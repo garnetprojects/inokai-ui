@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  font-family: 'robot', sans-serif;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.rs__time {
+  /* min-width: 30px !important; */
+}
+.MuiContainer-root > div > div:last-child {
+  overflow-x: unset;
+}
+
+.MuiListItem-padding {
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  background: white;
+}
+
+.MuiFormLabel-root {
+  text-transform: capitalize;
+}

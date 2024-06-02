@@ -1,0 +1,63 @@
+{
+  "menu": {
+    "companies": "companies",
+    "employees": "employees",
+    "profile": "profile",
+    "account": "account",
+    "dashboard": "dashboard",
+    "logout": "logout"
+  },
+  "title": {
+    "company": "company",
+    "center": "center",
+    "manager": "manager",
+    "setting": "setting",
+    "calender": "calender",
+    "appointment": "appointment"
+  },
+  "buttons": {
+    "register": "register",
+    "logIn": "sign in",
+    "edit": "edit",
+    "suspend": "suspend",
+    "delete": "delete",
+    "create": "create",
+    "back": "back",
+    "chooseLogo": "choose logo",
+    "uploadSettings": "upload settings",
+    "cancelAppointment": "cancel appointment"
+  },
+  "inputLabel": {
+    "companyName": "company name",
+    "clientName": "client's name",
+    "clientPhone": "client's phone",
+    "name": "name",
+    "email": "email",
+    "dni": "dni",
+    "password": "password",
+    "action": "action",
+    "primaryColor": "primary color",
+    "status": "status",
+    "address": "address",
+    "phoneNumber": "phone number",
+    "service": "service",
+    "companyId": "company id",
+    "initTime": "Init Time",
+    "endTime": "End Time"
+  },
+  "inputOptions": {
+    "active": "active",
+    "suspend": "suspend"
+  },
+  "messages": {
+    "nameBd": "Name of the database, cannot be edited later*.",
+    "logoPreview": "Logo Preview: Big and Small size",
+    "confirmDelete": "Do you want to delete it?",
+    "confirmChanges": "Are you sure you want to make these changes?",
+    "cancelAppointment": "Are you sure you want to cancel it?"
+  },
+  "text": {
+    "serviceReq": "Required Services",
+    "clientName": "Client Name"
+  }
+}
