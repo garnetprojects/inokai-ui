@@ -96,6 +96,7 @@ const Header = ({ dataBase }) => {
       email: e.target.email.value,
       phone: e.target.phone.value,
       DNI: e.target.DNI.value,
+      password: e.target?.password?.value,
       services,
     };
 
@@ -105,6 +106,7 @@ const Header = ({ dataBase }) => {
     }
 
     if (open?._id) {
+      delete data.password;
       delete data.DNI;
     }
 
@@ -190,18 +192,20 @@ const Header = ({ dataBase }) => {
               />
             </Grid>
 
-            {/* <Grid xs={12} md={6}>
-              <TextField
-                label={t('inputLabel.password')}
-                type="password"
-                variant="standard"
-                sx={{ width: '100%' }}
-                name="password"
-                defaultValue={open?.password || ''}
-                disabled={mutation.isPending}
-                required
-              />
-            </Grid> */}
+            {!open?._id && (
+              <Grid xs={12} md={6}>
+                <TextField
+                  label={t('inputLabel.password')}
+                  type="password"
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  name="password"
+                  defaultValue={open?.password || ''}
+                  disabled={mutation.isPending}
+                  required
+                />
+              </Grid>
+            )}
 
             <Grid xs={12} md={6}>
               <TextField
