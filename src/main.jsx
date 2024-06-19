@@ -12,7 +12,7 @@ import { SnackbarProvider } from 'notistack';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
-  lng: localStorage.getItem('lng') || 'en',
+  lng: localStorage.getItem('lng') || 'es',
   resources: {
     en: {
       global: global_en,
