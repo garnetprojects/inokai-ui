@@ -1,12 +1,14 @@
-import { Box, Chip, Typography } from '@mui/material';
+import { Box, Chip, CircularProgress, Typography } from '@mui/material';
 import MultipleSelectComponent from './MultipleSelectComponent';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
+import { useTranslation } from 'react-i18next';
 
 const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
   const { dataBase } = useParams();
+  const [t] = useTranslation('global');
 
   const servicesQuery = useQuery({
     queryKey: ['services'],
@@ -24,6 +26,10 @@ const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
 
   return (
     <Box>
+      {servicesQuery.isLoading && <CircularProgress size={20} />}
+      {servicesQuery.data?.data.length === 0 && (
+        <Typography>{t('messages.noservice')}</Typography>
+      )}
       <MultipleSelectComponent
         options={
           servicesQuery.data?.data.map((item) => ({
@@ -33,7 +39,11 @@ const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
         }
         setSelectedOption={setSelectedOption}
         selectedOption={selectedOption}
-        disabled={servicesQuery.isLoading || disabled}
+        disabled={
+          servicesQuery.isLoading ||
+          disabled ||
+          servicesQuery.data?.data.length === 0
+        }
       />
 
       <Box

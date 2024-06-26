@@ -54,7 +54,8 @@
     "logoPreview": "Logo Preview: Big and Small size",
     "confirmDelete": "Do you want to delete it?",
     "confirmChanges": "Are you sure you want to make these changes?",
-    "cancelAppointment": "Are you sure you want to cancel it?"
+    "cancelAppointment": "Are you sure you want to cancel it?",
+    "noservice": "No services available"
   },
   "text": {
     "serviceReq": "Required Services",
