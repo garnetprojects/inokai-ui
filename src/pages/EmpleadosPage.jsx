@@ -306,5 +306,5 @@ const TableBody = ({ dataBase }) => {
 
   return <TableComponent columns={columns} data={data} />;
 };
-
+// comentario
 export default EmpleadosPage;
