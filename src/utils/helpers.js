@@ -19,7 +19,7 @@ export function formatDate(fechaString) {
   const mes = String(fecha.getUTCMonth() + 1).padStart(2, '0'); // Ajustar el mes
   const año = fecha.getUTCFullYear();
 
-  // Retornar la fecha formateada
+  // Devolver la fecha formateada
   return `${mes}/${dia}/${año}`;
 }
 
