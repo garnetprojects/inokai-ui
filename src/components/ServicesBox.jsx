@@ -1,19 +1,39 @@
-import { Box, Chip } from '@mui/material';
+import { Box, Chip, Typography } from '@mui/material';
 import MultipleSelectComponent from './MultipleSelectComponent';
-import { services } from '../utils/options';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { getError } from '../utils/getError';
 
 const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
+  const { dataBase } = useParams();
+
+  const servicesQuery = useQuery({
+    queryKey: ['services'],
+    queryFn: () => axios(`/appointment/get-services/${dataBase}`),
+  });
+
   const handleDelete = (name) => {
     setSelectedOption((prev) => prev.filter((item) => item !== name));
   };
 
+  console.log(servicesQuery.isLoading);
+
+  if (servicesQuery.isError)
+    return <Typography>{getError(servicesQuery.error)}</Typography>;
+
   return (
     <Box>
       <MultipleSelectComponent
-        options={services}
+        options={
+          servicesQuery.data?.data.map((item) => ({
+            value: `${item.serviceName} - ${item.duration}`,
+            label: `${item.serviceName} - ${item.duration}`,
+          })) || []
+        }
         setSelectedOption={setSelectedOption}
         selectedOption={selectedOption}
-        disabled={disabled}
+        disabled={servicesQuery.isLoading || disabled}
       />
 
       <Box
