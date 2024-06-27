@@ -62,7 +62,7 @@ const LogoApp = ({ version = '' }) => {
           src={urlLogo}
           alt="Logo"
           decoding="async"
-          height={130}
+          height={auto}
           width={250}
         />
       )}
