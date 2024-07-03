@@ -38,7 +38,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         resourceFields={{
           idField: 'user_id',
           textField: 'name',
-          subTextField: 'email',
+          subTextField: '',
           avatarField: 'name',
         }}
         eventRenderer={({ event }) => {
