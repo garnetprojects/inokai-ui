@@ -24,3 +24,8 @@
 .MuiFormLabel-root {
   text-transform: capitalize;
 }
+
+.MuiTypography-root.MuiTypography-caption {
+  /* transform: rotate(90deg) !important; */
+  writing-mode: vertical-rl;
+}
