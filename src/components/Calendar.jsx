@@ -18,8 +18,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   }));
 
   return (
-    <>
+    <div className='calendario'>
       <Scheduler
+      
         height={3000}
         resourceViewMode="default"
         view="day"
@@ -45,7 +46,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           return <BoxAppointment setOpen={setOpen} data={event} />;
         }}
       />
-    </>
+    </div>
   );
 };
 
