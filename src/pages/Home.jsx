@@ -90,11 +90,17 @@ const Home = () => {
             />
           </Box>
           <LocationProvider>
+            {/* <StaticDatePicker
+              onAccept={(data) => setFilterDate(formatDate(data.$d))}
+            /> */}
+
             <DatePicker
-              value={dayjs(filterDate, 'DD/MM/YYYY')}
-              onChange={(data) => setFilterDate(formatDate(data))}
+              // sx={{ width: '100%' }}
+              onChange={(data) => setFilterDate(formatDate(data.$d))}
               name="date"
               required
+              on
+              // disabled={mutation.isPending || canEdit}
             />
           </LocationProvider>
         </Box>
@@ -372,7 +378,6 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
                   sx={{ width: '100%' }}
                   name="date"
                   required
-                  format="DD/MM/YYYY"
                   disabled={mutation.isPending || canEdit}
                   defaultValue={open?.date && dayjs(open?.date)}
                 />
