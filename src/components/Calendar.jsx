@@ -79,13 +79,13 @@ const BoxAppointment = ({ data, setOpen }) => {
       disabled={isFreeSlot}
     >
       {isFreeSlot && (
-        <Typography fontSize={16} color="text.secondary">
+        <Typography fontSize={11} color="text.secondary">
           LIBRE
         </Typography>
       )}
 
       <Box onDoubleClick={handleClick}>
-        <Box display="flex" flexDirection="row" gap={1}>
+        <Box display="flex" flexDirection="column" gap={1}>
           <Typography fontSize={11}>
             {t('inputLabel.initTime')}: {data.initTime}
           </Typography>
