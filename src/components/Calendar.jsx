@@ -86,16 +86,16 @@ const BoxAppointment = ({ data, setOpen }) => {
 
       <Box onDoubleClick={handleClick}>
         <Box display="flex" flexDirection="column" gap={1}>
-          <Typography fontSize={13}>
+          <Typography fontSize={10}>
             {t('inputLabel.initTime')}: {data.initTime}
           </Typography>
-          <Typography fontSize={13}>
+          <Typography fontSize={10}>
             {t('inputLabel.endTime')}: {data.finalTime}
           </Typography>
         </Box>
 
         <Typography my={1} fontSize={12}>
-          <Box component="span" fontWeight="bold" fontSize={13}>
+          <Box component="span" fontWeight="bold" fontSize={10}>
             {t('text.clientName')}: {isFreeSlot ? 'LIBRE' : data.clientName}
           </Box>
         </Typography>
@@ -108,7 +108,7 @@ const BoxAppointment = ({ data, setOpen }) => {
             fontWeight="bold"
             display="block"
             mb={1}
-            fontSize={13}
+            fontSize={10}
           >
             {t('text.serviceReq')}:
           </Typography>
