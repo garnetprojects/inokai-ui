@@ -20,7 +20,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   return (
     <div className='calendario'>
       <Scheduler
-      
         height={3000}
         resourceViewMode="default"
         view="day"
@@ -58,6 +57,7 @@ const BoxAppointment = ({ data, setOpen }) => {
   };
 
   const isFreeSlot = data.clientName === 'NO APLICA';
+  const serviceColor = !isFreeSlot && data.services.length > 0 ? data.services[0].color : 'grey.300';
 
   return (
     <Button
@@ -65,13 +65,13 @@ const BoxAppointment = ({ data, setOpen }) => {
         p: 1,
         position: 'relative',
         color: 'black',
-        bgcolor: isFreeSlot ? 'grey.300' : data.services[0]?.color,
+        bgcolor: serviceColor,
         opacity: isFreeSlot ? 0.3 : 1,
         ':disabled': {
           cursor: 'not-allowed',
         },
         ':hover': {
-          bgcolor: isFreeSlot ? 'grey.300' : data.services[0]?.color,
+          bgcolor: serviceColor,
           filter: 'saturate(250%)',
         },
       }}
@@ -113,10 +113,10 @@ const BoxAppointment = ({ data, setOpen }) => {
             {t('text.serviceReq')}:
           </Typography>
 
-          <Box display="flex" gap={1} flexWrap="wrap">
+          <Box display="flex" gap={0.5} flexWrap="wrap">
             {data.services.map((item, idx) => (
               <Chip
-                sx={{ background: 'white' }}
+                sx={{ background: item.color, fontSize: '0.75rem', height: '20px', padding: '0 5px', color: 'white' }}
                 size="small"
                 key={idx}
                 label={item.serviceName}
