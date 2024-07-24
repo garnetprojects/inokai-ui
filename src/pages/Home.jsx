@@ -32,6 +32,7 @@ import {
   defaultTime,
   fechaEnTiempoPresente,
   formatDate,
+  formatDatePicker,
   returnHour,
 } from '../utils/helpers';
 import { useSnackbar } from 'notistack';
@@ -95,11 +96,11 @@ const Home = () => {
             /> */}
 
             <DatePicker
-              // sx={{ width: '100%' }}
               onChange={(data) => setFilterDate(formatDate(data.$d))}
               name="date"
               required
               on
+              format={formatDatePicker}
               // disabled={mutation.isPending || canEdit}
             />
           </LocationProvider>
@@ -380,6 +381,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
                   required
                   disabled={mutation.isPending || canEdit}
                   defaultValue={open?.date && dayjs(open?.date)}
+                  format={formatDatePicker}
                 />
               </LocationProvider>
             </Grid>
