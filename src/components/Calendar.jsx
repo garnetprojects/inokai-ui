@@ -99,7 +99,7 @@ const BoxAppointment = ({ data, setOpen }) => {
 
           <Typography my={1} fontSize={11}>
             <Box component="span" fontWeight="bold" fontSize={11}>
-              {t('text.clientName')}: {isFreeSlot ? 'LIBRE' : data.clientName}
+              {isFreeSlot ? 'LIBRE' : data.clientName}
             </Box>
           </Typography>
 
@@ -113,7 +113,6 @@ const BoxAppointment = ({ data, setOpen }) => {
               mb={1}
               fontSize={11}
             >
-              {t('text.serviceReq')}:
             </Typography>
 
             <Box display="flex" gap={0.5} flexWrap="wrap">
