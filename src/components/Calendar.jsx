@@ -1,4 +1,4 @@
-import { Box, Button, Chip, Divider, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, Tooltip, Typography } from '@mui/material';
 import { Scheduler } from '@aldabil/react-scheduler';
 import { convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
@@ -59,73 +59,78 @@ const BoxAppointment = ({ data, setOpen }) => {
   const isFreeSlot = data.clientName === 'NO APLICA';
   const serviceColor = !isFreeSlot && data.services.length > 0 ? data.services[0].color : 'grey.300';
 
+  // Crear el texto para el tooltip con los servicios
+  const servicesTooltip = data.services.map((item) => item.serviceName).join(', ');
+
   return (
-    <Button
-      sx={{
-        p: 1,
-        position: 'relative',
-        color: 'black',
-        bgcolor: serviceColor,
-        opacity: isFreeSlot ? 0.3 : 1,
-        ':disabled': {
-          cursor: 'not-allowed',
-        },
-        ':hover': {
+    <Tooltip title={servicesTooltip} arrow>
+      <Button
+        sx={{
+          p: 1,
+          position: 'relative',
+          color: 'black',
           bgcolor: serviceColor,
-          filter: 'saturate(250%)',
-        },
-      }}
-      variant="contained"
-      disabled={isFreeSlot}
-    >
-      {isFreeSlot && (
-        <Typography fontSize={11} color="text.secondary">
-          LIBRE
-        </Typography>
-      )}
-
-      <Box onDoubleClick={handleClick}>
-        <Box display="flex" flexDirection="column" gap={1}>
-          <Typography fontSize={11}>
-            {t('inputLabel.initTime')}: {data.initTime}
+          opacity: isFreeSlot ? 0.3 : 1,
+          ':disabled': {
+            cursor: 'not-allowed',
+          },
+          ':hover': {
+            bgcolor: serviceColor,
+            filter: 'saturate(250%)',
+          },
+        }}
+        variant="contained"
+        disabled={isFreeSlot}
+      >
+        {isFreeSlot && (
+          <Typography fontSize={11} color="text.secondary">
+            LIBRE
           </Typography>
-          <Typography fontSize={11}>
-            {t('inputLabel.endTime')}: {data.finalTime}
-          </Typography>
-        </Box>
+        )}
 
-        <Typography my={1} fontSize={11}>
-          <Box component="span" fontWeight="bold" fontSize={11}>
-            {t('text.clientName')}: {isFreeSlot ? 'LIBRE' : data.clientName}
+        <Box onDoubleClick={handleClick}>
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Typography fontSize={11}>
+              {t('inputLabel.initTime')}: {data.initTime}
+            </Typography>
+            <Typography fontSize={11}>
+              {t('inputLabel.endTime')}: {data.finalTime}
+            </Typography>
           </Box>
-        </Typography>
 
-        <Divider sx={{ my: 0.5 }} />
-
-        <Box>
-          <Typography
-            component="span"
-            fontWeight="bold"
-            display="block"
-            mb={1}
-            fontSize={11}
-          >
-            {t('text.serviceReq')}:
+          <Typography my={1} fontSize={11}>
+            <Box component="span" fontWeight="bold" fontSize={11}>
+              {t('text.clientName')}: {isFreeSlot ? 'LIBRE' : data.clientName}
+            </Box>
           </Typography>
 
-          <Box display="flex" gap={0.5} flexWrap="wrap">
-            {data.services.map((item, idx) => (
-              <Chip
-                sx={{ background: item.color, fontSize: '0.75rem', height: '20px', padding: '0 5px', color: 'white' }}
-                size="small"
-                key={idx}
-                label={item.serviceName}
-              />
-            ))}
+          <Divider sx={{ my: 0.5 }} />
+
+          <Box>
+            <Typography
+              component="span"
+              fontWeight="bold"
+              display="block"
+              mb={1}
+              fontSize={11}
+            >
+              {t('text.serviceReq')}:
+            </Typography>
+
+            <Box display="flex" gap={0.5} flexWrap="wrap">
+              {data.services.map((item, idx) => (
+                <Chip
+                  sx={{ background: item.color, fontSize: '0.75rem', height: '20px', padding: '0 5px', color: 'white' }}
+                  size="small"
+                  key={idx}
+                  label={item.serviceName}
+                />
+              ))}
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </Button>
+      </Button>
+    </Tooltip>
   );
 };
 
