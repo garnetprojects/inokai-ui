@@ -1,3 +1,5 @@
+export const formatDatePicker = 'MM/DD/YYYY';
+
 export function formatDate(fechaString) {
   // Si no se proporciona ninguna fecha, usar la fecha actual
   if (!fechaString) {
