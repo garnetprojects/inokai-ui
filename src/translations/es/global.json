@@ -42,8 +42,8 @@
     "phoneNumber": "teléfono",
     "service": "servicio",
     "companyId": "ID de empresa",
-    "initTime": "Hora inicio",
-    "endTime": "Hora fin"
+    "initTime": "Inicio",
+    "endTime": "Fin"
   },
   "inputOptions": {
     "active": "activo",

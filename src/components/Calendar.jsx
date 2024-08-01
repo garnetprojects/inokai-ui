@@ -92,8 +92,7 @@ const BoxAppointment = ({ data, setOpen }) => {
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
-            </Typography>
-            <Typography fontSize={11}>
+              {t(' - ')}
               {t('inputLabel.endTime')}: {data.finalTime}
             </Typography>
           </Box>
