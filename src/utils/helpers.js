@@ -1,4 +1,4 @@
-export const formatDatePicker = 'MM/DD/YYYY';
+export const formatDatePicker = 'DD/MM/YYYY';
 
 export function formatDate(fechaString) {
   // Si no se proporciona ninguna fecha, usar la fecha actual
@@ -24,6 +24,17 @@ export function formatDate(fechaString) {
   // Devolver la fecha formateada
   return `${mes}/${dia}/${año}`;
 }
+
+export function formatDateToMongo(data = '', format) {
+  const [DD, MM, YY] = data.split('/')
+
+  const fecha = {DD, MM, YY}
+
+  const [num1, num2, num3] = format.split('/')
+
+  return `${fecha[num1]}/${fecha[num2]}/${fecha[num3]}`
+}
+
 
 export function convertirAMPMa24Horas(tiempo) {
   // Dividir la cadena en horas, minutos y AM/PM

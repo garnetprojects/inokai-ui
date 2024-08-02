@@ -33,6 +33,7 @@ import {
   fechaEnTiempoPresente,
   formatDate,
   formatDatePicker,
+  formatDateToMongo,
   returnHour,
 } from '../utils/helpers';
 import { useSnackbar } from 'notistack';
@@ -40,6 +41,9 @@ import { getError } from '../utils/getError';
 import dayjs from 'dayjs';
 import { UserContext } from '../context/UserProvider';
 import ServicesBox from '../components/ServicesBox';
+
+import 'dayjs/locale/es';
+import 'dayjs/locale/en';
 
 const Home = () => {
   const [filterDate, setFilterDate] = useState('');
@@ -100,7 +104,7 @@ const Home = () => {
               name="date"
               required
               on
-              format={formatDatePicker}
+              // format={formatDatePicker}
               // disabled={mutation.isPending || canEdit}
             />
           </LocationProvider>
@@ -134,7 +138,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
   const { invalidate } = useInvalidate();
   const [user, setUser] = useState('');
   const [selectedOption, setSelectedOption] = useState([]);
-  const [t] = useTranslation('global');
+  const [t, i18] = useTranslation('global');
   const {
     state: { userInfo },
   } = useContext(UserContext);
@@ -196,13 +200,16 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
       clientPhone: e.target?.clientPhone?.value,
       initTime: e.target?.initTime?.value,
       finalTime: e.target?.finalTime?.value,
-      date: e.target?.date?.value,
+      date: i18.language === 'en' ? e.target?.date?.value :  formatDateToMongo(e.target?.date?.value, 'MM/DD/YY'),
       services,
     };
 
     if (open?._id) {
       data.userInfo = user;
     }
+
+    console.log(data);
+    // return
 
     if (
       [
@@ -381,7 +388,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
                   required
                   disabled={mutation.isPending || canEdit}
                   defaultValue={open?.date && dayjs(open?.date)}
-                  format={formatDatePicker}
+                  // format={formatDatePicker}
                 />
               </LocationProvider>
             </Grid>
@@ -443,10 +450,15 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
   );
 };
 
-const LocationProvider = ({ children }) => (
-  <LocalizationProvider dateAdapter={AdapterDayjs}>
-    {children}
-  </LocalizationProvider>
-);
+const LocationProvider = ({ children }) => {
+  const [t, e] = useTranslation('global');
+  console.log(e.language)
+  
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={e.language}>
+      {children}
+    </LocalizationProvider>
+  );
+};
 
 export default Home;
