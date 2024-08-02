@@ -25,7 +25,7 @@ const ThemeApp = () => {
         main: data?.primaryColor || '#1976D2',
       },
     },
-  }, esES);
+  });
 
   useEffect(() => {
     if (data?.status === 'suspended') {
