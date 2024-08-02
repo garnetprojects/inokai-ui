@@ -29,3 +29,7 @@
   /* transform: rotate(90deg) !important; */
   writing-mode: vertical-rl;
 }
+
+.calendario .MuiPaper-rounded + div {
+  overflow-x: unset;
+}
