@@ -56,7 +56,7 @@ const BoxAppointment = ({ data, setOpen }) => {
     setOpen(data);
   };
 
-  const isFreeSlot = data.clientName === 'NO APLICA';
+  const isFreeSlot = data.clientName === 'NO APLICA' || data.clientName === 'Fuera de horario' || data.clientName === 'Vacaciones' || data.clientName === 'Baja' || data.clientName === 'Libre' || data.clientName === 'Año Nuevo' || data.clientName === 'Festivo';
   const serviceColor = !isFreeSlot && data.services.length > 0 ? data.services[0].color : 'grey.300';
 
   // Crear el texto para el tooltip con los servicios
@@ -70,7 +70,7 @@ const BoxAppointment = ({ data, setOpen }) => {
           position: 'relative',
           color: 'black',
           bgcolor: serviceColor,
-          opacity: isFreeSlot ? 0.3 : 1,
+          opacity: isFreeSlot ? 0.5 : 1,
           ':disabled': {
             cursor: 'not-allowed',
           },
@@ -84,7 +84,7 @@ const BoxAppointment = ({ data, setOpen }) => {
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
-            LIBRE
+            {t('')}
           </Typography>
         )}
 
@@ -99,7 +99,7 @@ const BoxAppointment = ({ data, setOpen }) => {
 
           <Typography my={1} fontSize={11}>
             <Box component="span" fontWeight="bold" fontSize={11}>
-              {isFreeSlot ? 'LIBRE' : data.clientName}
+              {data.clientName}
             </Box>
           </Typography>
 
