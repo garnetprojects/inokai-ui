@@ -70,7 +70,7 @@ const BoxAppointment = ({ data, setOpen }) => {
           position: 'relative',
           color: 'black',
           bgcolor: serviceColor,
-          opacity: isFreeSlot ? 0.5 : 1,
+          opacity: 1,
           ':disabled': {
             cursor: 'not-allowed',
           },
