@@ -197,7 +197,8 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
 
     const data = {
       clientName: e.target?.clientName?.value,
-      clientPhone: e.target?.clientPhone?.value,
+      //si no tiene prefijo, lo añade
+      clientPhone: e.target?.clientPhone?.value.startsWith('+34') ? e.target?.clientPhone?.value : '+34' + e.target?.clientPhone?.value,
       initTime: e.target?.initTime?.value,
       finalTime: e.target?.finalTime?.value,
       date: i18.language === 'en' ? e.target?.date?.value :  formatDateToMongo(e.target?.date?.value, 'MM/DD/YY'),
