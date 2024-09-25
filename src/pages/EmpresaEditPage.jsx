@@ -17,7 +17,10 @@ import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
 import TableComponent from '../components/TableComponent';
-import { CellActionCenter } from '../components/CellActionComponents';
+import {
+  CellActionCenter,
+  CellActionService,
+} from '../components/CellActionComponents';
 import { useInvalidate } from '../utils/Invalidate';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
@@ -28,6 +31,8 @@ import { enqueueSnackbar } from 'notistack';
 import { urlBD } from '../utils/urlBD';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useTranslation } from 'react-i18next';
+import { imageUpload } from '../utils/helpers';
+import SpecialitiesBox from '../components/SpecialitiesBox';
 
 const EmpresaEditPage = () => {
   const { nombreEmpresa } = useParams();
@@ -62,6 +67,8 @@ const EmpresaEditPage = () => {
       <Settings nombreEmpresa={nombreEmpresa} />
 
       <Centers data={data.centers} centerToEdit={{ nombreEmpresa }} />
+
+      <Services data={data.services} centerToEdit={{ nombreEmpresa }} />
     </Container>
   );
 };
@@ -87,7 +94,7 @@ const Header = ({ data, nombreEmpresa }) => {
     },
   });
 
-  console.log(data)
+  console.log(data);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -209,7 +216,8 @@ const Settings = ({ nombreEmpresa }) => {
   });
 
   const [selectValue, setSelectValue] = useState('');
-  const [urlLogo, setUrlLogo] = useState('');
+  const [urlLogo, setUrlLogo] = useState(null);
+  const [urlLogo2, setUrlLogo2] = useState(null);
 
   console.log(selectValue);
 
@@ -241,7 +249,7 @@ const Settings = ({ nombreEmpresa }) => {
 
   useEffect(() => {
     setSelectValue(data?.status || 'active');
-    setUrlLogo(data?.logo[0]?.cloudinary_url || '');
+    // setUrlLogo(data?.logo[0]?.cloudinary_url || '');
   }, [isLoading]);
 
   if (isLoading) return <CircularProgress />;
@@ -256,8 +264,16 @@ const Settings = ({ nombreEmpresa }) => {
     if (!confirmUpload) return;
 
     const dataForm = new FormData(e.target);
+    // dataForm.append('uploadImages', )
+    if (urlLogo) {
+      // console.log(newFile);
+      dataForm.append('uploadImages', imageUpload(urlLogo, 'large-l-ino24'));
+    }
 
-    console.log('Ayuda');
+    if (urlLogo2) {
+      dataForm.append('uploadImages', imageUpload(urlLogo2, 'small-l-ino24'));
+    }
+
     mutation.mutate(dataForm);
   };
 
@@ -323,43 +339,21 @@ const Settings = ({ nombreEmpresa }) => {
             />
           </Grid>
 
-          <Grid xs={12}>
-            <Box mb={2}>
-              <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                startIcon={<CloudUploadIcon />}
-              >
-                {t('buttons.chooseLogo')}
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
+            <HandleLogo
+              urlLogo={urlLogo}
+              setUrlLogo={setUrlLogo}
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={data?.logo[0]?.cloudinary_url}
+            />
 
-                <input
-                  type="file"
-                  hidden
-                  name="uploadImages"
-                  onChange={(e) =>
-                    setUrlLogo(URL.createObjectURL(e.target.files[0]))
-                  }
-                />
-              </Button>
-            </Box>
-
-            {urlLogo && (
-              <>
-                <Typography>{t('messages.logoPreview')}</Typography>
-
-                <img
-                  src={urlLogo}
-                  alt="Logo"
-                  decoding="async"
-                  height={130}
-                  width={250}
-                />
-                <img src={urlLogo} height={70} width={150} />
-              </>
-            )}
-          </Grid>
+            <HandleLogo
+              cloudinary_url={data?.smallLogo[0]?.cloudinary_url}
+              urlLogo={urlLogo2}
+              setUrlLogo={setUrlLogo2}
+              textBtn={`${t('buttons.chooseLogo')} 2`}
+            />
+          </Box>
         </Grid>
 
         <Button
@@ -373,6 +367,52 @@ const Settings = ({ nombreEmpresa }) => {
 
       <Divider sx={{ my: 3 }} />
     </>
+  );
+};
+
+const HandleLogo = ({ urlLogo, setUrlLogo, textBtn, cloudinary_url }) => {
+  const [t] = useTranslation('global');
+  console.log(urlLogo);
+
+  return (
+    <Box mb={2}>
+      <Box mb={2}>
+        <Button
+          component="label"
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+        >
+          {textBtn}
+
+          <input
+            accept="image/*"
+            type="file"
+            hidden
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setUrlLogo(e.target.files);
+              }
+            }}
+          />
+        </Button>
+      </Box>
+
+      {(cloudinary_url || urlLogo) && (
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={urlLogo ? URL.createObjectURL(urlLogo[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
+      )}
+    </Box>
   );
 };
 
@@ -486,6 +526,186 @@ const Centers = ({ data, centerToEdit }) => {
                 defaultValue={open?.address || ''}
 
                 // disabled={mutation.isPending}
+              />
+            </Grid>
+          </Grid>
+          {/* </Grid> */}
+
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ width: '100%', mt: 2 }}
+            disabled={mutation.isPending}
+          >
+            Crear
+          </Button>
+        </form>
+      </ModalComponent>
+
+      <TableComponent data={data} columns={columns} />
+    </>
+  );
+};
+
+const Services = ({ data, centerToEdit }) => {
+  const [t] = useTranslation('global');
+  const [open, setOpen] = useState(null);
+  const [specialities, setSpecialities] = useState([]);
+  const { invalidate } = useInvalidate();
+
+  const mutation = useMutation({
+    mutationFn: async (data) => {
+      if (open._id) {
+        await axios
+          .put(
+            `/appointment/edit-services/${centerToEdit.nombreEmpresa}/${open._id}`,
+            data
+          )
+          .then((response) => response.data);
+      } else {
+        await axios
+          .post(
+            `/appointment/create-services/${centerToEdit.nombreEmpresa}`,
+            data
+          )
+          .then((response) => response.data);
+      }
+    },
+
+    onSuccess: (data) => {
+      console.log(data);
+
+      invalidate(['empresa', centerToEdit.nombreEmpresa]);
+
+      enqueueSnackbar('Se logro con exito', { variant: 'success' });
+      setOpen(null);
+    },
+    onError: (err) => {
+      console.log(err);
+      enqueueSnackbar(getError(err), { variant: 'error' });
+    },
+  });
+
+  const columns = [
+    {
+      header: t('inputLabel.name'),
+      accessorKey: 'serviceName',
+    },
+    {
+      header: t('inputLabel.duration'),
+      accessorKey: 'duration',
+    },
+    {
+      header: 'color',
+      accessorKey: 'color',
+      cell: (info) => (
+        <Typography bgcolor={info.getValue()} textAlign={'center'}>
+          {info.getValue()}
+        </Typography>
+      ),
+    },
+    {
+      header: t('inputLabel.action'),
+      cell: (info) => (
+        <CellActionService
+          info={info.row.original}
+          setOpen={setOpen}
+          nombreEmpresa={centerToEdit.nombreEmpresa}
+        />
+      ),
+    },
+  ];
+
+  useEffect(() => {
+    if (open?._id) {
+      setSpecialities(open.specialities);
+    }
+  }, [open?._id]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const data = {
+      serviceName: e.target.serviceName.value,
+      duration: e.target.duration.value,
+      color: e.target.color.value,
+      specialities,
+    };
+
+    mutation.mutate(data);
+  };
+
+  return (
+    <>
+      <Typography
+        variant={'h4'}
+        sx={{ textTransform: 'capitalize' }}
+        mb={2}
+        mt={4}
+      >
+        {t('title.service')}s{' '}
+        <IconButton
+          variant="contained"
+          onClick={() => setOpen(true)}
+          // disabled={mutation.isPending}
+        >
+          <AddIcon />
+        </IconButton>
+      </Typography>
+
+      <ModalComponent
+        open={!!open}
+        setOpen={setOpen}
+        onClose={() => setSpecialities([])}
+      >
+        <form action="" onSubmit={handleSubmit}>
+          <Typography mt={3} variant="h4" textTransform={'capitalize'}>
+            {t('title.service')}
+          </Typography>
+
+          {/* <Grid container spacing={5}> */}
+          <Grid container spacing={5}>
+            <Grid xs={12} md={4}>
+              <TextField
+                label="Nombre"
+                name={`serviceName`}
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                defaultValue={open?.serviceName || ''}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+            <Grid xs={12} md={4}>
+              <TextField
+                label="Duracion"
+                name={`duration`}
+                type="text"
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                defaultValue={open?.duration || ''}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+            <Grid xs={12} md={4}>
+              <TextField
+                label="Color"
+                name={`color`}
+                type="color"
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                defaultValue={open?.color || ''}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+
+            <Grid paddingTop={0}>
+              <SpecialitiesBox
+                propBase={centerToEdit.nombreEmpresa}
+                selectedOption={specialities}
+                setSelectedOption={setSpecialities}
               />
             </Grid>
           </Grid>

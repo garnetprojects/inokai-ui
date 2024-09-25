@@ -26,15 +26,28 @@ export function formatDate(fechaString) {
 }
 
 export function formatDateToMongo(data = '', format) {
-  const [DD, MM, YY] = data.split('/')
+  const [DD, MM, YY] = data.split('/');
 
-  const fecha = {DD, MM, YY}
+  const fecha = { DD, MM, YY };
 
-  const [num1, num2, num3] = format.split('/')
+  const [num1, num2, num3] = format.split('/');
 
-  return `${fecha[num1]}/${fecha[num2]}/${fecha[num3]}`
+  return `${fecha[num1]}/${fecha[num2]}/${fecha[num3]}`;
 }
 
+export const imageUpload = (urlLogo, typeImg) => {
+  const dataModified = urlLogo[0];
+
+  const [name, type] = dataModified.name.split('.');
+  const typeImage = `image/${type}`;
+
+  const blob = dataModified.slice(0, dataModified.size, typeImage);
+  const newFile = new File([blob], `${typeImg}-${dataModified.name}`, {
+    type: typeImage,
+  });
+
+  return newFile;
+};
 
 export function convertirAMPMa24Horas(tiempo) {
   // Dividir la cadena en horas, minutos y AM/PM

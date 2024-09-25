@@ -9,6 +9,7 @@ import {
   Box,
   Button,
   Container,
+  MenuItem,
   Skeleton,
   TextField,
   Typography,
@@ -25,6 +26,7 @@ import { fixCentersArray } from '../utils/fixArray';
 import ServicesBox from '../components/ServicesBox';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
+import SpecialitiesBox from '../components/SpecialitiesBox';
 
 export const EmpleadosContext = createContext();
 
@@ -52,6 +54,7 @@ const Header = ({ dataBase }) => {
   const [t] = useTranslation('global');
   const { open, setOpen } = useContext(EmpleadosContext);
   const [selectedOption, setSelectedOption] = useState([]);
+  const [specialities, setSpecialities] = useState([]);
   const [center, setCenter] = useState('');
 
   const centerId = open?.centerInfo?._id;
@@ -97,8 +100,12 @@ const Header = ({ dataBase }) => {
       phone: e.target.phone.value,
       DNI: e.target.DNI.value,
       password: e.target?.password?.value,
+      isAvailable: e.target?.isAvailable?.value,
       services,
+      specialities,
     };
+
+    console.log(data, 'datos mandando');
 
     if (!selectedOption.length || !services.length) {
       enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
@@ -113,7 +120,7 @@ const Header = ({ dataBase }) => {
     mutation.mutate(data);
   };
 
-  console.log(center);
+  console.log({open, specialities, selectedOption}, 'aqui');
 
   useEffect(() => {
     console.log(open);
@@ -123,11 +130,11 @@ const Header = ({ dataBase }) => {
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
-
-      return;
     }
 
-    setSelectedOption([]);
+    if (open?.specialities) {
+      setSpecialities(open?.specialities);
+    }
   }, [open]);
 
   return (
@@ -139,7 +146,11 @@ const Header = ({ dataBase }) => {
       >
         {t('buttons.create')}
       </Button>
-      <ModalComponent open={!!open} setOpen={setOpen}>
+      <ModalComponent
+        open={!!open}
+        setOpen={setOpen}
+        onClose={() => setSelectedOption([])}
+      >
         <form action="" onSubmit={handleSubmit}>
           <Typography mt={3} variant="h4" sx={{ textTransform: 'capitalize' }}>
             {t('menu.employees')}
@@ -150,6 +161,13 @@ const Header = ({ dataBase }) => {
               <ServicesBox
                 setSelectedOption={setSelectedOption}
                 selectedOption={selectedOption}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+            <Grid xs={12}>
+              <SpecialitiesBox
+                selectedOption={specialities}
+                setSelectedOption={setSpecialities}
                 disabled={mutation.isPending}
               />
             </Grid>
@@ -232,6 +250,21 @@ const Header = ({ dataBase }) => {
                 }}
                 disabled={mutation.isPending}
               />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.isAvailable')}
+                name="isAvailable"
+                variant="standard"
+                fullWidth
+                disabled={mutation.isPending}
+                select
+                defaultValue={open?.isAvailable || 'yes'}
+              >
+                <MenuItem value={'yes'}>{t('messages.yes')}</MenuItem>
+                <MenuItem value={'no'}>{t('messages.no')}</MenuItem>
+              </TextField>
             </Grid>
           </Grid>
 

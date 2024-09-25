@@ -45,6 +45,7 @@ const Header = () => {
   const [companyName, setCompanyName] = useState('');
   const [open, setOpen] = useState(false);
   const [centers, setCenters] = useState([]);
+  const [services, setServices] = useState([]);
 
   const { invalidate } = useInvalidate();
 
@@ -77,27 +78,28 @@ const Header = () => {
       DNI: e.target.name.value,
       companyName: e.target.companyName.value.replace(/ /g, '-'),
       centers,
+      services
     };
 
     mutation.mutate(data);
   };
 
-  const handleDelete = (id) => {
-    setCenters((prev) => prev.filter((item, idx) => +idx !== +id));
+  const handleDelete = (id, setState = setCenters) => {
+    setState((prev) => prev.filter((item, idx) => +idx !== +id));
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e, setState = setCenters) => {
     const [name, id] = e.target.name.split('-');
     console.log(name, id);
 
-    setCenters((prev) =>
+    setState((prev) =>
       prev.map((item, idx) =>
         idx === +id ? { ...item, [name]: e.target.value } : item
       )
     );
   };
 
-  console.log(centers);
+  console.log({centers, services});
   return (
     <Box component={'header'} mb={5}>
       <Button
@@ -144,8 +146,6 @@ const Header = () => {
                 {t('messages.nameBd')}
               </Typography>
             </Grid>
-
-
           </Grid>
 
           <Typography mt={3} variant="h4" textTransform={'capitalize'}>
@@ -228,7 +228,7 @@ const Header = () => {
                   variant="standard"
                   sx={{ width: '100%' }}
                   disabled={mutation.isPending}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                 />
               </Grid>
               <Grid xs={12} md={6}>
@@ -241,7 +241,7 @@ const Header = () => {
                   variant="standard"
                   sx={{ width: '100%' }}
                   disabled={mutation.isPending}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                 />
               </Grid>
 
@@ -256,6 +256,76 @@ const Header = () => {
             </Grid>
           ))}
           {/* </Grid> */}
+
+          <Typography mt={3} variant="h4" textTransform={'capitalize'}>
+            {t('title.service')}s
+            <IconButton
+              sx={{ ml: 1 }}
+              variant="contained"
+              onClick={() => setServices((prev) => [...prev, {}])}
+              disabled={mutation.isPending}
+            >
+              <AddIcon />
+            </IconButton>
+          </Typography>
+
+          {services.map((item, idx) => (
+            <Grid
+              position={'relative'}
+              container
+              spacing={5}
+              key={idx}
+              mb={0.1}
+            >
+              <Grid xs={12} md={4}>
+                <TextField
+                  label={t('inputLabel.name')}
+                  name={`serviceName-${idx}`}
+                  value={services[idx].serviceName || ''}
+                  required
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  disabled={mutation.isPending}
+                  onChange={(e) => handleChange(e, setServices)}
+                />
+              </Grid>
+              <Grid xs={12} md={4}>
+                <TextField
+                  label={t('inputLabel.duration')}
+                  name={`duration-${idx}`}
+                  value={services[idx].duration || ''}
+                  type="text"
+                  required
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  disabled={mutation.isPending}
+                  onChange={(e) => handleChange(e, setServices)}
+                />
+              </Grid>
+              <Grid xs={12} md={4}>
+                <TextField
+                  label={'Color'}
+                  name={`color-${idx}`}
+                  value={services[idx].color || ''}
+                  type="color"
+                  required
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  disabled={mutation.isPending}
+                  onChange={(e) => handleChange(e, setServices)}
+                />
+              </Grid>
+
+              <IconButton
+                sx={{ position: 'absolute', right: 5 }}
+                color="error"
+                disabled={mutation.isPending}
+                onClick={() => handleDelete(idx, setServices)}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Grid>
+          ))}
 
           <Button
             type="submit"

@@ -13,7 +13,8 @@
     "manager": "manager",
     "setting": "configuración",
     "calender": "calendario",
-    "appointment": "cita"
+    "appointment": "cita",
+    "service": "servicio"
   },
   "buttons": {
     "register": "registrar",
@@ -43,7 +44,10 @@
     "service": "servicio",
     "companyId": "ID de empresa",
     "initTime": "Inicio",
-    "endTime": "Fin"
+    "endTime": "Fin",
+    "remarks": "observaciones",
+    "isAvailable": "Esta disponible?",
+    "duration": "Duración"
   },
   "inputOptions": {
     "active": "activo",
@@ -55,7 +59,9 @@
     "confirmDelete": "¿Seguro que quieres borrar?",
     "confirmChanges": "¿Seguro que quieres realizar los cambios?",
     "cancelAppointment": "¿Seguro que quieres cancelar la cita?",
-    "noservice": "No hay servicios disponibles"
+    "noservice": "No hay servicios disponibles",
+    "yes": "sí",
+    "no": "no"
   },
   "text": {
     "serviceReq": "Servicios",

@@ -10,6 +10,7 @@ const SelectComponent = ({
   aditionalProperties = {},
   disabled,
   required,
+  maxWidth,
 }) => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [label],
@@ -20,12 +21,13 @@ const SelectComponent = ({
   if (isError) return <p>Ocurrio algo</p>;
 
   return (
-    <FormControl disabled={isLoading} fullWidth>
+    <FormControl disabled={isLoading} fullWidth style={{ maxWidth }}>
       <InputLabel required={required} id={label}>
         {label}
       </InputLabel>
       <Select
         disabled={disabled || isLoading}
+        required={required}
         labelId={label}
         label={label}
         {...aditionalProperties}
