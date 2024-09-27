@@ -16,15 +16,18 @@ const LogoApp = ({ version = '' }) => {
       await axios(`/settings/get-settings/${dataBase}`).then((res) => res.data),
   });
 
+  console.log(data, 'aqui en logo');
+
   const urlLogo = data?.logo?.[0]?.cloudinary_url;
+  const urlLogoSm = data?.smallLogo?.[0]?.cloudinary_url;
 
   if (version === 'sm')
     return (
       <>
-        {urlLogo && (
+        {(urlLogo || urlLogoSm) && (
           <Box py={1}>
             <img
-              src={urlLogo}
+              src={urlLogoSm || urlLogo}
               alt="Logo"
               decoding="async"
               height={50}
@@ -33,7 +36,7 @@ const LogoApp = ({ version = '' }) => {
           </Box>
         )}
 
-        {!urlLogo && (
+        {(!urlLogo || !urlLogoSm) && (
           <>
             <AdbIcon />
             <Typography

@@ -9,6 +9,7 @@ import PagesLayout from './Layout/PagesLayout';
 import EmpresaEditPage from './pages/EmpresaEditPage';
 import EmpleadosPage from './pages/EmpleadosPage';
 import ThemeApp from '../theme/ThemeApp';
+import Horarios from './pages/Horarios';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
               {
                 path: 'empleados',
                 element: <EmpleadosPage />,
+              },
+              {
+                path: 'horarios',
+                element: <Horarios />,
               },
             ],
           },

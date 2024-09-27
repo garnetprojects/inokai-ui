@@ -37,8 +37,8 @@ const SpecialitiesBox = ({ disabled, setSelectedOption, selectedOption, propBase
       {servicesQuery.data?.data.length === 0 && (
         <Typography>{t('messages.noservice')}</Typography>
       )}
-      <Typography variant="h6">
-        Especialidades
+      <Typography variant="h6" textTransform={'capitalize'}>
+        {t('title.specialities')}
       </Typography>
 
       <Box gap={1} display={'flex'} flexWrap={'wrap'}>

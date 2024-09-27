@@ -14,7 +14,9 @@
     "setting": "setting",
     "calender": "calendar",
     "appointment": "appointment",
-    "service": "service"
+    "service": "service",
+    "specialities": "specialities",
+    "schedules": "schedules"
   },
   "buttons": {
     "register": "register",
@@ -47,7 +49,8 @@
     "endTime": "End Time",
     "remarks": "remarks",
     "isAvailable": "is Available?",
-    "duration": "duration"
+    "duration": "duration",
+    "monthToDelete": "month to delete"
   },
   "inputOptions": {
     "active": "active",

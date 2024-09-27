@@ -14,7 +14,9 @@
     "setting": "configuración",
     "calender": "calendario",
     "appointment": "cita",
-    "service": "servicio"
+    "service": "servicio",
+    "specialities": "especialidades",
+    "schedules": "horarios"
   },
   "buttons": {
     "register": "registrar",
@@ -47,7 +49,8 @@
     "endTime": "Fin",
     "remarks": "observaciones",
     "isAvailable": "Esta disponible?",
-    "duration": "Duración"
+    "duration": "Duración",
+    "monthToDelete": "Mes a eliminar"
   },
   "inputOptions": {
     "active": "activo",

@@ -45,6 +45,7 @@ import ServicesBox from '../components/ServicesBox';
 import 'dayjs/locale/es';
 import 'dayjs/locale/en';
 import SearchModal from '../components/SearchModal';
+import LocationProvider from '../components/LocationProvider';
 
 const Home = () => {
   const [filterDate, setFilterDate] = useState('');
@@ -70,6 +71,8 @@ const Home = () => {
   // if (appointmentQuery.isLoading) return <p>Cargando</p>;
 
   if (appointmentQuery.isError) return <p>Ocurrio algo</p>;
+
+  console.log(appointmentQuery.data);
 
   return (
     <Box>
@@ -466,17 +469,6 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
         </form>
       </ModalComponent>
     </Box>
-  );
-};
-
-const LocationProvider = ({ children }) => {
-  const [t, e] = useTranslation('global');
-  console.log(e.language);
-
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={e.language}>
-      {children}
-    </LocalizationProvider>
   );
 };
 

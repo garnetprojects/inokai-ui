@@ -252,9 +252,9 @@ export const CellActionService = ({ info, setOpen, nombreEmpresa }) => {
         >
           <Typography textAlign="center">{t('buttons.edit')}</Typography>
         </MenuItem>
-        <MenuItem onClick={handleDelete} disabled={isPending}>
+        {/* <MenuItem onClick={handleDelete} disabled={isPending}>
           <Typography textAlign="center">{t('buttons.delete')}</Typography>
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );
