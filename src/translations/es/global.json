@@ -50,7 +50,7 @@
     "remarks": "observaciones",
     "isAvailable": "Esta disponible?",
     "duration": "Duración",
-    "monthToDelete": "Mes a eliminar"
+    "monthToDelete": "Mes del año"
   },
   "inputOptions": {
     "active": "activo",
