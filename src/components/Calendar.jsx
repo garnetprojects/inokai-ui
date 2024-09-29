@@ -18,10 +18,11 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   }));
 
   return (
-    <div className='calendario'>
+    <div className="calendario">
       <Scheduler
         height={3000}
         resourceViewMode="default"
+        // resourceViewMode="tabs"
         view="day"
         disableViewNavigator
         disableViewer
@@ -56,11 +57,23 @@ const BoxAppointment = ({ data, setOpen }) => {
     setOpen(data);
   };
 
-  const isFreeSlot = data.clientName === 'NO APLICA' || data.clientName === 'Fuera de horario' || data.clientName === 'Vacaciones' || data.clientName === 'Baja' || data.clientName === 'Libre' || data.clientName === 'Año Nuevo' || data.clientName === 'Festivo';
-  const serviceColor = !isFreeSlot && data.services.length > 0 ? data.services[0].color : 'grey.300';
+  const isFreeSlot =
+    data.clientName === 'NO APLICA' ||
+    data.clientName === 'Fuera de horario' ||
+    data.clientName === 'Vacaciones' ||
+    data.clientName === 'Baja' ||
+    data.clientName === 'Libre' ||
+    data.clientName === 'Año Nuevo' ||
+    data.clientName === 'Festivo';
+  const serviceColor =
+    !isFreeSlot && data.services.length > 0
+      ? data.services[0].color
+      : 'grey.300';
 
   // Crear el texto para el tooltip con los servicios
-  const servicesTooltip = data.services.map((item) => item.serviceName).join(', ');
+  const servicesTooltip = data.services
+    .map((item) => item.serviceName)
+    .join(', ');
 
   return (
     <Tooltip title={servicesTooltip} arrow>
@@ -112,13 +125,18 @@ const BoxAppointment = ({ data, setOpen }) => {
               display="block"
               mb={1}
               fontSize={11}
-            >
-            </Typography>
+            ></Typography>
 
             <Box display="flex" gap={0.5} flexWrap="wrap">
               {data.services.map((item, idx) => (
                 <Chip
-                  sx={{ background: item.color, fontSize: '0.75rem', height: '20px', padding: '0 5px', color: 'white' }}
+                  sx={{
+                    background: item.color,
+                    fontSize: '0.75rem',
+                    height: '20px',
+                    padding: '0 5px',
+                    color: 'white',
+                  }}
                   size="small"
                   key={idx}
                   label={item.serviceName}

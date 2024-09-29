@@ -13,7 +13,10 @@
     "manager": "manager",
     "setting": "setting",
     "calender": "calendar",
-    "appointment": "appointment"
+    "appointment": "appointment",
+    "service": "service",
+    "specialities": "specialities",
+    "schedules": "schedules"
   },
   "buttons": {
     "register": "register",
@@ -43,7 +46,11 @@
     "service": "service",
     "companyId": "company id",
     "initTime": "Init Time",
-    "endTime": "End Time"
+    "endTime": "End Time",
+    "remarks": "remarks",
+    "isAvailable": "is Available?",
+    "duration": "duration",
+    "monthToDelete": "month to delete"
   },
   "inputOptions": {
     "active": "active",
@@ -55,7 +62,9 @@
     "confirmDelete": "Do you want to delete it?",
     "confirmChanges": "Are you sure you want to make these changes?",
     "cancelAppointment": "Are you sure you want to cancel it?",
-    "noservice": "No services available"
+    "noservice": "No services available",
+    "yes": "yes",
+    "no": "no"
   },
   "text": {
     "serviceReq": "Required Services",

@@ -44,6 +44,8 @@ import ServicesBox from '../components/ServicesBox';
 
 import 'dayjs/locale/es';
 import 'dayjs/locale/en';
+import SearchModal from '../components/SearchModal';
+import LocationProvider from '../components/LocationProvider';
 
 const Home = () => {
   const [filterDate, setFilterDate] = useState('');
@@ -69,6 +71,8 @@ const Home = () => {
   // if (appointmentQuery.isLoading) return <p>Cargando</p>;
 
   if (appointmentQuery.isError) return <p>Ocurrio algo</p>;
+
+  console.log(appointmentQuery.data);
 
   return (
     <Box>
@@ -111,24 +115,22 @@ const Home = () => {
         </Box>
       </Container>
 
-      <Box>
-        <Container
-          sx={{
-            width: '98vw',
-          }}
-          maxWidth="xl"
-        >
-          {appointmentQuery.isFetching && <CircularProgress />}
+      <Container
+        sx={{
+          width: '98vw',
+        }}
+        maxWidth="xl"
+      >
+        {appointmentQuery.isFetching && <CircularProgress />}
 
-          {!appointmentQuery.isFetching && (
-            <Calendar
-              data={appointmentQuery.data}
-              setOpen={setOpen}
-              selectedDate={filterDate}
-            />
-          )}
-        </Container>
-      </Box>
+        {!appointmentQuery.isFetching && (
+          <Calendar
+            data={appointmentQuery.data}
+            setOpen={setOpen}
+            selectedDate={filterDate}
+          />
+        )}
+      </Container>
     </Box>
   );
 };
@@ -200,7 +202,11 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
       clientPhone: e.target?.clientPhone?.value,
       initTime: e.target?.initTime?.value,
       finalTime: e.target?.finalTime?.value,
-      date: i18.language === 'en' ? e.target?.date?.value :  formatDateToMongo(e.target?.date?.value, 'MM/DD/YY'),
+      remarks: e.target?.remarks.value,
+      date:
+        i18.language === 'en'
+          ? e.target?.date?.value
+          : formatDateToMongo(e.target?.date?.value, 'MM/DD/YY'),
       services,
     };
 
@@ -287,22 +293,26 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
     }
   }, [open]);
 
+  console.log(open, 'datos');
+
   return (
-    <Box component={'header'} mb={5}>
-      <Box>
+    <Box component={'header'}>
+      <Box gap={2} mb={2}>
         {userInfo.role === 'admin' && (
-          <SelectComponent
-            fixArrayFn={fixCentersArray}
-            params={`users/get-all-centers/${dataBase}`}
-            label={t('title.center')}
-            required={true}
-            aditionalProperties={{
-              onChange: (e) => setFilterCenter(e.target.value),
-              sx: { maxWidth: '300px' },
-              value: filterCenter,
-            }}
-            disabled={mutation.isPending || canEdit}
-          />
+          <Box mb={2}>
+            <SelectComponent
+              fixArrayFn={fixCentersArray}
+              params={`users/get-all-centers/${dataBase}`}
+              label={t('title.center')}
+              required={true}
+              aditionalProperties={{
+                onChange: (e) => setFilterCenter(e.target.value),
+                sx: { maxWidth: '300px' },
+                value: filterCenter,
+              }}
+              disabled={mutation.isPending || canEdit}
+            />
+          </Box>
         )}
 
         {userInfo.role !== 'admin' && (
@@ -310,13 +320,12 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
             variant="outlined"
             onClick={() => setOpen(true)}
             startIcon={<AddIcon />}
-            sx={{ mb: 2 }}
           >
             {t('buttons.create')}
           </Button>
         )}
 
-        {/* <Box></Box> */}
+        <SearchModal />
       </Box>
 
       <ModalComponent
@@ -422,6 +431,19 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
                 />
               </LocationProvider>
             </Grid>
+
+            <Grid xs={12}>
+              <TextField
+                label={t('inputLabel.remarks')}
+                name="remarks"
+                variant="standard"
+                defaultValue={open?.remarks || ''}
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending || canEdit}
+                multiline
+                fullWidth
+              />
+            </Grid>
           </Grid>
 
           <Button
@@ -447,17 +469,6 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
         </form>
       </ModalComponent>
     </Box>
-  );
-};
-
-const LocationProvider = ({ children }) => {
-  const [t, e] = useTranslation('global');
-  console.log(e.language)
-  
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={e.language}>
-      {children}
-    </LocalizationProvider>
   );
 };
 

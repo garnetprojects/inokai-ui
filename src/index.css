@@ -16,13 +16,22 @@
 
 .MuiListItem-padding {
   position: sticky !important;
+  position: -webkit-sticky !important;
   top: 0;
+  left: 0;
   z-index: 100;
   background: white;
 }
 
 .MuiFormLabel-root {
   text-transform: capitalize;
+}
+
+.calendario {
+  max-width: 100%;
+  height: 1000px;
+  overflow: auto;
+  /*overflow-y: visible !important;  */
 }
 
 .calendario .MuiTypography-root.MuiTypography-caption {

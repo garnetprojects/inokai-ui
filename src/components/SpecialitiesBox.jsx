@@ -6,13 +6,13 @@ import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
 import { useTranslation } from 'react-i18next';
 
-const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
+const SpecialitiesBox = ({ disabled, setSelectedOption, selectedOption, propBase }) => {
   const { dataBase } = useParams();
   const [t] = useTranslation('global');
 
   const servicesQuery = useQuery({
-    queryKey: ['services'],
-    queryFn: () => axios(`/appointment/get-services/${dataBase}`),
+    queryKey: ['specialities'],
+    queryFn: () => axios(`/appointment/get-specialities/${propBase || dataBase}`),
   });
 
   const handleDelete = (name) => {
@@ -37,31 +37,32 @@ const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
       {servicesQuery.data?.data.length === 0 && (
         <Typography>{t('messages.noservice')}</Typography>
       )}
-      <Typography mt={1} variant="h6">
-        Servicios
+      <Typography variant="h6" textTransform={'capitalize'}>
+        {t('title.specialities')}
       </Typography>
 
       <Box gap={1} display={'flex'} flexWrap={'wrap'}>
-        {servicesQuery.data?.data
-          .map((service) => {
-            return (
-              <Chip
-                key={service._id}
-                label={`${service.serviceName} - ${service.duration}`}
-                // onDelete={() => handleDelete(name)}
-                onClick={() => handleSelectedOption(`${service.serviceName} - ${service.duration}`)}
-                disabled={disabled}
-                variant={
-                  selectedOption.findIndex((item) => item === `${service.serviceName} - ${service.duration}`) == -1
-                    ? 'outlined'
-                    : 'filled'
-                }
-              />
-            );
-          })}
+        {servicesQuery.data?.data.map((item) => {
+          console.log(selectedOption);
+
+          return (
+            <Chip
+              key={item._id}
+              label={item.specialityName}
+              // onDelete={() => handleDelete(name)}
+              onClick={() => handleSelectedOption(item._id)}
+              disabled={disabled}
+              variant={
+                selectedOption.findIndex((data) => data === item._id) == -1
+                  ? 'outlined'
+                  : 'filled'
+              }
+            />
+          );
+        })}
       </Box>
     </Box>
   );
 };
 
-export default ServicesBox;
+export default SpecialitiesBox;
