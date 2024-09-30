@@ -24,7 +24,7 @@ const LogoApp = ({ version = '' }) => {
   if (version === 'sm')
     return (
       <>
-        {(urlLogo || urlLogoSm) && (
+        {urlLogo || urlLogoSm ? (
           <Box py={1}>
             <img
               src={urlLogoSm || urlLogo}
@@ -34,9 +34,7 @@ const LogoApp = ({ version = '' }) => {
               width={150}
             />
           </Box>
-        )}
-
-        {(!urlLogo || !urlLogoSm) && (
+        ) : (
           <>
             <AdbIcon />
             <Typography

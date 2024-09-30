@@ -41,7 +41,7 @@ const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
         Servicios
       </Typography>
 
-      <Box gap={1} display={'flex'} flexWrap={'wrap'}>
+      <Box gap={1} display={'flex'} flexWrap={'wrap'} maxHeight={200} overflow={'auto'} style={{resize: 'vertical'}}>
         {servicesQuery.data?.data
           .map((service) => {
             return (

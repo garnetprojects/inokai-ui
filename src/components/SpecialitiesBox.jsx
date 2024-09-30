@@ -41,7 +41,7 @@ const SpecialitiesBox = ({ disabled, setSelectedOption, selectedOption, propBase
         {t('title.specialities')}
       </Typography>
 
-      <Box gap={1} display={'flex'} flexWrap={'wrap'}>
+      <Box gap={1} display={'flex'} flexWrap={'wrap'} maxHeight={200} overflow={'auto'} style={{resize: 'vertical'}}>
         {servicesQuery.data?.data.map((item) => {
           console.log(selectedOption);
 
