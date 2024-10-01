@@ -27,6 +27,7 @@ import ServicesBox from '../components/ServicesBox';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
 import SpecialitiesBox from '../components/SpecialitiesBox';
+import InputPhone from '../components/InputPhone';
 
 export const EmpleadosContext = createContext();
 
@@ -97,7 +98,9 @@ const Header = ({ dataBase }) => {
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
-      phone: e.target.phone.value,
+      phone: e.target?.countryPhone?.value
+        ? e.target?.countryPhone?.value + e.target.phone.value
+        : e.target?.phone?.value,
       DNI: e.target.DNI.value,
       password: e.target?.password?.value,
       isAvailable: e.target?.isAvailable?.value,
@@ -120,7 +123,7 @@ const Header = ({ dataBase }) => {
     mutation.mutate(data);
   };
 
-  console.log({open, specialities, selectedOption}, 'aqui');
+  console.log({ open, specialities, selectedOption }, 'aqui');
 
   useEffect(() => {
     console.log(open);
@@ -225,18 +228,12 @@ const Header = ({ dataBase }) => {
               </Grid>
             )}
 
-            <Grid xs={12} md={6}>
-              <TextField
-                label={t('inputLabel.phoneNumber')}
-                name="phone"
-                type="tel"
-                variant="standard"
-                defaultValue={open?.phone || ''}
-                sx={{ width: '100%' }}
-                disabled={mutation.isPending}
-                required
-              />
-            </Grid>
+            <InputPhone
+              defaultValue={open?.phone}
+              nameCountry={'countryPhone'}
+              hidden={open?._id}
+              disabled={mutation.isPending}
+            />
 
             <Grid xs={12} md={6}>
               <SelectComponent

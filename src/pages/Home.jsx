@@ -46,6 +46,7 @@ import 'dayjs/locale/es';
 import 'dayjs/locale/en';
 import SearchModal from '../components/SearchModal';
 import LocationProvider from '../components/LocationProvider';
+import InputPhone from '../components/InputPhone';
 
 const Home = () => {
   const [filterDate, setFilterDate] = useState('');
@@ -199,7 +200,9 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
 
     const data = {
       clientName: e.target?.clientName?.value,
-      clientPhone: e.target?.clientPhone?.value,
+      clientPhone: e.target.countryPhone.value
+        ? e.target.countryPhone.value + e.target?.clientPhone?.value
+        : e.target?.clientPhone?.value,
       initTime: e.target?.initTime?.value,
       finalTime: e.target?.finalTime?.value,
       remarks: e.target?.remarks.value,
@@ -215,7 +218,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
     }
 
     console.log(data);
-    // return
+    // return;
 
     if (
       [
@@ -361,7 +364,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
               />
             </Grid>
 
-            <Grid xs={12} md={6}>
+            {/* <Grid xs={12} md={6}>
               <TextField
                 label={t('inputLabel.clientPhone')}
                 name="clientPhone"
@@ -371,7 +374,15 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
                 disabled={mutation.isPending || canEdit}
                 defaultValue={open?.clientPhone}
               />
-            </Grid>
+            </Grid> */}
+
+            <InputPhone
+              namePhone="clientPhone"
+              nameCountry={'countryPhone'}
+              hidden={open?.clientPhone?.includes('+')}
+              defaultValue={open?.clientPhone}
+              disabled={mutation.isPending || canEdit}
+            />
           </Grid>
 
           <Grid container spacing={5}>
