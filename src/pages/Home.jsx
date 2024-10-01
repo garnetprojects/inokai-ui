@@ -320,6 +320,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
             variant="outlined"
             onClick={() => setOpen(true)}
             startIcon={<AddIcon />}
+            style={{ margin: '7px' }} // Añadir el margen aquí
           >
             {t('buttons.create')}
           </Button>
