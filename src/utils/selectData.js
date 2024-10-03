@@ -1,1 +1,1 @@
-export const phoneCountry = ['+34'];
+export const phoneCountry = ['34'];
