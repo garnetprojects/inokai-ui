@@ -92,6 +92,7 @@ const Home = () => {
               {t('title.calender')}
             </Typography>
             <Header
+              appointmentData={appointmentQuery.data}
               dataBase={dataBase}
               open={open}
               setOpen={setOpen}
@@ -136,7 +137,14 @@ const Home = () => {
   );
 };
 
-const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
+const Header = ({
+  dataBase,
+  open,
+  setOpen,
+  setFilterCenter,
+  filterCenter,
+  appointmentData,
+}) => {
   const { enqueueSnackbar } = useSnackbar();
   const { invalidate } = useInvalidate();
   const [user, setUser] = useState('');
@@ -296,7 +304,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
     }
   }, [open]);
 
-  console.log(open, 'datos');
+  console.log(appointmentData, 'datos');
 
   return (
     <Box component={'header'}>
@@ -388,6 +396,7 @@ const Header = ({ dataBase, open, setOpen, setFilterCenter, filterCenter }) => {
           <Grid container spacing={5}>
             <Grid xs={12} md={6}>
               <SelectComponent
+                appointmentData={appointmentData?.appointments2}
                 disabled={mutation.isPending || canEdit}
                 fixArrayFn={fixUserArray}
                 params={`appointment/get-all-employees/${dataBase}`}
