@@ -194,14 +194,8 @@ export const bringAvailibity = (idUser, data) => {
   console.log({ idUser, data, userAppointment });
 
   let times = {
-    from: userAppointment?.[0]?.finalTime,
-    to: userAppointment?.[1]?.initTime,
+    from: userAppointment?.[0]?.finalTime.slice(0, -3),
+    to: userAppointment?.[1]?.initTime.slice(0, -3),
   };
-
-  // if (userAppointment[0]?.clientName === 'Fuera de horario') {
-  //   times.from = '';
-  // }
-
-  // return { from: userAppointment[0]?.finalTime };
   return times
 };

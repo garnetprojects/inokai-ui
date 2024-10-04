@@ -60,29 +60,33 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 availibity.to ? `a ${availibity.to}` : ''
               }`}
               arrow
-              key={user.user_id}
+              key={user._id}
             >
-              <Box
-                key={user._id}
-                bgcolor={'white'}
-                flex={'1'}
-                // width={'100%'}
-              >
+              <Box bgcolor={'white'} flex={'1'}>
                 <Box
                   display={'flex'}
-                  // maxWidth={200}
                   mx={'auto'}
                   border={'1px solid #e0e0e0'}
                   py={1}
                   px={'10px'}
+                  flexDirection={'row'} // Keep horizontal for avatar + text
                 >
                   <Box mx={1} textTransform={'uppercase'}>
                     <Avatar>{user.name[0]}</Avatar>
                   </Box>
 
-                  <Typography variant="body2" whiteSpace={'nowrap'}>
-                    {user.name}
-                  </Typography>
+                  <Box display={'flex'} flexDirection={'column'}>
+                    {' '}
+                    {/* Stack typography vertically */}
+                    <Typography variant="body2" whiteSpace={'nowrap'}>
+                      {user.name}
+                    </Typography>
+                    <Typography variant="body2" whiteSpace={'nowrap'}>
+                      {`${availibity.from ? availibity.from : ''}  ${
+                        availibity.to ? `a ${availibity.to}` : ''
+                      }`}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Tooltip>
