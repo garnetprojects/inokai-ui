@@ -60,6 +60,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 availibity.to ? `a ${availibity.to}` : ''
               }`}
               arrow
+              key={user.user_id}
             >
               <Box
                 key={user._id}
