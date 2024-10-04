@@ -191,17 +191,17 @@ export const bringAvailibity = (idUser, data) => {
         appoint.clientName === 'Fuera de horario'
     )
     .sort((a, b) => a.initTime - b.initTime);
-  console.log({ idUser, data, userAppointment });
 
-  let times = {
-    from: userAppointment?.[0]?.finalTime,
-    to: userAppointment?.[1]?.initTime,
+  const formatTime = (time) => {
+    if (!time) return '';
+    const date = new Date(time);
+    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); // HH:mm format
   };
 
-  // if (userAppointment[0]?.clientName === 'Fuera de horario') {
-  //   times.from = '';
-  // }
+  let times = {
+    from: formatTime(userAppointment?.[0]?.finalTime),
+    to: formatTime(userAppointment?.[1]?.initTime),
+  };
 
-  // return { from: userAppointment[0]?.finalTime };
-  return times
+  return times;
 };
