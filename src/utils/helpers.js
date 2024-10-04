@@ -182,3 +182,26 @@ export function restarHoras(horaInicio, horaFin) {
   console.log(diferenciaHoras);
   return diferenciaHoras + 1;
 }
+
+export const bringAvailibity = (idUser, data) => {
+  const userAppointment = data
+    .filter(
+      (appoint) =>
+        appoint.userInfo._id === idUser &&
+        appoint.clientName === 'Fuera de horario'
+    )
+    .sort((a, b) => a.initTime - b.initTime);
+  console.log({ idUser, data, userAppointment });
+
+  let times = {
+    from: userAppointment?.[0]?.finalTime,
+    to: userAppointment?.[1]?.initTime,
+  };
+
+  // if (userAppointment[0]?.clientName === 'Fuera de horario') {
+  //   times.from = '';
+  // }
+
+  // return { from: userAppointment[0]?.finalTime };
+  return times
+};

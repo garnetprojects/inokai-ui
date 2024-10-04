@@ -2,6 +2,7 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { bringAvailibity } from '../utils/helpers';
 
 const SelectComponent = ({
   label,
@@ -47,29 +48,6 @@ const SelectComponent = ({
       </Select>
     </FormControl>
   );
-};
-
-const bringAvailibity = (idUser, data) => {
-  const userAppointment = data
-    .filter(
-      (appoint) =>
-        appoint.userInfo._id === idUser &&
-        appoint.clientName === 'Fuera de horario'
-    )
-    .sort((a, b) => a.initTime - b.initTime);
-  console.log({ idUser, data, userAppointment });
-
-  let times = {
-    from: userAppointment?.[0]?.finalTime,
-    to: userAppointment?.[1]?.initTime,
-  };
-
-  // if (userAppointment[0]?.clientName === 'Fuera de horario') {
-  //   times.from = '';
-  // }
-
-  // return { from: userAppointment[0]?.finalTime };
-  return times
 };
 
 export const SelectNoFetchComponent = ({

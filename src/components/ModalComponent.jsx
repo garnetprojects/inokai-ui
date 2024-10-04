@@ -13,6 +13,8 @@ const style = {
   boxShadow: 24,
   px: 4,
   pb: 5,
+  maxHeight: '100%',
+  overflow: 'auto',
 };
 
 export default function ModalComponent({

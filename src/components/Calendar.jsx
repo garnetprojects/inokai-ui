@@ -1,7 +1,16 @@
-import { Box, Button, Chip, Divider, Tooltip, Typography } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { Scheduler } from '@aldabil/react-scheduler';
-import { convertirAMPMa24Horas } from '../utils/helpers';
+import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
+import { memo, useCallback, useRef } from 'react';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -17,40 +26,108 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     event_id: item._id,
   }));
 
+  const scrollableRef = useRef(null);
+  const hiddenScrollRef = useRef(null);
+
+  const handleScroll = () => {
+    if (scrollableRef.current && hiddenScrollRef.current) {
+      // Sincronizar el scroll horizontal
+      hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
+    }
+  };
+
+  console.log(data.usersInAppointments);
   return (
-    <div className="calendario">
-      <Scheduler
-        height={3000}
-        resourceViewMode="default"
-        // resourceViewMode="tabs"
-        view="day"
-        disableViewNavigator
-        disableViewer
-        hourFormat="24"
-        events={formatedDate || []}
-        resources={data?.usersInAppointments || []}
-        selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
-        day={{
-          startHour: 9,
-          endHour: 23,
-          cellRenderer: () => <></>,
-          navigation: false,
-        }}
-        resourceFields={{
-          idField: 'user_id',
-          textField: 'name',
-          subTextField: '',
-          avatarField: 'name',
-        }}
-        eventRenderer={({ event }) => {
-          return <BoxAppointment setOpen={setOpen} data={event} />;
-        }}
-      />
-    </div>
+    <Box position={'relative'}>
+      <Box
+        className="probando-aqui"
+        ref={hiddenScrollRef}
+        position={'sticky'}
+        top={0}
+        // position={'absolute'}
+        zIndex={1000}
+        display={'flex'}
+        maxWidth={'100%'}
+        overflow={'hidden'}
+        // width={'100%'}
+      >
+        {data.usersInAppointments.map((user) => {
+          let availibity = bringAvailibity(user.user_id, data?.appointments2);
+
+          return (
+            <Tooltip
+              title={`${availibity.from ? availibity.from : ''}  ${
+                availibity.to ? `a ${availibity.to}` : ''
+              }`}
+              arrow
+            >
+              <Box
+                key={user._id}
+                bgcolor={'white'}
+                flex={'1'}
+                // width={'100%'}
+              >
+                <Box
+                  display={'flex'}
+                  // maxWidth={200}
+                  mx={'auto'}
+                  border={'1px solid #e0e0e0'}
+                  py={1}
+                  px={'10px'}
+                >
+                  <Box mx={1} textTransform={'uppercase'}>
+                    <Avatar>{user.name[0]}</Avatar>
+                  </Box>
+
+                  <Typography variant="body2" whiteSpace={'nowrap'}>
+                    {user.name}
+                  </Typography>
+                </Box>
+              </Box>
+            </Tooltip>
+          );
+        })}
+      </Box>
+      <div className="calendario" ref={scrollableRef} onScroll={handleScroll}>
+        <Scheduler
+          height={3000}
+          resourceViewMode="default"
+          // resourceViewMode="tabs"
+          view="day"
+          disableViewNavigator
+          disableViewer
+          hourFormat="24"
+          events={formatedDate || []}
+          resources={data?.usersInAppointments || []}
+          selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
+          day={{
+            startHour: 9,
+            endHour: 23,
+            cellRenderer: () => <></>,
+            navigation: false,
+          }}
+          resourceFields={{
+            idField: 'user_id',
+            textField: 'name',
+            subTextField: '',
+            avatarField: 'name',
+          }}
+          eventRenderer={({ event }) => {
+            return (
+              <BoxAppointment
+                setOpen={setOpen}
+                data={event}
+                appointments={data?.appointments2}
+              />
+            );
+          }}
+        />
+      </div>
+    </Box>
   );
 };
 
-const BoxAppointment = ({ data, setOpen }) => {
+const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
 
   const handleClick = () => {
@@ -150,4 +227,4 @@ const BoxAppointment = ({ data, setOpen }) => {
   );
 };
 
-export default Calendar;
+export default memo(Calendar);
