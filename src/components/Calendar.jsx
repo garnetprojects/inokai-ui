@@ -36,7 +36,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
-  console.log(data.usersInAppointments);
   return (
     <Box position={'relative'}>
       <Box
@@ -60,7 +59,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 availibity.to ? `a ${availibity.to}` : ''
               }`}
               arrow
-              key={user._id}
+              key={user.user_id}
             >
               <Box bgcolor={'white'} flex={'1'}>
                 <Box
