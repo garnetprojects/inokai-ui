@@ -76,10 +76,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                   px={'10px'}
                 >
                   <Box mx={1} textTransform={'uppercase'}>
-                    <Avatar>{user.name[0]}</Avatar>
-                    <p>{`${availibity.from ? availibity.from : ''}  ${
+                    <Avatar>{user.name[0]}<p>{`${availibity.from ? availibity.from : ''}  ${
                 availibity.to ? `a ${availibity.to}` : ''
-              }`}</p>
+              }`}</p></Avatar>
                   </Box>
 
                   <Typography variant="body2" whiteSpace={'nowrap'}>
