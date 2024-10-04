@@ -184,7 +184,7 @@ export function restarHoras(horaInicio, horaFin) {
 }
 
 export const bringAvailibity = (idUser, data) => {
-  const userAppointment = data
+  const userAppointment = (data ?? [])
     .filter(
       (appoint) =>
         appoint.userInfo._id === idUser &&
