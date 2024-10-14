@@ -198,5 +198,22 @@ export const bringAvailibity = (idUser, data) => {
     from: userAppointment?.[0]?.finalTime.slice(0, -3),
     to: userAppointment?.[1]?.initTime.slice(0, -3),
   };
-  return times
+  return times;
 };
+
+export function eliminarPrimerosCharSiCoinciden(cadena, listaSubstr) {
+  let prefijo = '';
+
+  for (let substr of listaSubstr) {
+    if (cadena.startsWith(substr)) {
+      prefijo = substr;
+      cadena = cadena.slice(substr.length);
+      break; // Solo queremos eliminar una coincidencia al inicio
+    }
+  }
+
+  return {
+    prefijo: prefijo,
+    numero: cadena,
+  };
+}

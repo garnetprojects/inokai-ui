@@ -30,6 +30,7 @@ import { fixCentersArray, fixUserArray } from '../utils/fixArray';
 import Calendar from '../components/Calendar';
 import {
   defaultTime,
+  eliminarPrimerosCharSiCoinciden,
   fechaEnTiempoPresente,
   formatDate,
   formatDatePicker,
@@ -47,6 +48,7 @@ import 'dayjs/locale/en';
 import SearchModal from '../components/SearchModal';
 import LocationProvider from '../components/LocationProvider';
 import InputPhone from '../components/InputPhone';
+import { phoneCountry } from '../utils/selectData';
 
 const Home = () => {
   const [filterDate, setFilterDate] = useState('');
@@ -388,8 +390,10 @@ const Header = ({
             <InputPhone
               namePhone="clientPhone"
               nameCountry={'countryPhone'}
-              hidden={open?.clientPhone?.includes('+')}
-              defaultValue={open?.clientPhone}
+              defaultValue={eliminarPrimerosCharSiCoinciden(
+                open?.clientPhone ?? '',
+                phoneCountry
+              )}
               disabled={mutation.isPending || canEdit}
             />
           </Grid>
