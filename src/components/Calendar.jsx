@@ -11,6 +11,7 @@ import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { memo, useCallback, useRef } from 'react';
+import ModalComponent from '../components/ModalComponent';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -123,18 +124,165 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 data={event}
                 appointments={data?.appointments2}
               />
-            );
-            
+            );    
           }}
-          onCellDoubleClick={(event, resource, date) => {
-         // Aquí abre el modal al hacer doble clic
-        setOpen({
-          start: date,   // Puedes pasar la fecha y otros datos relevantes al modal
-          resourceId: resource.user_id
-        });
-      }}
+
+          onEventDoubleClick={(event) => {
+            setOpen(event); // Abrir el modal con la información del evento
+          }}
         />
       </div>
+      <ModalComponent
+        onClose={() => {
+          setSelectedOption([]);
+          setOpen(null);
+        }}
+        open={!!open}
+        setOpen={setOpen}
+      >
+        <form action="" onSubmit={handleSubmit}>
+          <Typography mt={3} variant="h4" textTransform={'capitalize'}>
+            {t('title.appointment')}
+          </Typography>
+
+          <Grid container spacing={5}>
+            <Grid xs={12}>
+              <ServicesBox
+                setSelectedOption={setSelectedOption}
+                selectedOption={selectedOption}
+                disabled={mutation.isPending || canEdit}
+              />
+            </Grid>
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.clientName')}
+                required
+                variant="standard"
+                name="clientName"
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending || canEdit}
+                defaultValue={open?.clientName}
+              />
+            </Grid>
+
+            {/* <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.clientPhone')}
+                name="clientPhone"
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending || canEdit}
+                defaultValue={open?.clientPhone}
+              />
+            </Grid> */}
+
+            <InputPhone
+              namePhone="clientPhone"
+              nameCountry={'countryPhone'}
+              defaultValue={eliminarPrimerosCharSiCoinciden(
+                open?.clientPhone ?? '',
+                phoneCountry
+              )}
+              disabled={mutation.isPending || canEdit}
+            />
+          </Grid>
+
+          <Grid container spacing={5}>
+            <Grid xs={12} md={6}>
+              <SelectComponent
+                appointmentData={appointmentData?.appointments2}
+                disabled={mutation.isPending || canEdit}
+                fixArrayFn={fixUserArray}
+                params={`appointment/get-all-employees/${dataBase}`}
+                label={t('menu.employees')}
+                required={true}
+                aditionalProperties={{
+                  onChange: (e) => setUser(e.target.value),
+                  value: user,
+                  name: 'userInfo',
+                }}
+              />
+            </Grid>
+            <Grid xs={12} md={6}>
+              <LocationProvider>
+                <DatePicker
+                  sx={{ width: '100%' }}
+                  name="date"
+                  required
+                  disabled={mutation.isPending || canEdit}
+                  defaultValue={open?.date && dayjs(open?.date)}
+                  // format={formatDatePicker}
+                />
+              </LocationProvider>
+            </Grid>
+            <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.initTime')}
+                  sx={{ width: '100%' }}
+                  name="initTime"
+                  required
+                  defaultValue={
+                    open?.initTime && dayjs(defaultTime(open?.initTime))
+                  }
+                  ampm={false}
+                  disabled={mutation.isPending || canEdit}
+                />
+              </LocationProvider>
+            </Grid>
+            <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.endTime')}
+                  sx={{ width: '100%' }}
+                  required
+                  name="finalTime"
+                  defaultValue={
+                    open?.finalTime && dayjs(defaultTime(open?.finalTime))
+                  }
+                  ampm={false}
+                  disabled={mutation.isPending || canEdit}
+                />
+              </LocationProvider>
+            </Grid>
+
+            <Grid xs={12}>
+              <TextField
+                label={t('inputLabel.remarks')}
+                name="remarks"
+                variant="standard"
+                defaultValue={open?.remarks || ''}
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending || canEdit}
+                multiline
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={mutation.isPending || canEdit}
+            sx={{ width: '100%', mt: 5 }}
+          >
+            {open?._id ? t('buttons.edit') : t('buttons.create')}
+          </Button>
+
+          {open?._id && (
+            <Button
+              variant="contained"
+              color="error"
+              disabled={mutation.isPending}
+              sx={{ width: '100%', mt: 3 }}
+              onClick={handleCancel}
+            >
+              {t('buttons.cancelAppointment')}
+            </Button>
+          )}
+        </form>
+      </ModalComponent>
     </Box>
   );
 };
