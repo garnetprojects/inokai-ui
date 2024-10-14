@@ -10,7 +10,7 @@ import {
 import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useRef, useContext, useEffect, useState} from 'react';
 import ModalComponent from '../components/ModalComponent';
 
 function combinarFechaYHora(fecha, hora) {
@@ -145,7 +145,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   }, [open]);
 
   console.log(appointmentData, 'datos');
-  
+
   return (
     <Box position={'relative'}>
       <Box
