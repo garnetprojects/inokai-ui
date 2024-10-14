@@ -22,7 +22,7 @@ const InputPhone = ({
           disabled={disabled}
           variant="standard"
           select
-          defaultValue={phoneCountry[0]}
+          defaultValue={defaultValue?.prefijo || phoneCountry[0]}
         >
           {phoneCountry.map((num) => (
             <MenuItem value={num} key={num}>
@@ -37,7 +37,7 @@ const InputPhone = ({
         name={namePhone}
         type="tel"
         variant="standard"
-        defaultValue={defaultValue || ''}
+        defaultValue={defaultValue?.numero || ''}
         disabled={disabled}
         required
         style={{ flex: 1 }}

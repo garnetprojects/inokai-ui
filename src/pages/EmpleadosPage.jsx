@@ -28,6 +28,8 @@ import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
 import SpecialitiesBox from '../components/SpecialitiesBox';
 import InputPhone from '../components/InputPhone';
+import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
+import { phoneCountry } from '../utils/selectData';
 
 export const EmpleadosContext = createContext();
 
@@ -229,10 +231,12 @@ const Header = ({ dataBase }) => {
             )}
 
             <InputPhone
-              defaultValue={open?.phone}
               nameCountry={'countryPhone'}
-              hidden={open?._id}
               disabled={mutation.isPending}
+              defaultValue={eliminarPrimerosCharSiCoinciden(
+                open?.phone ?? '',
+                phoneCountry
+              )}
             />
 
             <Grid xs={12} md={6}>

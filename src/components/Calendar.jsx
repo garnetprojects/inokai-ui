@@ -127,6 +127,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 appointments={data?.appointments2}
               />
             );
+            
           }}
         />
       </div>
