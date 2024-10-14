@@ -128,13 +128,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
               />
             );
           }}
-          onCellDoubleClick={(event, resource, date) => {
-    // Aquí abre el modal al hacer doble clic
-    setOpen({
-      start: date,   // Puedes pasar la fecha y otros datos relevantes al modal
-      resourceId: resource.user_id
-    });
-  }}
         />
       </div>
     </Box>
