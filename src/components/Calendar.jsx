@@ -36,7 +36,116 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
     }
   };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(user);
 
+    const services = selectedOption.map((item) => {
+      const [serviceName, duration] = item.split(' - ');
+
+      return { serviceName, duration };
+    });
+
+    const data = {
+      clientName: e.target?.clientName?.value,
+      clientPhone: e.target.countryPhone.value
+        ? e.target.countryPhone.value + e.target?.clientPhone?.value
+        : e.target?.clientPhone?.value,
+      initTime: e.target?.initTime?.value,
+      finalTime: e.target?.finalTime?.value,
+      remarks: e.target?.remarks.value,
+      date:
+        i18.language === 'en'
+          ? e.target?.date?.value
+          : formatDateToMongo(e.target?.date?.value, 'MM/DD/YY'),
+      services,
+    };
+
+    if (open?._id) {
+      data.userInfo = user;
+    }
+
+    console.log(data);
+    // return;
+
+    if (
+      [
+        data.clientName,
+        data.clientPhone,
+        data.initTime,
+        data.finalTime,
+        data.date,
+      ].includes('') ||
+      !selectedOption.length ||
+      !services.length
+    ) {
+      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      return;
+    }
+
+    console.log(returnHour(data.initTime));
+
+    if (returnHour(data.initTime) < 9 || returnHour(data.initTime) > 22) {
+      return enqueueSnackbar(
+        'No puedes crear una horario de inicio antes de 9:00 o despues de 22:00',
+        { variant: 'error' }
+      );
+    }
+
+    if (returnHour(data.finalTime) < 9 || returnHour(data.finalTime) > 22) {
+      return enqueueSnackbar(
+        'No puedes crear una horario de fin antes de 9:00 o despues de 22:00',
+        { variant: 'error' }
+      );
+    }
+
+    if (!validarHorario(data.initTime, data.finalTime)) {
+      return enqueueSnackbar('Hora fin no puede ser antes de hora inicio', {
+        variant: 'error',
+      });
+    }
+
+    console.log('llego aqui');
+    // return;
+    // return
+    mutation.mutate(data);
+  };
+
+  function validarHorario(horaInicio, horaFin) {
+    // Crear objetos de fecha para la hora de inicio y la hora de fin
+    const fechaInicio = new Date('2024-04-26 ' + horaInicio);
+    const fechaFin = new Date('2024-04-26 ' + horaFin);
+
+    // Comparar las fechas
+    if (fechaFin > fechaInicio) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const handleCancel = () => {
+    const confirmCancel = confirm(t('messages.cancelAppointment'));
+
+    if (!confirmCancel) return;
+
+    mutation.mutate('cancel');
+  };
+
+  useEffect(() => {
+    if (open?.userInfo?._id) {
+      setUser(open?.userInfo?._id);
+    }
+
+    if (open?.services) {
+      setSelectedOption(
+        open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
+      );
+    }
+  }, [open]);
+
+  console.log(appointmentData, 'datos');
+  
   return (
     <Box position={'relative'}>
       <Box
