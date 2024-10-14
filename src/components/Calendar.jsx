@@ -1,16 +1,7 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Chip,
-  Divider,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { useState, memo, useRef } from 'react';
 import { Scheduler } from '@aldabil/react-scheduler';
+import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
-import { useTranslation } from 'react-i18next';
-import { memo, useCallback, useRef } from 'react';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -19,6 +10,12 @@ function combinarFechaYHora(fecha, hora) {
 }
 
 const Calendar = ({ data, setOpen, selectedDate }) => {
+  const [isOpen, setIsOpen] = useState(false);  // Controla si el modal está abierto
+  const [appointmentData, setAppointmentData] = useState(null);  // Datos de la cita
+  const scrollableRef = useRef(null);
+  const hiddenScrollRef = useRef(null);
+
+  // Formatea las citas existentes
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -26,216 +23,135 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     event_id: item._id,
   }));
 
-  const scrollableRef = useRef(null);
-  const hiddenScrollRef = useRef(null);
-
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
-      // Sincronizar el scroll horizontal
       hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
     }
+  };
+
+  // Función para manejar el doble clic en el calendario vacío
+  const handleDoubleClickOutsideEvent = (event) => {
+    const currentDate = new Date();  // Captura la fecha actual o puedes capturar la fecha donde clicas
+    const endDate = new Date(currentDate.getTime() + 60 * 60 * 1000); // Añade 1 hora
+
+    setAppointmentData({
+      start: currentDate,
+      end: endDate,
+      resourceId: null,  // No hay recurso en este caso
+      resourceName: 'N/A',
+      view: 'day',
+      duration: 60,
+    });
+
+    setIsOpen(true);  // Abre el modal
   };
 
   return (
     <Box position={'relative'}>
       <Box
-        className="probando-aqui"
         ref={hiddenScrollRef}
         position={'sticky'}
         top={0}
-        // position={'absolute'}
         zIndex={1000}
         display={'flex'}
         maxWidth={'100%'}
         overflow={'hidden'}
-        // width={'100%'}
       >
         {data.usersInAppointments.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
-
           return (
-            <Tooltip
-              title={`${availibity.from ? availibity.from : ''}  ${
-                availibity.to ? `a ${availibity.to}` : ''
-              }`}
-              arrow
-              key={user.user_id}
-            >
-              <Box bgcolor={'white'} flex={'1'}>
-                <Box
-                  display={'flex'}
-                  mx={'auto'}
-                  border={'1px solid #e0e0e0'}
-                  py={1}
-                  px={'10px'}
-                  flexDirection={'row'} // Keep horizontal for avatar + text
-                >
-                  <Box mx={1} textTransform={'uppercase'}>
-                    <Avatar>{user.name[0]}</Avatar>
-                  </Box>
-
-                  <Box display={'flex'} flexDirection={'column'}>
-                    {' '}
-                    {/* Stack typography vertically */}
-                    <Typography variant="body2" whiteSpace={'nowrap'}>
-                      {user.name}
-                    </Typography>
-                    <Typography variant="body2" whiteSpace={'nowrap'}>
-                      {`${availibity.from ? availibity.from : ''}  ${
-                        availibity.to ? `a ${availibity.to}` : ''
-                      }`}
-                    </Typography>
-                  </Box>
+            <Box key={user._id} bgcolor={'white'} flex={'1'}>
+              {/* Muestra el nombre y disponibilidad */}
+              <Box display={'flex'} mx={'auto'} border={'1px solid #e0e0e0'} py={1} px={'10px'}>
+                <Box mx={1} textTransform={'uppercase'}>
+                  {user.name}
+                </Box>
+                <Box display={'flex'} flexDirection={'column'}>
+                  <p>{availibity.from ? availibity.from : ''} {availibity.to ? `a ${availibity.to}` : ''}</p>
                 </Box>
               </Box>
-            </Tooltip>
+            </Box>
           );
         })}
       </Box>
+
+      {/* El área que captura el doble clic */}
       <div className="calendario" ref={scrollableRef} onScroll={handleScroll}>
-        <Scheduler
-          height={3000}
-          resourceViewMode="default"
-          // resourceViewMode="tabs"
-          view="day"
-          disableViewNavigator
-          disableViewer
-          hourFormat="24"
-          events={formatedDate || []}
-          resources={data?.usersInAppointments || []}
-          selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
-          day={{
-            startHour: 9,
-            endHour: 23,
-            cellRenderer: () => <></>,
-            navigation: false,
-          }}
-          resourceFields={{
-            idField: 'user_id',
-            textField: 'name',
-            subTextField: '',
-            avatarField: 'name',
-          }}
-          eventRenderer={({ event }) => {
-            return (
+        <Box onDoubleClick={handleDoubleClickOutsideEvent}>
+          <Scheduler
+            height={3000}
+            resourceViewMode="default"
+            view="day"
+            disableViewNavigator
+            disableViewer
+            hourFormat="24"
+            events={formatedDate || []}
+            resources={data?.usersInAppointments || []}
+            selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
+            day={{
+              startHour: 9,
+              endHour: 23,
+              cellRenderer: () => <></>, // Sin celdas custom
+              navigation: false,
+            }}
+            resourceFields={{
+              idField: 'user_id',
+              textField: 'name',
+              avatarField: 'name',
+            }}
+            eventRenderer={({ event }) => (
               <BoxAppointment
                 setOpen={setOpen}
                 data={event}
                 appointments={data?.appointments2}
               />
-            );
-            
-          }}
-          onCellDoubleClick={(event, resource, date) => {
-    // Aquí abre el modal al hacer doble clic
-    setOpen({
-      start: date,   // Puedes pasar la fecha y otros datos relevantes al modal
-      resourceId: resource.user_id
-    });
-  }}
-        />
+            )}
+          />
+        </Box>
       </div>
+
+      {/* Modal para crear nueva cita */}
+      {isOpen && (
+        <YourModalComponent
+          open={isOpen}
+          onClose={() => setIsOpen(false)}  // Cierra el modal
+          appointmentData={appointmentData}  // Pasa los datos de la cita
+        />
+      )}
     </Box>
   );
 };
 
-const BoxAppointment = ({ data, setOpen, appointments }) => {
-  const [t] = useTranslation('global');
+// Componente del modal que se abre al hacer doble clic en el calendario
+const YourModalComponent = ({ open, onClose, appointmentData }) => {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Crear nueva cita</DialogTitle>
+      <DialogContent>
+        {/* Mostrar datos de la cita */}
+        <p>Fecha de inicio: {appointmentData?.start.toLocaleString()}</p>
+        <p>Fecha de fin: {appointmentData?.end.toLocaleString()}</p>
+        <p>Duración: {appointmentData?.duration} minutos</p>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button onClick={() => { /* Lógica para crear la cita */ }}>Crear Cita</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
+// Componente para cada evento en el calendario
+const BoxAppointment = ({ data, setOpen }) => {
   const handleClick = () => {
-    setOpen(data);
+    setOpen(data); // Manejar clic en un evento existente
   };
 
-  const isFreeSlot =
-    data.clientName === 'NO APLICA' ||
-    data.clientName === 'Fuera de horario' ||
-    data.clientName === 'Vacaciones' ||
-    data.clientName === 'Baja' ||
-    data.clientName === 'Libre' ||
-    data.clientName === 'Año Nuevo' ||
-    data.clientName === 'Festivo';
-  const serviceColor =
-    !isFreeSlot && data.services.length > 0
-      ? data.services[0].color
-      : 'grey.300';
-
-  // Crear el texto para el tooltip con los servicios
-  const servicesTooltip = data.services
-    .map((item) => item.serviceName)
-    .join(', ');
-
   return (
-    <Tooltip title={servicesTooltip} arrow>
-      <Button
-        sx={{
-          p: 1,
-          position: 'relative',
-          color: 'black',
-          bgcolor: serviceColor,
-          opacity: 1,
-          ':disabled': {
-            cursor: 'not-allowed',
-          },
-          ':hover': {
-            bgcolor: serviceColor,
-            filter: 'saturate(250%)',
-          },
-        }}
-        variant="contained"
-        disabled={isFreeSlot}
-      >
-        {isFreeSlot && (
-          <Typography fontSize={11} color="text.secondary">
-            {t('')}
-          </Typography>
-        )}
-
-        <Box onDoubleClick={handleClick}>
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Typography fontSize={11}>
-              {t('inputLabel.initTime')}: {data.initTime}
-              {t(' - ')}
-              {t('inputLabel.endTime')}: {data.finalTime}
-            </Typography>
-          </Box>
-
-          <Typography my={1} fontSize={11}>
-            <Box component="span" fontWeight="bold" fontSize={11}>
-              {data.clientName}
-            </Box>
-          </Typography>
-
-          <Divider sx={{ my: 0.5 }} />
-
-          <Box>
-            <Typography
-              component="span"
-              fontWeight="bold"
-              display="block"
-              mb={1}
-              fontSize={11}
-            ></Typography>
-
-            <Box display="flex" gap={0.5} flexWrap="wrap">
-              {data.services.map((item, idx) => (
-                <Chip
-                  sx={{
-                    background: item.color,
-                    fontSize: '0.75rem',
-                    height: '20px',
-                    padding: '0 5px',
-                    color: 'white',
-                  }}
-                  size="small"
-                  key={idx}
-                  label={item.serviceName}
-                />
-              ))}
-            </Box>
-          </Box>
-        </Box>
-      </Button>
-    </Tooltip>
+    <Box onClick={handleClick}>
+      <p>{data.clientName}</p>
+      <p>{data.initTime} - {data.finalTime}</p>
+    </Box>
   );
 };
 
