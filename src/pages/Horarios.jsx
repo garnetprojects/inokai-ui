@@ -16,12 +16,14 @@ import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
+import { fixCentersArray } from '../utils/fixArray';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
   // const [file, setFile] = useState(null);
   const [fileData, setFileData] = useState([]);
   const [dateSelected, SetDateSelected] = useState('');
+  const [center, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
 
@@ -89,6 +91,11 @@ const Horarios = () => {
         'No se ha detectado un mes para eliminar, seguro que deseas continuar?'
       );
     }
+    if (!center) {
+      confirmContinue = confirm(
+        'No se ha detectado un centro. Por favor selecciona el centro.'
+      );
+    }
 
     if (!confirmContinue) return;
 
@@ -127,6 +134,19 @@ const Horarios = () => {
           }
         />
       </LocationProvider>
+      <Grid xs={12} md={6}>
+              <SelectComponent
+                fixArrayFn={fixCentersArray}
+                params={`users/get-all-centers/${dataBase}`}
+                label={t('title.center')}
+                required={true}
+                aditionalProperties={{
+                  onChange: (e) => setCenter(e.target.value),
+                  value: center || centerId || '',
+                }}
+                disabled={mutation.isPending}
+              />
+            </Grid>
       <TextField
         type="file"
         inputProps={{
