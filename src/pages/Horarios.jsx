@@ -17,6 +17,7 @@ import LocationProvider from '../components/LocationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
 import { fixCentersArray } from '../utils/fixArray';
+import Grid from '@mui/material/Unstable_Grid2/Grid2';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
