@@ -229,8 +229,6 @@ export const bringAvailability = (idUser, data) => {
   return times;
 };
 
-
-
 export function eliminarPrimerosCharSiCoinciden(cadena, listaSubstr) {
   let prefijo = '';
 
