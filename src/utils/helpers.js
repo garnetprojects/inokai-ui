@@ -211,7 +211,7 @@ export const bringAvailability = (idUser, data) => {
     const appointmentEndHour = singleAppointment.finalTime.slice(0, -3);
 
     // Verificamos si la cita es por la mañana o por la tarde
-    if (appointmentStartHour < "12:00") {
+    if (appointmentStartHour == "9:00") {
       // Cita por la mañana
       times.from = appointmentEndHour;  // Hora de finalización de la cita por la mañana
       times.to = "22:00";               // Fin del horario de trabajo
