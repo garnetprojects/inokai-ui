@@ -148,8 +148,8 @@ const Horarios = () => {
                   onChange: (e) => setCenter(e.target.value),
                   value: centerId || '',
                 }}
-                disabled={mutation.isPending}
-              />
+                disabled={loading}             
+                />
             </Grid>
       <TextField
         type="file"
