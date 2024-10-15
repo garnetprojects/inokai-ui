@@ -214,18 +214,18 @@ export const bringAvailibity = (idUser, data) => {
     const appointmentEndHour = singleAppointment.finalTime.slice(0, -3);
 
     // Verificamos si la cita es por la mañana o por la tarde
-    if (appointmentStartHour == "9:00") {
+    if (appointmentStartHour == "10:00") {
       // Cita por la mañana
       times.from = appointmentEndHour;  // Hora de finalización de la cita por la mañana
       times.to = "22:00";               // Fin del horario de trabajo
     } else {
       // Cita por la tarde
-      times.from = "09:00";             // Inicio del horario de trabajo
+      times.from = "10:00";             // Inicio del horario de trabajo
       times.to = appointmentStartHour;  // Hora de inicio de la cita por la tarde
     }
   } else {
     // Si no hay citas, se devuelve un horario por defecto o vacío
-    times.from = "09:00"; // Horario por defecto de entrada
+    times.from = "10:00"; // Horario por defecto de entrada
     times.to = "22:00";   // Horario por defecto de salida
   }
 
