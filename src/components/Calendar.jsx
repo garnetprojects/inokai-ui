@@ -105,8 +105,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           resources={data?.usersInAppointments || []}
           selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
           day={{
-            startHour: 9,
-            endHour: 23,
+            startHour: 10,
+            endHour: 22,
             cellRenderer: () => <></>,
             navigation: false,
           }}
