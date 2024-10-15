@@ -183,7 +183,7 @@ export function restarHoras(horaInicio, horaFin) {
   return diferenciaHoras + 1;
 }
 
-export const bringAvailability = (idUser, data) => {
+export const bringAvailibity = (idUser, data) => {
   console.log({ idUser, data });
 
   // Filtramos las citas del usuario que sean "Fuera de horario"
