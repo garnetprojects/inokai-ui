@@ -144,7 +144,7 @@ const Horarios = () => {
                 }
               }}
               renderInput={(params) => (
-                <TextField {...params} fullWidth sx={{ mb: 2 }} /> {/* Espaciado inferior */}
+                <TextField {...params} fullWidth sx={{ mb: 2 }} />
               )}
             />
           </LocationProvider>
