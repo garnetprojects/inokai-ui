@@ -202,8 +202,8 @@ export const bringAvailibity = (idUser, data) => {
   // Casos según la cantidad de citas fuera de horario
   if (userAppointments.length === 2) {
     // Si hay dos citas (una por la mañana y otra por la tarde)
-    times.from = userAppointments[0].finalTime.slice(0, -3); // Hora de finalización de la primera cita
-    times.to = userAppointments[1].initTime.slice(0, -3);    // Hora de inicio de la segunda cita
+    times.from = userAppointments[1].finalTime.slice(0, -3); // Hora de finalización de la primera cita
+    times.to = userAppointments[0].initTime.slice(0, -3);    // Hora de inicio de la segunda cita
   } else if (userAppointments.length === 1) {
     // Si hay una sola cita
     const singleAppointment = userAppointments[0];
