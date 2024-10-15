@@ -132,22 +132,15 @@ const Horarios = () => {
         
         {/* DatePicker */}
         <Grid item xs={12} md={6}>
-          <LocationProvider>
-            <DatePicker
-              label={t('inputLabel.monthToDelete')}
-              views={['month', 'year']}
-              onChange={(date) => {
-                if (date) {
-                  const month = date.getMonth() + 1; // Los meses son 0-indexados
-                  const year = date.getFullYear();
-                  SetDateSelected(`${month}/1/${year}`);
-                }
-              }}
-              renderInput={(params) => (
-                <TextField {...params} fullWidth sx={{ mb: 2 }} />
-              )}
-            />
-          </LocationProvider>
+        <LocationProvider>
+        <DatePicker
+          label={t('inputLabel.monthToDelete')}
+          views={['month', 'year']}
+          onChange={(e) =>
+            SetDateSelected(`${e.get('month') + 1}/1/${e.get('year')}`)
+          }
+        />
+      </LocationProvider>
         </Grid>
 
         {/* SelectComponent (Centro) */}
