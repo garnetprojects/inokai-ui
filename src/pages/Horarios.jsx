@@ -25,9 +25,10 @@ const Horarios = () => {
   // const [file, setFile] = useState(null);
   const [fileData, setFileData] = useState([]);
   const [dateSelected, SetDateSelected] = useState('');
-  const [center, setCenter] = useState('');
+  const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
+  const centerId = null;
 
   // Manejar la carga del archivo
   const handleFileChange = (e) => {
@@ -93,7 +94,7 @@ const Horarios = () => {
         'No se ha detectado un mes para eliminar, seguro que deseas continuar?'
       );
     }
-    if (!center) {
+    if (!centerId) {
       confirmContinue = confirm(
         'No se ha detectado un centro. Por favor selecciona el centro.'
       );
