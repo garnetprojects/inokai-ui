@@ -126,58 +126,76 @@ const Horarios = () => {
 
   return (
     <Container maxWidth="xl">
-      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
-        {t('title.schedules')}
-      </Typography>
+  <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+    {t('title.schedules')}
+  </Typography>
+  
+  <Grid container spacing={2}> {/* Grid container con spacing de separación */}
+    
+    {/* DatePicker */}
+    <Grid item xs={12} md={6}> {/* Tamaño igual al de SelectComponent */}
       <LocationProvider>
         <DatePicker
           label={t('inputLabel.monthToDelete')}
           views={['month', 'year']}
-          onChange={(e) =>
-            SetDateSelected(`${e.get('month') + 1}/1/${e.get('year')}`)
-          }
+          onChange={(date) => {
+            if (date) {
+              const month = date.getMonth() + 1; // Los meses son 0-indexados
+              const year = date.getFullYear();
+              SetDateSelected(`${month}/1/${year}`);
+            }
+          }}
+          renderInput={(params) => (
+            <TextField {...params} fullWidth sx={{ mb: 2 }} /> {/* Espaciado inferior */}
+          )}
         />
       </LocationProvider>
-      <Grid xs={12} md={6}>
-              <SelectComponent
-                fixArrayFn={fixCentersArray}
-                params={`users/get-all-centers/${dataBase}`}
-                label={t('title.center')}
-                required={true}
-                aditionalProperties={{
-                  onChange: (e) => setCenter(e.target.value),
-                  value: centerId || '',
-                }}
-                disabled={loading}             
-                />
-            </Grid>
-      <TextField
-        type="file"
-        inputProps={{
-          accept:
-            '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel',
-        }}
-        onChange={handleFileChange}
-        fullWidth
-        variant="outlined"
-        sx={{ my: 2 }}
-      />
-      <Button
-        disabled={loading}
-        variant="contained"
-        color="primary"
-        onClick={handleSubmit}
-      >
-        {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
-      </Button>
+    </Grid>
 
-      {/* Mostrar los datos */}
-      {fileData.length > 0 && (
-        <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
-          <pre>{JSON.stringify(fileData, null, 2)}</pre>
-        </Box>
-      )}
-    </Container>
+    {/* SelectComponent (Centro) */}
+    <Grid item xs={12} md={6}> {/* Tamaño igual al de DatePicker */}
+      <SelectComponent
+        fixArrayFn={fixCentersArray}
+        params={`users/get-all-centers/${dataBase}`}
+        label={t('title.center')}
+        required={true}
+        aditionalProperties={{
+          onChange: (e) => setCenter(e.target.value),
+          value: centerId || '',
+        }}
+        disabled={loading}
+        sx={{ mb: 2 }} {/* Espaciado inferior, igual al DatePicker */}
+      />
+    </Grid>
+    
+  </Grid>
+
+  <TextField
+    type="file"
+    inputProps={{
+      accept: '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel',
+    }}
+    onChange={handleFileChange}
+    fullWidth
+    variant="outlined"
+    sx={{ my: 2 }}
+  />
+  
+  <Button
+    disabled={loading}
+    variant="contained"
+    color="primary"
+    onClick={handleSubmit}
+  >
+    {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
+  </Button>
+
+  {fileData.length > 0 && (
+    <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
+      <pre>{JSON.stringify(fileData, null, 2)}</pre>
+    </Box>
+  )}
+</Container>
   );
 };
 
