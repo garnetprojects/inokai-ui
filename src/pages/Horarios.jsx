@@ -28,7 +28,8 @@ const Horarios = () => {
   const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
-  const centerId = null;
+  const [open, setOpen] = useState(null);
+  const centerId = open?.centerInfo?._id;
 
   // Manejar la carga del archivo
   const handleFileChange = (e) => {
