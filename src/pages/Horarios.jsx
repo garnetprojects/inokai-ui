@@ -29,7 +29,6 @@ const Horarios = () => {
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(null);
-  const centerId = open?.centerInfo?._id;
 
   // Manejar la carga del archivo
   const handleFileChange = (e) => {
@@ -111,6 +110,7 @@ const Horarios = () => {
         {
           params: {
             dateToDelete: dateSelected,
+            centerId: centerId
           },
         }
       );
@@ -146,7 +146,7 @@ const Horarios = () => {
                 required={true}
                 aditionalProperties={{
                   onChange: (e) => setCenter(e.target.value),
-                  value: center || centerId || '',
+                  value: centerId || '',
                 }}
                 disabled={mutation.isPending}
               />
