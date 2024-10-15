@@ -108,6 +108,7 @@ const Horarios = () => {
         {
           params: {
             dateToDelete: dateSelected,
+            centerId: centerId
           },
         }
       );
@@ -154,7 +155,7 @@ const Horarios = () => {
               onChange: (e) => setCenter(e.target.value),
               value: centerId || '',
             }}
-            disabled={loading} // Usamos 'loading' en vez de 'mutation.isPending'
+            disabled={loading} 
             sx={{ mb: 2 }} // Espaciado inferior
           />
         </Grid>
