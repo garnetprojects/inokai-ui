@@ -193,8 +193,11 @@ export const bringAvailibity = (idUser, data) => {
       appoint.userInfo._id === idUser &&
       appoint.clientName === 'Fuera de horario'
   )
-  .sort((a, b) => new Date(a.initTime) - new Date(b.initTime)); // Ordenamos correctamente por la fecha y hora de inicio
-
+  .sort((a, b) => {
+    const aInitTime = Date.parse(a.initTime); // Convierte a timestamp
+    const bInitTime = Date.parse(b.initTime); // Convierte a timestamp
+    return aInitTime - bInitTime; // Ordena por hora de inicio
+  });
   console.log({ idUser, data, userAppointments });
 
   let times = { from: null, to: null };
