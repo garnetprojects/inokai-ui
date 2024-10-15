@@ -22,13 +22,11 @@ import SelectComponent from '../components/SelectComponent';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
-  // const [file, setFile] = useState(null);
   const [fileData, setFileData] = useState([]);
   const [dateSelected, SetDateSelected] = useState('');
   const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(null);
 
   // Manejar la carga del archivo
   const handleFileChange = (e) => {
@@ -85,13 +83,13 @@ const Horarios = () => {
     let confirmContinue = true;
 
     if (fileData.length === 0)
-      return enqueueSnackbar('No se estan importando datos', {
+      return enqueueSnackbar('No se están importando datos', {
         variant: 'error',
       });
 
     if (!dateSelected) {
       confirmContinue = confirm(
-        'No se ha detectado un mes para eliminar, seguro que deseas continuar?'
+        'No se ha detectado un mes para eliminar, ¿seguro que deseas continuar?'
       );
     }
     if (!centerId) {
@@ -110,12 +108,11 @@ const Horarios = () => {
         {
           params: {
             dateToDelete: dateSelected,
-            centerId: centerId
           },
         }
       );
       console.log(data);
-      enqueueSnackbar('Se importo exitosamente', { variant: 'success' });
+      enqueueSnackbar('Se importó exitosamente', { variant: 'success' });
     } catch (err) {
       console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
@@ -126,76 +123,81 @@ const Horarios = () => {
 
   return (
     <Container maxWidth="xl">
-  <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
-    {t('title.schedules')}
-  </Typography>
-  
-  <Grid container spacing={2}> {/* Grid container con spacing de separación */}
-    
-    {/* DatePicker */}
-    <Grid item xs={12} md={6}> {/* Tamaño igual al de SelectComponent */}
-      <LocationProvider>
-        <DatePicker
-          label={t('inputLabel.monthToDelete')}
-          views={['month', 'year']}
-          onChange={(date) => {
-            if (date) {
-              const month = date.getMonth() + 1; // Los meses son 0-indexados
-              const year = date.getFullYear();
-              SetDateSelected(`${month}/1/${year}`);
-            }
-          }}
-          renderInput={(params) => (
-            <TextField {...params} fullWidth sx={{ mb: 2 }} /> {/* Espaciado inferior */}
-          )}
-        />
-      </LocationProvider>
-    </Grid>
+      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+        {t('title.schedules')}
+      </Typography>
 
-    {/* SelectComponent (Centro) */}
-    <Grid item xs={12} md={6}> {/* Tamaño igual al de DatePicker */}
-      <SelectComponent
-        fixArrayFn={fixCentersArray}
-        params={`users/get-all-centers/${dataBase}`}
-        label={t('title.center')}
-        required={true}
-        aditionalProperties={{
-          onChange: (e) => setCenter(e.target.value),
-          value: centerId || '',
+      {/* Grid para agrupar DatePicker y SelectComponent */}
+      <Grid container spacing={2}> {/* spacing={2} aplica 16px de separación entre los elementos */}
+        
+        {/* DatePicker */}
+        <Grid item xs={12} md={6}>
+          <LocationProvider>
+            <DatePicker
+              label={t('inputLabel.monthToDelete')}
+              views={['month', 'year']}
+              onChange={(date) => {
+                if (date) {
+                  const month = date.getMonth() + 1; // Los meses son 0-indexados
+                  const year = date.getFullYear();
+                  SetDateSelected(`${month}/1/${year}`);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth sx={{ mb: 2 }} /> {/* Espaciado inferior */}
+              )}
+            />
+          </LocationProvider>
+        </Grid>
+
+        {/* SelectComponent (Centro) */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixCentersArray}
+            params={`users/get-all-centers/${dataBase}`}
+            label={t('title.center')}
+            required={true}
+            aditionalProperties={{
+              onChange: (e) => setCenter(e.target.value),
+              value: centerId || '',
+            }}
+            disabled={loading} // Usamos 'loading' en vez de 'mutation.isPending'
+            sx={{ mb: 2 }} // Espaciado inferior
+          />
+        </Grid>
+
+      </Grid>
+
+      {/* Input para subir archivos */}
+      <TextField
+        type="file"
+        inputProps={{
+          accept:
+            '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel',
         }}
-        disabled={loading}
-        sx={{ mb: 2 }} {/* Espaciado inferior, igual al DatePicker */}
+        onChange={handleFileChange}
+        fullWidth
+        variant="outlined"
+        sx={{ my: 2 }} // Margen en el eje Y
       />
-    </Grid>
-    
-  </Grid>
 
-  <TextField
-    type="file"
-    inputProps={{
-      accept: '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel',
-    }}
-    onChange={handleFileChange}
-    fullWidth
-    variant="outlined"
-    sx={{ my: 2 }}
-  />
-  
-  <Button
-    disabled={loading}
-    variant="contained"
-    color="primary"
-    onClick={handleSubmit}
-  >
-    {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
-  </Button>
+      {/* Botón de envío */}
+      <Button
+        disabled={loading}
+        variant="contained"
+        color="primary"
+        onClick={handleSubmit}
+      >
+        {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
+      </Button>
 
-  {fileData.length > 0 && (
-    <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
-      <pre>{JSON.stringify(fileData, null, 2)}</pre>
-    </Box>
-  )}
-</Container>
+      {/* Mostrar los datos importados */}
+      {fileData.length > 0 && (
+        <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
+          <pre>{JSON.stringify(fileData, null, 2)}</pre>
+        </Box>
+      )}
+    </Container>
   );
 };
 
