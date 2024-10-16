@@ -53,4 +53,12 @@
 
 .calendario .MuiPaper-rounded + div {
   overflow-x: unset;
+
+  & > div {
+    min-width: 200px;
+  }
+}
+
+.boxPerfil {
+  min-width: 200px;
 }
