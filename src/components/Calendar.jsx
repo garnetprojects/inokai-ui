@@ -80,11 +80,13 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
                     </Typography>
-                    <Typography variant="body2" whiteSpace={'nowrap'}>
-                      {`${availibity.from ? availibity.from : ''}  ${
-                        availibity.to ? `a ${availibity.to}` : ''
-                      }`}
-                    </Typography>
+                    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
+  <Typography variant="body2" whiteSpace={'nowrap'}>
+    {`${availibity.from ? availibity.from : ''}  ${
+      availibity.to ? `a ${availibity.to}` : ''
+    }`}
+  </Typography>
+)}
                   </Box>
                 </Box>
               </Box>
