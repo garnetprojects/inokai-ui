@@ -55,43 +55,41 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
 
           return (
-           <Tooltip
-  title={`${availibity.from ? availibity.from : ''}  ${
-    availibity.to ? `a ${availibity.to}` : ''
-  }`}
-  arrow
->
-  <Box
-    key={user._id}
-    bgcolor={'white'}
-    flex={'1'}
-  >
-    <Box
-      display={'flex'}
-      mx={'auto'}
-      border={'1px solid #e0e0e0'}
-      py={1}
-      px={'10px'}
-      flexDirection={'row'} // Keep horizontal for avatar + text
-    >
-      <Box mx={1} textTransform={'uppercase'}>
-        <Avatar>{user.name[0]}</Avatar>
-      </Box>
+            <Tooltip
+              title={`${availibity.from ? availibity.from : ''}  ${
+                availibity.to ? `a ${availibity.to}` : ''
+              }`}
+              arrow
+              key={user._id}
+            >
+              <Box bgcolor={'white'} flex={'1'} className="boxPerfil">
+                <Box
+                  display={'flex'}
+                  mx={'auto'}
+                  border={'1px solid #e0e0e0'}
+                  py={1}
+                  px={'10px'}
+                  flexDirection={'row'} // Keep horizontal for avatar + text
+                >
+                  <Box mx={1} textTransform={'uppercase'}>
+                    <Avatar>{user.name[0]}</Avatar>
+                  </Box>
 
-      <Box display={'flex'} flexDirection={'column'}> {/* Stack typography vertically */}
-        <Typography variant="body2" whiteSpace={'nowrap'}>
-          {user.name}
-        </Typography>
-        <Typography variant="body2" whiteSpace={'nowrap'}>
-          {`${availibity.from ? availibity.from : ''}  ${
-            availibity.to ? `a ${availibity.to}` : ''
-          }`}
-        </Typography>
-      </Box>
-    </Box>
-  </Box>
-</Tooltip>
-
+                  <Box display={'flex'} flexDirection={'column'}>
+                    {' '}
+                    {/* Stack typography vertically */}
+                    <Typography variant="body2" whiteSpace={'nowrap'}>
+                      {user.name}
+                    </Typography>
+                    <Typography variant="body2" whiteSpace={'nowrap'}>
+                      {`${availibity.from ? availibity.from : ''}  ${
+                        availibity.to ? `a ${availibity.to}` : ''
+                      }`}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Tooltip>
           );
         })}
       </Box>
@@ -127,7 +125,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 appointments={data?.appointments2}
               />
             );
-            
           }}
         />
       </div>
