@@ -184,19 +184,52 @@ export function restarHoras(horaInicio, horaFin) {
 }
 
 export const bringAvailibity = (idUser, data) => {
-  const userAppointment = (data ?? [])
-    .filter(
-      (appoint) =>
-        appoint.userInfo._id === idUser &&
-        appoint.clientName === 'Fuera de horario'
-    )
-    .sort((a, b) => a.initTime - b.initTime);
-  console.log({ idUser, data, userAppointment });
 
-  let times = {
-    from: userAppointment?.[0]?.finalTime.slice(0, -3),
-    to: userAppointment?.[1]?.initTime.slice(0, -3),
-  };
+  console.log({ idUser, data });
+
+  // Filtramos las citas del usuario que sean "Fuera de horario"
+  const userAppointments = (data ?? [])
+  .filter(
+    (appoint) =>
+      appoint.userInfo._id === idUser &&
+      appoint.clientName === 'Fuera de horario'
+  )
+  .sort((a, b) => {
+    const aInitTime = Date.parse(a.initTime); // Convierte a timestamp
+    const bInitTime = Date.parse(b.initTime); // Convierte a timestamp
+    return aInitTime - bInitTime; // Ordena por hora de inicio
+  });
+  console.log({ idUser, data, userAppointments });
+
+  let times = { from: null, to: null };
+
+  // Casos según la cantidad de citas fuera de horario
+  if (userAppointments.length === 2) {
+    // Si hay dos citas (una por la mañana y otra por la tarde)
+    times.from = userAppointments[0].finalTime.slice(0, -3); // Hora de finalización de la primera cita
+    times.to = userAppointments[1].initTime.slice(0, -3);    // Hora de inicio de la segunda cita
+  } else if (userAppointments.length === 1) {
+    // Si hay una sola cita
+    const singleAppointment = userAppointments[0];
+    const appointmentStartHour = singleAppointment.initTime.slice(0, -3);
+    const appointmentEndHour = singleAppointment.finalTime.slice(0, -3);
+
+    // Verificamos si la cita es por la mañana o por la tarde
+    if (appointmentStartHour == "10:00") {
+      // Cita por la mañana
+      times.from = appointmentEndHour;  // Hora de finalización de la cita por la mañana
+      times.to = "22:00";               // Fin del horario de trabajo
+    } else {
+      // Cita por la tarde
+      times.from = "10:00";             // Inicio del horario de trabajo
+      times.to = appointmentStartHour;  // Hora de inicio de la cita por la tarde
+    }
+  } else {
+    // Si no hay citas, se devuelve un horario por defecto o vacío
+    times.from = "10:00"; // Horario por defecto de entrada
+    times.to = "22:00";   // Horario por defecto de salida
+  }
+
   return times;
 };
 
