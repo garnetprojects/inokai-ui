@@ -36,6 +36,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
+  console.log(data.usersInAppointments);
   return (
     <Box position={'relative'}>
       <Box
@@ -54,6 +55,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
 
           return (
+
             <Tooltip
               title={`${availibity.from ? availibity.from : ''}  ${
                 availibity.to ? `a ${availibity.to}` : ''
