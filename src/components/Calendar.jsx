@@ -11,13 +11,11 @@ import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { memo, useCallback, useRef } from 'react';
-
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
   const [hour, minute] = hora.split(':');
   return new Date(year, month - 1, day, hour, minute); // mes se indexa desde 0
 }
-
 const Calendar = ({ data, setOpen, selectedDate }) => {
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
@@ -25,18 +23,14 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     end: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.finalTime)),
     event_id: item._id,
   }));
-
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
-
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
       // Sincronizar el scroll horizontal
       hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
     }
   };
-
-  console.log(data.usersInAppointments);
   return (
     <Box position={'relative'}>
       <Box
@@ -53,9 +47,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       >
         {data.usersInAppointments.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
-
           return (
-
             <Tooltip
               title={`${availibity.from ? availibity.from : ''}  ${
                 availibity.to ? `a ${availibity.to}` : ''
@@ -64,7 +56,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
               key={user.user_id}
             >
               <Box bgcolor={'white'} flex={'1'} className="boxPerfil">
-                <Box
+              <Box
                   display={'flex'}
                   mx={'auto'}
                   border={'1px solid #e0e0e0'}
@@ -75,22 +67,19 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                   <Box mx={1} textTransform={'uppercase'}>
                     <Avatar>{user.name[0]}</Avatar>
                   </Box>
-
                   <Box display={'flex'} flexDirection={'column'}>
                     {' '}
                     {/* Stack typography vertically */}
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
                     </Typography>
-                    {!(
-                      availibity.from === '10:00' && availibity.to === '22:00'
-                    ) && (
-                      <Typography variant="body2" whiteSpace={'nowrap'}>
-                        {`${availibity.from ? availibity.from : ''}  ${
-                          availibity.to ? `a ${availibity.to}` : ''
-                        }`}
-                      </Typography>
-                    )}
+                    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
+  <Typography variant="body2" whiteSpace={'nowrap'}>
+    {`${availibity.from ? availibity.from : ''}  ${
+      availibity.to ? `a ${availibity.to}` : ''
+    }`}
+  </Typography>
+)}
                   </Box>
                 </Box>
               </Box>
@@ -130,20 +119,18 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 appointments={data?.appointments2}
               />
             );
+            
           }}
         />
       </div>
     </Box>
   );
 };
-
 const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
-
   const handleClick = () => {
     setOpen(data);
   };
-
   const isFreeSlot =
     data.clientName === 'NO APLICA' ||
     data.clientName === 'Fuera de horario' ||
@@ -156,12 +143,10 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
     !isFreeSlot && data.services.length > 0
       ? data.services[0].color
       : 'grey.300';
-
   // Crear el texto para el tooltip con los servicios
   const servicesTooltip = data.services
     .map((item) => item.serviceName)
     .join(', ');
-
   return (
     <Tooltip title={servicesTooltip} arrow>
       <Button
@@ -187,7 +172,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
             {t('')}
           </Typography>
         )}
-
         <Box onDoubleClick={handleClick}>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
@@ -196,15 +180,12 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
               {t('inputLabel.endTime')}: {data.finalTime}
             </Typography>
           </Box>
-
           <Typography my={1} fontSize={11}>
             <Box component="span" fontWeight="bold" fontSize={11}>
               {data.clientName}
             </Box>
           </Typography>
-
           <Divider sx={{ my: 0.5 }} />
-
           <Box>
             <Typography
               component="span"
@@ -213,7 +194,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
               mb={1}
               fontSize={11}
             ></Typography>
-
             <Box display="flex" gap={0.5} flexWrap="wrap">
               {data.services.map((item, idx) => (
                 <Chip
@@ -236,5 +216,4 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
     </Tooltip>
   );
 };
-
 export default memo(Calendar);
