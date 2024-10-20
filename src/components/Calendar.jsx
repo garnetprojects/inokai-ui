@@ -36,7 +36,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
-  console.log(data.usersInAppointments);
   return (
     <Box position={'relative'}>
       <Box
