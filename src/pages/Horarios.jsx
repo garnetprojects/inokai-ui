@@ -16,12 +16,15 @@ import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
+import { fixCentersArray } from '../utils/fixArray';
+import Grid from '@mui/material/Unstable_Grid2/Grid2';
+import SelectComponent from '../components/SelectComponent';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
-  // const [file, setFile] = useState(null);
   const [fileData, setFileData] = useState([]);
   const [dateSelected, SetDateSelected] = useState('');
+  const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
 
@@ -80,13 +83,18 @@ const Horarios = () => {
     let confirmContinue = true;
 
     if (fileData.length === 0)
-      return enqueueSnackbar('No se estan importando datos', {
+      return enqueueSnackbar('No se están importando datos', {
         variant: 'error',
       });
 
     if (!dateSelected) {
       confirmContinue = confirm(
-        'No se ha detectado un mes para eliminar, seguro que deseas continuar?'
+        'No se ha detectado un mes para eliminar, ¿seguro que deseas continuar?'
+      );
+    }
+    if (!centerId) {
+      confirmContinue = confirm(
+        'No se ha detectado un centro. Por favor selecciona el centro.'
       );
     }
 
@@ -100,11 +108,12 @@ const Horarios = () => {
         {
           params: {
             dateToDelete: dateSelected,
+            centerId: centerId
           },
         }
       );
       console.log(data);
-      enqueueSnackbar('Se importo exitosamente', { variant: 'success' });
+      enqueueSnackbar('Se importó exitosamente', { variant: 'success' });
     } catch (err) {
       console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
@@ -118,7 +127,13 @@ const Horarios = () => {
       <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
         {t('title.schedules')}
       </Typography>
-      <LocationProvider>
+
+      {/* Grid para agrupar DatePicker y SelectComponent */}
+      <Grid container spacing={2}> {/* spacing={2} aplica 16px de separación entre los elementos */}
+        
+        {/* DatePicker */}
+        <Grid item xs={12} md={6}>
+        <LocationProvider>
         <DatePicker
           label={t('inputLabel.monthToDelete')}
           views={['month', 'year']}
@@ -127,6 +142,27 @@ const Horarios = () => {
           }
         />
       </LocationProvider>
+        </Grid>
+
+        {/* SelectComponent (Centro) */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixCentersArray}
+            params={`users/get-all-centers/${dataBase}`}
+            label={t('title.center')}
+            required={true}
+            aditionalProperties={{
+              onChange: (e) => setCenter(e.target.value),
+              value: centerId || '',
+            }}
+            disabled={loading} 
+            sx={{ mb: 2 }} // Espaciado inferior
+          />
+        </Grid>
+
+      </Grid>
+
+      {/* Input para subir archivos */}
       <TextField
         type="file"
         inputProps={{
@@ -136,8 +172,10 @@ const Horarios = () => {
         onChange={handleFileChange}
         fullWidth
         variant="outlined"
-        sx={{ my: 2 }}
+        sx={{ my: 2 }} // Margen en el eje Y
       />
+
+      {/* Botón de envío */}
       <Button
         disabled={loading}
         variant="contained"
@@ -147,7 +185,7 @@ const Horarios = () => {
         {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
       </Button>
 
-      {/* Mostrar los datos */}
+      {/* Mostrar los datos importados */}
       {fileData.length > 0 && (
         <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
           <pre>{JSON.stringify(fileData, null, 2)}</pre>
