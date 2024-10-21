@@ -59,7 +59,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 availibity.to ? `a ${availibity.to}` : ''
               }`}
               arrow
-              key={user._id}
+              key={user.user_id}
             >
               <Box bgcolor={'white'} flex={'1'} className="boxPerfil">
                 <Box
@@ -80,11 +80,15 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
                     </Typography>
-                    <Typography variant="body2" whiteSpace={'nowrap'}>
-                      {`${availibity.from ? availibity.from : ''}  ${
-                        availibity.to ? `a ${availibity.to}` : ''
-                      }`}
-                    </Typography>
+                    {!(
+                      availibity.from === '10:00' && availibity.to === '22:00'
+                    ) && (
+                      <Typography variant="body2" whiteSpace={'nowrap'}>
+                        {`${availibity.from ? availibity.from : ''}  ${
+                          availibity.to ? `a ${availibity.to}` : ''
+                        }`}
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
               </Box>
@@ -105,8 +109,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           resources={data?.usersInAppointments || []}
           selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
           day={{
-            startHour: 9,
-            endHour: 23,
+            startHour: 10,
+            endHour: 22,
             cellRenderer: () => <></>,
             navigation: false,
           }}
