@@ -147,6 +147,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
     data.clientName === 'Fuera de horario' ||
     data.clientName === 'Vacaciones' ||
     data.clientName === 'Baja' ||
+    data.clientName === 'Compensado' ||
     data.clientName === 'Libre' ||
     data.clientName === 'Año Nuevo' ||
     data.clientName === 'Festivo';
