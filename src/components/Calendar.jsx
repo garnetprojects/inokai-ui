@@ -62,35 +62,37 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
               key={user.user_id}
             >
               <Box bgcolor={'white'} flex={'1'} className="boxPerfil">
-                <Box
-                  display={'flex'}
-                  mx={'auto'}
-                  border={'1px solid #e0e0e0'}
-                  py={1}
-                  px={'10px'}
-                  flexDirection={'row'} // Keep horizontal for avatar + text
-                >
-                  <Box mx={1} textTransform={'uppercase'}>
-                    <Avatar>{user.name[0]}</Avatar>
-                  </Box>
+              <Box
+  display={'flex'}
+  mx={'auto'}
+  border={'1px solid #e0e0e0'}
+  py={1}
+  px={'10px'}
+  flexDirection={'row'} // Keep horizontal for avatar + text
+>
+  {/* Show user profile image in Avatar */}
+  <Box mx={1} textTransform={'uppercase'}>
+    <Avatar
+      src={user.profileImgUrl} // Cloudinary image URL
+      alt={user.name}
+      sx={{ width: 40, height: 40 }} // Adjust size as needed
+    />
+  </Box>
 
-                  <Box display={'flex'} flexDirection={'column'}>
-                    {' '}
-                    {/* Stack typography vertically */}
-                    <Typography variant="body2" whiteSpace={'nowrap'}>
-                      {user.name}
-                    </Typography>
-                    {!(
-                      availibity.from === '10:00' && availibity.to === '22:00'
-                    ) && (
-                      <Typography variant="body2" whiteSpace={'nowrap'}>
-                        {`${availibity.from ? availibity.from : ''}  ${
-                          availibity.to ? `a ${availibity.to}` : ''
-                        }`}
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
+  <Box display={'flex'} flexDirection={'column'}>
+    {/* Stack typography vertically */}
+    <Typography variant="body2" whiteSpace={'nowrap'}>
+      {user.name}
+    </Typography>
+    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
+      <Typography variant="body2" whiteSpace={'nowrap'}>
+        {`${availibity.from ? availibity.from : ''} ${
+          availibity.to ? `a ${availibity.to}` : ''
+        }`}
+      </Typography>
+    )}
+  </Box>
+</Box>
               </Box>
             </Tooltip>
           );
