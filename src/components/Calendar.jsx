@@ -72,11 +72,13 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 >
   {/* Show user profile image in Avatar */}
   <Box mx={1} textTransform={'uppercase'}>
-    <Avatar
-      src={user.profileImgUrl} // Cloudinary image URL
-      alt={user.name}
-      sx={{ width: 40, height: 40 }} // Adjust size as needed
-    />
+  <Avatar
+  src={user.profileImage || ''}
+  alt={user.name}
+  sx={{ width: 40, height: 40 }}
+>
+  {!user.profileImage && user.name[0].toUpperCase()} {/* Show initial if no image */}
+</Avatar>
   </Box>
 
   <Box display={'flex'} flexDirection={'column'}>
