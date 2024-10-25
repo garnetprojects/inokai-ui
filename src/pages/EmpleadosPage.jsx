@@ -108,6 +108,7 @@ const Header = ({ dataBase }) => {
       isAvailable: e.target?.isAvailable?.value,
       services,
       specialities,
+      profileImgUrl
     };
 
     console.log(data, 'datos mandando');
