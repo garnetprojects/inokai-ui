@@ -36,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const [t] = useTranslation('global');
+  const [t, i18n] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -64,6 +64,7 @@ const Header = ({ dataBase }) => {
   const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
+
   const { invalidate } = useInvalidate();
 
   const mutation = useMutation({
@@ -73,45 +74,51 @@ const Header = ({ dataBase }) => {
           .put(`/users/edit-employee/${dataBase}/${open?._id}`, data)
           .then((response) => response.data);
       }
+
       return await axios
         .post(`/users/create-employee/${dataBase}/${center}`, data)
         .then((response) => response.data);
     },
-    onSuccess: () => {
+
+    onSuccess: (data) => {
       invalidate(['empleados']);
-      enqueueSnackbar('Acción realizada con éxito', { variant: 'success' });
-      setOpen(null);
+      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
+      setOpen(false);
     },
     onError: (err) => {
-      console.error('Error en la mutación:', err);
+      console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
+
       return { serviceName, duration };
     });
-
-    if (!services.length || !specialities.length) {
-      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
-      return;
-    }
 
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
-      phone: e.target.countryPhone?.value
-        ? e.target.countryPhone.value + e.target.phone.value
-        : e.target.phone?.value,
+      phone: e.target?.countryPhone?.value
+        ? e.target?.countryPhone?.value + e.target.phone.value
+        : e.target?.phone?.value,
       DNI: e.target.DNI.value,
-      password: e.target.password?.value,
-      isAvailable: e.target.isAvailable?.value,
+      password: e.target?.password?.value,
+      isAvailable: e.target?.isAvailable?.value,
       services,
-      specialities,
+      specialities
     };
+
+    console.log(data, 'datos mandando');
+
+    if (!selectedOption.length || !services.length) {
+      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      return;
+    }
 
     if (open?._id) {
       delete data.password;
@@ -119,26 +126,26 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
-      try {
-        data.profileImgUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
-      } catch (err) {
-        console.error("Error al subir la imagen:", err);
-        enqueueSnackbar("Error al subir la imagen", { variant: "error" });
-        return;
-      }
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
     }
 
     mutation.mutate(data);
   };
 
+  console.log({ open, specialities, selectedOption }, 'aqui');
+
   useEffect(() => {
+    console.log(open);
+
     if (open?.services) {
+      console.log(open);
       setSelectedOption(
-        open.services.map((item) => `${item.serviceName} - ${item.duration}`)
+        open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
     }
+
     if (open?.specialities) {
-      setSpecialities(open.specialities);
+      setSpecialities(open?.specialities);
     }
   }, [open]);
 
@@ -244,7 +251,7 @@ const Header = ({ dataBase }) => {
                 fixArrayFn={fixCentersArray}
                 params={`users/get-all-centers/${dataBase}`}
                 label={t('title.center')}
-                required
+                required={true}
                 aditionalProperties={{
                   onChange: (e) => setCenter(e.target.value),
                   value: center || centerId || '',
@@ -268,25 +275,23 @@ const Header = ({ dataBase }) => {
               </TextField>
             </Grid>
           </Grid>
-
-          <Box display={'flex'} gap={5} mt={3}>
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
             <HandleLogo
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
-              textBtn={t('inputLabel.addLogo')}
-              cloudinary_url={open?.profileImgUrl || ''}
-            />
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
+              />
           </Box>
 
-          <Box display="flex" justifyContent="center" mt={5}>
-            <Button
-              variant="contained"
-              type="submit"
-              disabled={mutation.isPending}
-            >
-              {t('buttons.submit')}
-            </Button>
-          </Box>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ width: '100%', mt: 5 }}
+            disabled={mutation.isPending}
+          >
+            {open?._id ? t('buttons.edit') : t('buttons.create')}
+          </Button>
         </form>
       </ModalComponent>
     </Box>
@@ -295,66 +300,107 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
+  console.log(profileImgUrl);
 
   return (
     <Box mb={2}>
-      <Button
-        component="label"
-        variant="contained"
-        startIcon={<CloudUploadIcon />}
-      >
-        {textBtn}
-        <input
-          accept="image/*"
-          type="file"
-          hidden
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              setProfileImgUrl(e.target.files[0]);
-            }
-          }}
-        />
-      </Button>
+      <Box mb={2}>
+        <Button
+          component="label"
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+        >
+          {textBtn}
+
+          <input
+            accept="image/*"
+            type="file"
+            hidden
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setProfileImgUrl(e.target.files);
+              }
+            }}
+          />
+        </Button>
+      </Box>
 
       {(cloudinary_url || profileImgUrl) && (
-        <img
-          src={profileImgUrl ? URL.createObjectURL(profileImgUrl) : cloudinary_url}
-          alt="Logo"
-          decoding="async"
-          height={130}
-          width={250}
-        />
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
       )}
     </Box>
   );
 };
 
+
 const TableBody = ({ dataBase }) => {
-  const { open, setOpen } = useContext(EmpleadosContext);
-  const { data, isLoading } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: async () => {
-      const res = await axios.get(`/users/get-all-employee/${dataBase}`);
-      return res.data;
+  const [t] = useTranslation('global');
+
+  const columns = [
+    {
+      header: t('inputLabel.dni'),
+      accessorKey: 'DNI',
     },
+    {
+      header: t('inputLabel.name'),
+      accessorKey: 'name',
+    },
+
+    {
+      header: t('inputLabel.email'),
+      accessorKey: 'email',
+    },
+    {
+      header: t('inputLabel.phoneNumber'),
+      accessorKey: 'phone',
+    },
+    {
+      header: t('title.center'),
+      accessorKey: 'centerInfo.centerName',
+    },
+    {
+      header: t('inputLabel.action'),
+      cell: (info) => (
+        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
+      ),
+    },
+  ];
+
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: () =>
+      axios(`/users/get-all-employees/${dataBase}`).then(
+        (response) => response.data
+      ),
   });
 
-  return (
-    <TableComponent
-      tableHead={['DNI', 'Nombre', 'Correo', 'Telefono']}
-      tableBody={
-        isLoading
-          ? [Array(4).fill(<Skeleton variant={'text'} />)]
-          : data?.users.map((data, index) => [
-              data.DNI,
-              data.name,
-              data.email,
-              data.phone,
-              <CellActionEmployee key={index} {...data} setOpen={setOpen} />,
-            ])
-      }
-    />
-  );
-};
+  if (isLoading)
+    return (
+      <Skeleton
+        variant="rectangular"
+        // animation="wave"
+        height={300}
+        sx={{ bgcolor: 'rgb(203 213 225)' }}
+      />
+    );
 
+  if (isError) return <p>Ocurrio algo</p>;
+
+  console.log(data);
+
+  return <TableComponent columns={columns} data={data} />;
+};
+// comentario
 export default EmpleadosPage;
