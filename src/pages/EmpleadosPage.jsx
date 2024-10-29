@@ -126,7 +126,7 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24'));
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
     }
 
     mutation.mutate(data);
