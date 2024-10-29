@@ -30,6 +30,7 @@ import SpecialitiesBox from '../components/SpecialitiesBox';
 import InputPhone from '../components/InputPhone';
 import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
 import { phoneCountry } from '../utils/selectData';
+import { imageUpload } from '../utils/helpers';
 
 export const EmpleadosContext = createContext();
 
@@ -59,6 +60,7 @@ const Header = ({ dataBase }) => {
   const [selectedOption, setSelectedOption] = useState([]);
   const [specialities, setSpecialities] = useState([]);
   const [center, setCenter] = useState('');
+  const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
 
@@ -121,6 +123,10 @@ const Header = ({ dataBase }) => {
     if (open?._id) {
       delete data.password;
       delete data.DNI;
+    }
+
+    if (profileImgUrl) {
+      dataForm.append('uploadImages', imageUpload(profileImgUrl, 'large-l-ino24'));
     }
 
     mutation.mutate(data);
@@ -269,6 +275,14 @@ const Header = ({ dataBase }) => {
               </TextField>
             </Grid>
           </Grid>
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
+            <HandleLogo
+              profileImgUrl={profileImgUrl}
+              setProfileImgUrl={setProfileImgUrl}
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={data?.logo[0]?.cloudinary_url}
+            />
+          </Box>
 
           <Button
             type="submit"
@@ -283,6 +297,53 @@ const Header = ({ dataBase }) => {
     </Box>
   );
 };
+
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const [t] = useTranslation('global');
+  console.log(profileImgUrl);
+
+  return (
+    <Box mb={2}>
+      <Box mb={2}>
+        <Button
+          component="label"
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+        >
+          {textBtn}
+
+          <input
+            accept="image/*"
+            type="file"
+            hidden
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setProfileImgUrl(e.target.files);
+              }
+            }}
+          />
+        </Button>
+      </Box>
+
+      {(cloudinary_url || profileImgUrl) && (
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
+      )}
+    </Box>
+  );
+};
+
 
 const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
