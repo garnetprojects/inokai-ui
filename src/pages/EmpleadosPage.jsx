@@ -110,7 +110,7 @@ const Header = ({ dataBase }) => {
       password: e.target?.password?.value,
       isAvailable: e.target?.isAvailable?.value,
       services,
-      specialities,
+      specialities
     };
 
     console.log(data, 'datos mandando');
