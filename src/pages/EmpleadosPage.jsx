@@ -31,6 +31,7 @@ import InputPhone from '../components/InputPhone';
 import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
 import { phoneCountry } from '../utils/selectData';
 import { imageUpload } from '../utils/helpers';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export const EmpleadosContext = createContext();
 
