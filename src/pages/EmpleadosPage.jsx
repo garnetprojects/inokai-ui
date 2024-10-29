@@ -280,8 +280,8 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={data?.logo[0]?.cloudinary_url}
-            />
+              cloudinary_url={open?.logo?.[0]?.cloudinary_url || null} // Ensure data source
+              />
           </Box>
 
           <Button
