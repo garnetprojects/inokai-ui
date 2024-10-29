@@ -91,32 +91,29 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
-
       return { serviceName, duration };
     });
 
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
-      phone: e.target?.countryPhone?.value
-        ? e.target?.countryPhone?.value + e.target.phone.value
-        : e.target?.phone?.value,
+      phone: e.target.countryPhone?.value 
+        ? e.target.countryPhone.value + e.target.phone.value 
+        : e.target.phone?.value,
       DNI: e.target.DNI.value,
-      password: e.target?.password?.value,
-      isAvailable: e.target?.isAvailable?.value,
+      password: e.target.password?.value,
+      isAvailable: e.target.isAvailable?.value,
       services,
-      specialities
+      specialities,
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
       return;
     }
 
@@ -126,19 +123,20 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+      try {
+        data.profileImgUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
+      } catch (err) {
+        console.log("Error al subir la imagen", err);
+        enqueueSnackbar("Error al subir la imagen", { variant: "error" });
+        return;
+      }
     }
 
     mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -280,7 +278,7 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
+              cloudinary_url={open?.profileImgUrl || null}
               />
           </Box>
 
@@ -300,107 +298,66 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
-  console.log(profileImgUrl);
-
+  
   return (
     <Box mb={2}>
-      <Box mb={2}>
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-        >
-          {textBtn}
-
-          <input
-            accept="image/*"
-            type="file"
-            hidden
-            // name="uploadImages"
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
-              }
-            }}
-          />
-        </Button>
-      </Box>
+      <Button
+        component="label"
+        variant="contained"
+        startIcon={<CloudUploadIcon />}
+      >
+        {textBtn}
+        <input
+          accept="image/*"
+          type="file"
+          hidden
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setProfileImgUrl(e.target.files[0]);
+            }
+          }}
+        />
+      </Button>
 
       {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
+        <img
+          src={profileImgUrl ? URL.createObjectURL(profileImgUrl) : cloudinary_url}
+          alt="Logo"
+          decoding="async"
+          height={130}
+          width={250}
+        />
       )}
     </Box>
   );
 };
 
-
 const TableBody = ({ dataBase }) => {
-  const [t] = useTranslation('global');
-
-  const columns = [
-    {
-      header: t('inputLabel.dni'),
-      accessorKey: 'DNI',
-    },
-    {
-      header: t('inputLabel.name'),
-      accessorKey: 'name',
-    },
-
-    {
-      header: t('inputLabel.email'),
-      accessorKey: 'email',
-    },
-    {
-      header: t('inputLabel.phoneNumber'),
-      accessorKey: 'phone',
-    },
-    {
-      header: t('title.center'),
-      accessorKey: 'centerInfo.centerName',
-    },
-    {
-      header: t('inputLabel.action'),
-      cell: (info) => (
-        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
-      ),
-    },
-  ];
-
-  const { isLoading, isError, data } = useQuery({
+  const { open, setOpen } = useContext(EmpleadosContext);
+  const { data, isLoading } = useQuery({
     queryKey: ['empleados'],
-    queryFn: () =>
-      axios(`/users/get-all-employees/${dataBase}`).then(
-        (response) => response.data
-      ),
+    queryFn: async () => {
+      const res = await axios.get(`/users/get-all-employee/${dataBase}`);
+      return res.data;
+    },
   });
 
-  if (isLoading)
-    return (
-      <Skeleton
-        variant="rectangular"
-        // animation="wave"
-        height={300}
-        sx={{ bgcolor: 'rgb(203 213 225)' }}
-      />
-    );
-
-  if (isError) return <p>Ocurrio algo</p>;
-
-  console.log(data);
-
-  return <TableComponent columns={columns} data={data} />;
+  return (
+    <TableComponent
+      tableHead={['DNI', 'Nombre', 'Correo', 'Telefono']}
+      tableBody={
+        isLoading
+          ? [Array(4).fill(<Skeleton variant={'text'} />)]
+          : data?.users.map((data, index) => [
+              data.DNI,
+              data.name,
+              data.email,
+              data.phone,
+              <CellActionEmployee key={index} {...data} setOpen={setOpen} />,
+            ])
+      }
+    />
+  );
 };
-// comentario
+
 export default EmpleadosPage;
