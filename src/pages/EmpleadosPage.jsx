@@ -110,7 +110,7 @@ const Header = ({ dataBase }) => {
       password: e.target?.password?.value,
       isAvailable: e.target?.isAvailable?.value,
       services,
-      specialities
+      specialities,
     };
 
     console.log(data, 'datos mandando');
@@ -280,7 +280,7 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.logo?.[0]?.cloudinary_url || null} // Ensure data source
+              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
               />
           </Box>
 
