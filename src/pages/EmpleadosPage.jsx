@@ -36,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const [t, i18n] = useTranslation('global');
+  const [t] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -64,7 +64,6 @@ const Header = ({ dataBase }) => {
   const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
-
   const { invalidate } = useInvalidate();
 
   const mutation = useMutation({
@@ -74,36 +73,38 @@ const Header = ({ dataBase }) => {
           .put(`/users/edit-employee/${dataBase}/${open?._id}`, data)
           .then((response) => response.data);
       }
-
       return await axios
         .post(`/users/create-employee/${dataBase}/${center}`, data)
         .then((response) => response.data);
     },
-
-    onSuccess: (data) => {
+    onSuccess: () => {
       invalidate(['empleados']);
-      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
-      setOpen(false);
+      enqueueSnackbar('Acción realizada con éxito', { variant: 'success' });
+      setOpen(null);
     },
     onError: (err) => {
-      console.log(err);
+      console.error('Error en la mutación:', err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     },
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
       return { serviceName, duration };
     });
 
+    if (!services.length || !specialities.length) {
+      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
+      return;
+    }
+
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
-      phone: e.target.countryPhone?.value 
-        ? e.target.countryPhone.value + e.target.phone.value 
+      phone: e.target.countryPhone?.value
+        ? e.target.countryPhone.value + e.target.phone.value
         : e.target.phone?.value,
       DNI: e.target.DNI.value,
       password: e.target.password?.value,
@@ -111,11 +112,6 @@ const Header = ({ dataBase }) => {
       services,
       specialities,
     };
-
-    if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
-      return;
-    }
 
     if (open?._id) {
       delete data.password;
@@ -126,7 +122,7 @@ const Header = ({ dataBase }) => {
       try {
         data.profileImgUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
       } catch (err) {
-        console.log("Error al subir la imagen", err);
+        console.error("Error al subir la imagen:", err);
         enqueueSnackbar("Error al subir la imagen", { variant: "error" });
         return;
       }
@@ -138,12 +134,11 @@ const Header = ({ dataBase }) => {
   useEffect(() => {
     if (open?.services) {
       setSelectedOption(
-        open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
+        open.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
     }
-
     if (open?.specialities) {
-      setSpecialities(open?.specialities);
+      setSpecialities(open.specialities);
     }
   }, [open]);
 
@@ -249,7 +244,7 @@ const Header = ({ dataBase }) => {
                 fixArrayFn={fixCentersArray}
                 params={`users/get-all-centers/${dataBase}`}
                 label={t('title.center')}
-                required={true}
+                required
                 aditionalProperties={{
                   onChange: (e) => setCenter(e.target.value),
                   value: center || centerId || '',
@@ -273,23 +268,25 @@ const Header = ({ dataBase }) => {
               </TextField>
             </Grid>
           </Grid>
-          <Box xs={12} display={'flex'} gap={5} mt={3}>
+
+          <Box display={'flex'} gap={5} mt={3}>
             <HandleLogo
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
-              textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null}
-              />
+              textBtn={t('inputLabel.addLogo')}
+              cloudinary_url={open?.profileImgUrl || ''}
+            />
           </Box>
 
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ width: '100%', mt: 5 }}
-            disabled={mutation.isPending}
-          >
-            {open?._id ? t('buttons.edit') : t('buttons.create')}
-          </Button>
+          <Box display="flex" justifyContent="center" mt={5}>
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={mutation.isPending}
+            >
+              {t('buttons.submit')}
+            </Button>
+          </Box>
         </form>
       </ModalComponent>
     </Box>
@@ -298,7 +295,7 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
-  
+
   return (
     <Box mb={2}>
       <Button
