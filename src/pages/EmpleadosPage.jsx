@@ -318,8 +318,8 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
             hidden
             // name="uploadImages"
             onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
+              if (e.target.profileImgUrl) {
+                setProfileImgUrl(e.target.profileImgUrl);
               }
             }}
           />
