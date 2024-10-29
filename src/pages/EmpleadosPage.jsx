@@ -110,8 +110,7 @@ const Header = ({ dataBase }) => {
       password: e.target?.password?.value,
       isAvailable: e.target?.isAvailable?.value,
       services,
-      specialities,
-      profileImgUrl
+      specialities
     };
 
     console.log(data, 'datos mandando');
@@ -127,7 +126,7 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
-      dataForm.append('uploadImages', imageUpload(profileImgUrl, 'large-l-ino24'));
+      data.append('uploadImages', imageUpload(profileImgUrl, 'large-l-ino24'));
     }
 
     mutation.mutate(data);
