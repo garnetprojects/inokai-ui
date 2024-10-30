@@ -29,6 +29,7 @@ const ContactPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const { state } = useContext(UserContext);
+
     const centerId = state.userInfo?.centerInfo;
 
     const [newContact, setNewContact] = useState({
@@ -63,6 +64,7 @@ const ContactPage = () => {
             return res.data;
         },
         onSuccess: () => {
+            console.log(state.userInfo);
             queryClient.invalidateQueries(['contacts', dataBase, centerId]);
             enqueueSnackbar('Contact saved successfully', { variant: 'success' });
             handleCloseDialog();
