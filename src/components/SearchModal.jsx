@@ -21,7 +21,7 @@ import { UserContext } from '../context/UserProvider';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
-const SearchModal = () => {
+const SearchModal = ({ setSelectedDate, setOpenEdit }) => { // Recibimos las props
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
 
@@ -49,6 +49,15 @@ const SearchModal = () => {
     // return
 
     mutate.mutate(params);
+  };
+
+  const handleSelectAppointment = (appointment) => {
+    // Cerrar el modal de búsqueda
+    setIsOpen(false);
+    // Cambiar la fecha seleccionada en el calendario
+    setSelectedDate(appointment.date);
+    // Abrir el modal de editar cita
+    setOpenEdit(appointment);
   };
 
   return (
@@ -111,7 +120,7 @@ const SearchModal = () => {
 
           {mutate.data &&
             mutate.data?.data.map((item) => (
-              <Box key={item._id}>
+              <Box key={item._id} onClick={() => handleSelectAppointment(item)} style={{ cursor: 'pointer' }}>
                 <CardContent>
                   <Typography gutterBottom component="div">
                     Nombre: {item.clientName}
@@ -126,17 +135,17 @@ const SearchModal = () => {
                     Hora: {item.initTime} - {item.finalTime}
                   </Typography>
                   <Typography gutterBottom component="div">
-                    observaciones: {item.remarks}
+                    Observaciones: {item.remarks}
                   </Typography>
 
                   <Typography gutterBottom component="div">
                     Servicios:
                   </Typography>
                   <Box ml={1}>
-                    {item.services.map((item) => (
+                    {item.services.map((service) => (
                       <Chip
-                        label={`${item.serviceName} - ${item.duration}`}
-                        key={item.serviceName}
+                        label={`${service.serviceName} - ${service.duration}`}
+                        key={service.serviceName}
                       />
                     ))}
                   </Box>
