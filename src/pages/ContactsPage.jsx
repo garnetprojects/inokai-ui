@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     Box,
     Button,
@@ -19,7 +19,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
-import { useContext, useState } from 'react';
 import { UserContext } from '../context';
 
 const ContactPage = () => {
@@ -27,8 +26,9 @@ const ContactPage = () => {
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
-    const { state } = useContext(UserContext); // Accessing UserContext
-    const centerId = state.userInfo?.centerInfo; // Extracting centerId
+    const { state } = useContext(UserContext);
+    const centerId = state.userInfo?.centerInfo;
+
     const [newContact, setNewContact] = useState({
         firstName: '',
         lastName: '',
@@ -36,79 +36,66 @@ const ContactPage = () => {
         phone2: '',
         email: '',
         observations: '',
-        centerIds: [], // This should be an array of center IDs
+        centerIds: [],
     });
 
-    // Fetch contacts for the selected database
     const { data: contacts = [], isLoading, isError } = useQuery(
-      ['contacts', dataBase, centerId],
-      () =>
-          axios.get(`/api/contacts/${dataBase}`, {
-              params: { centerId }, // Pass the centerId here
-          })
-  );
+        ['contacts', dataBase, centerId],
+        () =>
+            axios.get(`/api/contacts/${dataBase}`, {
+                params: { centerId },
+            })
+    );
 
-    // Mutation for creating a new contact
-    const createContactMutation = useMutation((newContact) =>
+    const createContactMutation = useMutation(newContact =>
         axios.post(`/api/contacts/${dataBase}`, newContact)
     );
 
-    // Mutation for updating an existing contact
-    const updateContactMutation = useMutation((updatedContact) =>
+    const updateContactMutation = useMutation(updatedContact =>
         axios.put(`/api/contacts/${dataBase}/${selectedContact._id}`, updatedContact)
     );
 
-    // Mutation for deleting a contact
-    const deleteContactMutation = useMutation((contactId) =>
+    const deleteContactMutation = useMutation(contactId =>
         axios.delete(`/api/contacts/${dataBase}/${contactId}`)
     );
 
-    // Open the dialog for adding/editing a contact
-    const handleOpenDialog = (contact) => {
+    const handleOpenDialog = (contact = null) => {
         setSelectedContact(contact);
-        if (contact) {
-            setNewContact(contact);
-        } else {
-            setNewContact({
-                firstName: '',
-                lastName: '',
-                phone1: '',
-                phone2: '',
-                email: '',
-                observations: '',
-                centerIds: [], // This should be an array of center IDs
-            });
-        }
+        setNewContact(contact || {
+            firstName: '',
+            lastName: '',
+            phone1: '',
+            phone2: '',
+            email: '',
+            observations: '',
+            centerIds: [],
+        });
         setOpenDialog(true);
     };
 
-    // Close the dialog
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setSelectedContact(null);
     };
 
-// Handle form submission
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  // Ensure the centerId is included in the centerIds array
-  const contactToSubmit = {
-      ...newContact,
-      centerIds: [centerId], // Include the centerId here
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  if (selectedContact) {
-      await updateContactMutation.mutateAsync(contactToSubmit);
-  } else {
-      await createContactMutation.mutateAsync(contactToSubmit);
-  }
+        const contactToSubmit = {
+            ...newContact,
+            centerIds: [centerId],
+        };
 
-  queryClient.invalidateQueries(['contacts', dataBase, centerId]); // Invalidate queries to fetch updated contacts
-  handleCloseDialog();
-};
+        if (selectedContact) {
+            await updateContactMutation.mutateAsync(contactToSubmit);
+        } else {
+            await createContactMutation.mutateAsync(contactToSubmit);
+        }
 
-    // Handle contact deletion
+        queryClient.invalidateQueries(['contacts', dataBase, centerId]);
+        handleCloseDialog();
+    };
+
     const handleDelete = async (contactId) => {
         await deleteContactMutation.mutateAsync(contactId);
         queryClient.invalidateQueries(['contacts', dataBase]);
@@ -119,7 +106,7 @@ const handleSubmit = async (e) => {
 
     return (
         <Box sx={{ padding: 2 }}>
-            <Button variant="contained" onClick={() => handleOpenDialog(null)}>
+            <Button variant="contained" onClick={() => handleOpenDialog()}>
                 Add Contact
             </Button>
             <TableContainer>
