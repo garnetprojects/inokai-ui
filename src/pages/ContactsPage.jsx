@@ -33,7 +33,7 @@ const ContactPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [sortField, setSortField] = useState('firstName');
-    const [sortOrder, setSortOrder] = useState('asc'); // Agregar estado para el orden ascendente/descendente
+    const [sortOrder, setSortOrder] = useState('asc'); // Orden ascendente o descendente
     const [filterText, setFilterText] = useState('');
     const { state } = useContext(UserContext);
 
@@ -62,7 +62,83 @@ const ContactPage = () => {
         },
     });
 
-    // Función para cambiar el campo de orden y el orden ascendente/descendente
+    // Mutation for creating or updating a contact
+    const mutation = useMutation({
+        mutationFn: async (contactData) => {
+            const url = selectedContact
+                ? `/contacts/${dataBase}/${selectedContact._id}`
+                : `/contacts/${dataBase}`;
+            const method = selectedContact ? 'put' : 'post';
+            const res = await axios[method](url, contactData);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
+            enqueueSnackbar(t('contacts.saveSuccess'), { variant: 'success' });
+            handleCloseDialog();
+        },
+        onError: (err) => {
+            enqueueSnackbar(getError(err), { variant: 'error' });
+        },
+    });
+
+    // Mutation for deleting a contact
+    const deleteContactMutation = useMutation({
+        mutationFn: async (contactId) => {
+            const res = await axios.delete(`/contacts/${dataBase}/${contactId}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
+            enqueueSnackbar(t('contacts.deleteSuccess'), { variant: 'success' });
+        },
+        onError: (err) => {
+            enqueueSnackbar(getError(err), { variant: 'error' });
+        },
+    });
+
+    useEffect(() => {
+        if (!openDialog) {
+            setSelectedContact(null);
+            setNewContact({
+                firstName: '',
+                lastName: '',
+                phone1: '',
+                phone2: '',
+                email: '',
+                observations: '',
+                centerInfo: [],
+            });
+        }
+    }, [openDialog]);
+
+    const handleOpenDialog = (contact = null) => {
+        setSelectedContact(contact);
+        setNewContact(contact || {
+            firstName: '',
+            lastName: '',
+            phone1: '',
+            phone2: '',
+            email: '',
+            observations: '',
+            centerInfo: [centerInfo],
+        });
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => setOpenDialog(false);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        mutation.mutate({
+            ...newContact,
+            centerInfo: [centerInfo],
+        });
+    };
+
+    const handleDelete = (contactId) => deleteContactMutation.mutate(contactId);
+
+    // Cambia el campo de orden y alterna entre ascendente y descendente
     const handleSortChange = (field) => {
         if (sortField === field) {
             setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -72,6 +148,7 @@ const ContactPage = () => {
         }
     };
 
+    // Filtro y ordenamiento de contactos
     const filteredContacts = contacts
         .filter(contact =>
             contact.firstName.toLowerCase().includes(filterText.toLowerCase()) ||
