@@ -32,7 +32,7 @@ import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
 import { phoneCountry } from '../utils/selectData';
 import { imageUpload } from '../utils/helpers';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-
+import { CircularProgress } from '@mui/material';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
@@ -91,15 +91,15 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
-
       return { serviceName, duration };
     });
-
+  
+    // Crear el objeto de datos del empleado
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
@@ -111,28 +111,30 @@ const Header = ({ dataBase }) => {
       isAvailable: e.target?.isAvailable?.value,
       services,
       specialities,
-      profileImgUrl
     };
-
-    console.log(data, 'datos mandando');
-
-    if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
-      return;
+  
+    // Verificar si `profileImgUrl` contiene una imagen cargada
+    if (profileImgUrl && profileImgUrl[0]) {
+      // Activar un indicador de carga si es necesario
+      setLoading(true);
+  
+      try {
+        // Subir la imagen y obtener la URL
+        const uploadedImgUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24');
+        data.profileImgUrl = uploadedImgUrl; // Agregar la URL al objeto `data`
+      } catch (error) {
+        enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+  
+      setLoading(false); // Desactivar indicador de carga
     }
-
-    if (open?._id) {
-      delete data.password;
-      delete data.DNI;
-    }
-
-    if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
-    }
-
+  
+    // Realizar la mutación con los datos finales
     mutation.mutate(data);
   };
-
   console.log({ open, specialities, selectedOption }, 'aqui');
 
   useEffect(() => {
@@ -301,7 +303,15 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
-  console.log(profileImgUrl);
+  const [loading, setLoading] = useState(false); // Estado de carga
+
+  const handleImageUpload = (e) => {
+    if (e.target.files) {
+      setLoading(true);
+      setProfileImgUrl(e.target.files);
+      setLoading(false); // Desactivar carga una vez que la imagen se ha procesado
+    }
+  };
 
   return (
     <Box mb={2}>
@@ -312,34 +322,25 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
           startIcon={<CloudUploadIcon />}
         >
           {textBtn}
-
           <input
             accept="image/*"
             type="file"
             hidden
-            // name="uploadImages"
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
-              }
-            }}
+            onChange={handleImageUpload}
           />
         </Button>
       </Box>
 
-      {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
+      {loading ? (
+        <CircularProgress />
+      ) : (cloudinary_url || profileImgUrl) && (
+        <img
+          src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+          alt="Logo"
+          decoding="async"
+          height={130}
+          width={250}
+        />
       )}
     </Box>
   );
