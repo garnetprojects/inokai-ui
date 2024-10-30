@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import texts from '../assets/texts.json'; // Import the JSON file
 import {
     Box,
     Button,
