@@ -90,6 +90,7 @@
     "sortByLastName": "Sort by Last Name",
     "sortByEmail": "Sort by Email",
     "asc": "⬆️",
-    "desc": "⬇️"
+    "desc": "⬇️",
+    "search": "Search"
   }
 }

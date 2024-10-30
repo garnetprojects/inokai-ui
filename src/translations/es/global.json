@@ -91,6 +91,7 @@
     "sortByLastName": "Ordenar por apellido",
     "sortByEmail": "Ordenar por email",
     "asc": "⬆️",
-    "desc": "⬇️"
+    "desc": "⬇️",
+    "search": "Buscar"
   }
 }
