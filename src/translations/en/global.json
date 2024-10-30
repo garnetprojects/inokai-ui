@@ -70,5 +70,20 @@
   "text": {
     "serviceReq": "Required Services",
     "clientName": "Client Name"
+  },
+"contacts": {
+    "addContact": "Add Contact",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone1": "Phone 1",
+    "phone2": "Phone 2",
+    "email": "Email",
+    "observations": "Observations",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "saveSuccess": "Contact saved successfully",
+    "deleteSuccess": "Contact deleted successfully",
+    "errorLoading": "Error loading contacts"
   }
 }

@@ -71,5 +71,20 @@
   "text": {
     "serviceReq": "Servicios",
     "clientName": "Cliente"
+  },
+"contacts": {
+    "addContact": "Añadir contacto",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "phone1": "Telefono 1",
+    "phone2": "Telefono 2",
+    "email": "Email",
+    "observations": "Observaciones",
+    "actions": "Acciones",
+    "edit": "Editar",
+    "delete": "Borrar",
+    "saveSuccess": "Contacto guardado correctamente",
+    "deleteSuccess": "Contacto borrado correctamente",
+    "errorLoading": "Error cargando contactos"
   }
 }
