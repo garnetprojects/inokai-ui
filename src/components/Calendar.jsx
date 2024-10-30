@@ -31,8 +31,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
 
-  // Estado para el menú contextual
+  // Estado para el menú contextual y la información de la celda
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedCellData, setSelectedCellData] = useState({});
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -40,13 +41,15 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
-  // Maneja el menú contextual y almacena las coordenadas del clic
-  const handleContextMenu = (event) => {
+  // Maneja el menú contextual y almacena las coordenadas del clic y los datos de la celda
+  const handleContextMenu = (event, cellData) => {
     event.preventDefault();
     setMenuAnchor({
       mouseX: event.clientX,
       mouseY: event.clientY,
     });
+    // Guardamos la información de la celda seleccionada
+    setSelectedCellData(cellData);
   };
 
   const handleCloseMenu = () => {
@@ -55,7 +58,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    setOpen(true);
+    // Pasamos la hora de inicio y empleado seleccionado al modal
+    setOpen({ open: true, ...selectedCellData });
   };
 
   return (
@@ -123,7 +127,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         className="calendario"
         ref={scrollableRef}
         onScroll={handleScroll}
-        onContextMenu={handleContextMenu}
+        onContextMenu={(e) => handleContextMenu(e, { startTime: '10:00', user: 'empleadoId' })}
       >
         <Scheduler
           height={1500}
@@ -138,7 +142,13 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           day={{
             startHour: 10,
             endHour: 22,
-            cellRenderer: () => <></>,
+            cellRenderer: ({ date, resource }) => (
+              <Box
+                onContextMenu={(e) =>
+                  handleContextMenu(e, { startTime: date, user: resource })
+                }
+              />
+            ),
             navigation: false,
           }}
           resourceFields={{
