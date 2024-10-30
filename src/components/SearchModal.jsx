@@ -21,9 +21,10 @@ import { UserContext } from '../context/UserProvider';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
-const SearchModal = ({ setSelectedDate, setOpenEdit }) => { // Recibimos las props
+const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
+  const [highlightedAppointment, setHighlightedAppointment] = useState(null); // Nuevo estado para la cita resaltada
 
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
@@ -34,8 +35,6 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => { // Recibimos las pro
       axios(`/appointment/filter/${dataBase}`, { params }),
   });
 
-  console.log(mutate.data?.data);
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -45,19 +44,21 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => { // Recibimos las pro
       centerInfo: filterCenter,
     };
 
-    console.log(params);
-    // return
-
     mutate.mutate(params);
   };
 
   const handleSelectAppointment = (appointment) => {
-    // Cerrar el modal de búsqueda
     setIsOpen(false);
-    // Cambiar la fecha seleccionada en el calendario
     setSelectedDate(appointment.date);
-    // Abrir el modal de editar cita
     setOpenEdit(appointment);
+  };
+
+  const handleMouseEnter = (appointment) => {
+    setHighlightedAppointment(appointment); // Resaltar cita al pasar el mouse
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedAppointment(null); // Quitar resaltado al salir del mouse
   };
 
   return (
@@ -120,7 +121,19 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => { // Recibimos las pro
 
           {mutate.data &&
             mutate.data?.data.map((item) => (
-              <Box key={item._id} onClick={() => handleSelectAppointment(item)} style={{ cursor: 'pointer' }}>
+              <Box
+                key={item._id}
+                onClick={() => handleSelectAppointment(item)}
+                onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
+                onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor:
+                    highlightedAppointment?._id === item._id
+                      ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
+                      : 'transparent',
+                }}
+              >
                 <CardContent>
                   <Typography gutterBottom component="div">
                     Nombre: {item.clientName}
