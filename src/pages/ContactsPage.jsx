@@ -153,21 +153,26 @@ const ContactPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {contacts.map((contact) => (
-                            <TableRow key={contact._id}>
-                                <TableCell>{contact.firstName}</TableCell>
-                                <TableCell>{contact.lastName}</TableCell>
-                                <TableCell>{contact.phone1}</TableCell>
-                                <TableCell>{contact.phone2}</TableCell>
-                                <TableCell>{contact.email}</TableCell>
-                                <TableCell>{contact.observations}</TableCell>
-                                <TableCell>
-                                    <Button onClick={() => handleOpenDialog(contact)}>Edit</Button>
-                                    <Button onClick={() => handleDelete(contact._id)} color="error">Delete</Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
+    {contacts.map((contact) => (
+        <TableRow key={contact._id}>
+            <TableCell>{contact.firstName}</TableCell>
+            <TableCell>{contact.lastName}</TableCell>
+            <TableCell>{contact.phone1}</TableCell>
+            <TableCell>{contact.phone2}</TableCell>
+            <TableCell>{contact.email}</TableCell>
+            <TableCell>{contact.observations}</TableCell>
+            <TableCell>
+                {contact.editable && (
+                    <>
+                        <Button onClick={() => handleOpenDialog(contact)}>Edit</Button>
+                        <Button onClick={() => handleDelete(contact._id)} color="error">Delete</Button>
+                    </>
+                )}
+            </TableCell>
+        </TableRow>
+    ))}
+</TableBody>
+
                 </Table>
             </TableContainer>
             <Dialog open={openDialog} onClose={handleCloseDialog}>
