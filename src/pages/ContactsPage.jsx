@@ -4,26 +4,30 @@ import {
   Box,
   Button,
   Container,
-  MenuItem,
-  Skeleton,
   TextField,
   Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Snackbar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
-
-export const ContactsContext = createContext();
 
 const ContactsPage = () => {
   const [contacts, setContacts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContact, setEditedContact] = useState(null);
+  const [newContact, setNewContact] = useState({}); // State for new contact
 
   // Fetch contacts from the server
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['contacts'],
     queryFn: () => axios.get('/contacts').then(res => res.data),
     onSuccess: (data) => setContacts(data),
@@ -36,8 +40,7 @@ const ContactsPage = () => {
     onSuccess: () => {
       enqueueSnackbar('Contact updated successfully', { variant: 'success' });
       setIsEditing(false);
-      // Refetch contacts after update
-      refetch();
+      refetch(); // Refetch contacts after update
     },
     onError: (error) => {
       enqueueSnackbar(getError(error), { variant: 'error' });
@@ -57,38 +60,101 @@ const ContactsPage = () => {
     mutation.mutate(editedContact);
   };
 
-  if (isLoading) return <Skeleton variant="rectangular" height={300} />;
-  if (isError) return <p>Something went wrong...</p>;
+  const handleAddChange = (e) => {
+    setNewContact({ ...newContact, [e.target.name]: e.target.value });
+  };
+
+  const handleAddContact = () => {
+    // Logic to add new contact
+    if (!newContact.firstName || !newContact.lastName) {
+      enqueueSnackbar('Please fill in all fields', { variant: 'error' });
+      return;
+    }
+
+    // Simulating adding a new contact
+    setContacts([...contacts, { id: Date.now(), ...newContact }]);
+    enqueueSnackbar('Contact added successfully', { variant: 'success' });
+
+    // Reset new contact state
+    setNewContact({});
+  };
+
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isError) return <Typography>Something went wrong...</Typography>;
 
   return (
     <Container>
       <Typography variant={'h2'} mb={2}>Contacts</Typography>
 
-      <Button
-        variant="outlined"
-        onClick={() => setEditedContact({})} // Reset state for new contact
-        startIcon={<AddIcon />}
-      >
-        Add Contact
-      </Button>
+      <Box mb={2}>
+        <TextField
+          label="First Name"
+          name="firstName"
+          value={newContact.firstName || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <TextField
+          label="Last Name"
+          name="lastName"
+          value={newContact.lastName || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <TextField
+          label="Number 1"
+          name="phone1"
+          value={newContact.phone1 || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <TextField
+          label="Number 2"
+          name="phone2"
+          value={newContact.phone2 || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <TextField
+          label="Email"
+          name="email"
+          value={newContact.email || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <TextField
+          label="Observations"
+          name="observations"
+          value={newContact.observations || ''}
+          onChange={handleAddChange}
+          sx={{ marginRight: 1 }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleAddContact}
+          startIcon={<AddIcon />}
+        >
+          Add Contact
+        </Button>
+      </Box>
 
-      <Box mt={3}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Apellidos</th>
-              <th>Número 1</th>
-              <th>Número 2</th>
-              <th>Correo</th>
-              <th>Observaciones</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Apellidos</TableCell>
+              <TableCell>Número 1</TableCell>
+              <TableCell>Número 2</TableCell>
+              <TableCell>Correo</TableCell>
+              <TableCell>Observaciones</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {contacts.map(contact => (
-              <tr key={contact.id}>
-                <td>
+              <TableRow key={contact.id}>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="firstName"
@@ -98,8 +164,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.firstName
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="lastName"
@@ -109,8 +175,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.lastName
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="phone1"
@@ -120,8 +186,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.phone1
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="phone2"
@@ -131,8 +197,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.phone2
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="email"
@@ -142,8 +208,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.email
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <TextField
                       name="observations"
@@ -153,8 +219,8 @@ const ContactsPage = () => {
                   ) : (
                     contact.observations
                   )}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   {isEditing && editedContact.id === contact.id ? (
                     <Button onClick={handleSave} variant="contained">
                       Save
@@ -164,12 +230,12 @@ const ContactsPage = () => {
                       Edit
                     </Button>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </Box>
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 };
