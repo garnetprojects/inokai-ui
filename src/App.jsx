@@ -8,6 +8,8 @@ import { PrivateRoutes } from './auth/PrivateRoutes';
 import PagesLayout from './Layout/PagesLayout';
 import EmpresaEditPage from './pages/EmpresaEditPage';
 import EmpleadosPage from './pages/EmpleadosPage';
+import ContactsPage from './pages/ContactsPage';
+
 import ThemeApp from '../theme/ThemeApp';
 import Horarios from './pages/Horarios';
 import React, { useEffect } from 'react'; // Importa React y useEffect
@@ -51,6 +53,10 @@ const router = createBrowserRouter([
               {
                 path: 'horarios',
                 element: <Horarios />,
+              },
+              {
+                path: 'agenda',
+                element: <ContactsPage />,
               },
             ],
           },

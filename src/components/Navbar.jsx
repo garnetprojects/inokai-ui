@@ -45,6 +45,9 @@ const Navbar = () => {
     pages.push({ text: t('title.schedules'), to: '/horarios' });
   }
 
+  pages.push({ text: t('title.schedules'), to: '/agenda' });
+
+
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
