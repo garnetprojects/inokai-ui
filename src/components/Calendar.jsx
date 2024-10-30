@@ -52,12 +52,19 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    setOpenEdit(true); // Abre el modal para crear una cita
+    if (setOpenEdit) {
+      setOpenEdit(true); // Abre el modal para crear una cita
+    } else {
+      console.error("setOpenEdit no está definido");
+    }
   };
 
   const handleAppointmentClick = (appointment) => {
+    console.log("Cita seleccionada:", appointment); // Depuración
     if (setSelectedAppointment) {
       setSelectedAppointment(appointment); // Establece la cita seleccionada
+    } else {
+      console.error("setSelectedAppointment no está definido");
     }
     if (setOpenEdit) {
       setOpenEdit(true); // Abre el modal de edición
@@ -187,8 +194,11 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
   const [t] = useTranslation('global');
 
   const handleClick = () => {
+    console.log("Botón de cita clicado:", data); // Depuración
     if (handleAppointmentClick) {
       handleAppointmentClick(data); // Asegúrate de que se pase correctamente
+    } else {
+      console.error("handleAppointmentClick no está definido");
     }
   };
 
