@@ -82,7 +82,7 @@ const Header = ({ dataBase }) => {
 
     onSuccess: (data) => {
       invalidate(['empleados']);
-      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
+      enqueueSnackbar('Acción lograda con éxito', { variant: 'success' });
       setOpen(false);
     },
     onError: (err) => {
@@ -91,7 +91,7 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
@@ -111,13 +111,10 @@ const Header = ({ dataBase }) => {
       isAvailable: e.target?.isAvailable?.value,
       services,
       specialities,
-      profileImgUrl
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
       return;
     }
 
@@ -126,20 +123,20 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
-    if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+    try {
+      if (profileImgUrl) {
+        const uploadedImageUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24'); // Asegura que se envía el archivo correcto
+        data.profileImgUrl = uploadedImageUrl;
+      }
+      mutation.mutate(data);
+    } catch (error) {
+      enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+      console.log(error);
     }
-
-    mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -281,7 +278,7 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
+              cloudinary_url={open?.profileImgUrl || null} 
               />
           </Box>
 
@@ -299,109 +296,85 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
-  console.log(profileImgUrl);
+  const { setOpen } = useContext(EmpleadosContext);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: async () => {
+      const { data } = await axios.get(`/users/get-employees/${dataBase}`);
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <>
+        {Array(5)
+          .fill('')
+          .map((item, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rounded"
+              width={'100%'}
+              height={60}
+              sx={{ my: 2 }}
+            />
+          ))}
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Typography textAlign={'center'} variant="h3">
+        {t('error.noEmployees')}
+      </Typography>
+    );
+  }
 
   return (
-    <Box mb={2}>
-      <Box mb={2}>
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-        >
-          {textBtn}
-
-          <input
-            accept="image/*"
-            type="file"
-            hidden
-            // name="uploadImages"
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
-              }
-            }}
-          />
-        </Button>
-      </Box>
-
-      {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
-      )}
-    </Box>
+    <TableComponent
+      rows={data}
+      columns={[
+        { key: 'name', header: 'Nombre' },
+        { key: 'email', header: 'Email' },
+        { key: 'phone', header: 'Teléfono' },
+        { key: 'DNI', header: 'DNI' },
+        { key: 'isAvailable', header: 'Disponible' },
+        { key: 'actions', header: 'Acciones', render: CellActionEmployee(setOpen) },
+      ]}
+    />
   );
 };
 
-
-const TableBody = ({ dataBase }) => {
-  const [t] = useTranslation('global');
-
-  const columns = [
-    {
-      header: t('inputLabel.dni'),
-      accessorKey: 'DNI',
-    },
-    {
-      header: t('inputLabel.name'),
-      accessorKey: 'name',
-    },
-
-    {
-      header: t('inputLabel.email'),
-      accessorKey: 'email',
-    },
-    {
-      header: t('inputLabel.phoneNumber'),
-      accessorKey: 'phone',
-    },
-    {
-      header: t('title.center'),
-      accessorKey: 'centerInfo.centerName',
-    },
-    {
-      header: t('inputLabel.action'),
-      cell: (info) => (
-        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
-      ),
-    },
-  ];
-
-  const { isLoading, isError, data } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: () =>
-      axios(`/users/get-all-employees/${dataBase}`).then(
-        (response) => response.data
-      ),
-  });
-
-  if (isLoading)
-    return (
-      <Skeleton
-        variant="rectangular"
-        // animation="wave"
-        height={300}
-        sx={{ bgcolor: 'rgb(203 213 225)' }}
-      />
-    );
-
-  if (isError) return <p>Ocurrio algo</p>;
-
-  console.log(data);
-
-  return <TableComponent columns={columns} data={data} />;
-};
-// comentario
 export default EmpleadosPage;
+
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const handleChange = (e) => {
+    setProfileImgUrl(e.target.files);
+  };
+
+  return (
+    <Box display={'flex'} flexDirection={'column'} alignItems={'center'} gap={2}>
+      {cloudinary_url && !profileImgUrl ? (
+        <img src={cloudinary_url} alt="logo" width={100} height={100} style={{ borderRadius: '50%' }} />
+      ) : (
+        profileImgUrl && (
+          <img
+            src={URL.createObjectURL(profileImgUrl[0])}
+            alt="logo"
+            width={100}
+            height={100}
+            style={{ borderRadius: '50%' }}
+          />
+        )
+      )}
+      <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}>
+        {textBtn}
+        <input hidden accept="image/*" type="file" onChange={handleChange} />
+      </Button>
+    </Box>
+  );
+};
