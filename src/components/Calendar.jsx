@@ -102,7 +102,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       </Box>
       <div className="calendario" ref={scrollableRef} onScroll={handleScroll}>
         <Scheduler
-          height={3000}
+          height={1500}
           resourceViewMode="default"
           // resourceViewMode="tabs"
           view="day"
