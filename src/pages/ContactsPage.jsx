@@ -25,6 +25,8 @@ const ContactPage = () => {
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
+    const { state } = useContext(UserContext); // Accessing UserContext
+    const centerId = state.userInfo?.centerInfo; // Extracting centerId
     const [newContact, setNewContact] = useState({
         firstName: '',
         lastName: '',
@@ -36,9 +38,13 @@ const ContactPage = () => {
     });
 
     // Fetch contacts for the selected database
-    const { data: contacts = [], isLoading, isError } = useQuery(['contacts', dataBase], () =>
-        axios.get(`/api/contacts/${dataBase}`, { params: { centerId: /* Your center ID */ } })
-    );
+    const { data: contacts = [], isLoading, isError } = useQuery(
+      ['contacts', dataBase, centerId],
+      () =>
+          axios.get(`/api/contacts/${dataBase}`, {
+              params: { centerId }, // Pass the centerId here
+          })
+  );
 
     // Mutation for creating a new contact
     const createContactMutation = useMutation((newContact) =>
@@ -80,17 +86,25 @@ const ContactPage = () => {
         setSelectedContact(null);
     };
 
-    // Handle form submission
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (selectedContact) {
-            await updateContactMutation.mutateAsync(newContact);
-        } else {
-            await createContactMutation.mutateAsync(newContact);
-        }
-        queryClient.invalidateQueries(['contacts', dataBase]);
-        handleCloseDialog();
-    };
+// Handle form submission
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Ensure the centerId is included in the centerIds array
+  const contactToSubmit = {
+      ...newContact,
+      centerIds: [centerId], // Include the centerId here
+  };
+
+  if (selectedContact) {
+      await updateContactMutation.mutateAsync(contactToSubmit);
+  } else {
+      await createContactMutation.mutateAsync(contactToSubmit);
+  }
+
+  queryClient.invalidateQueries(['contacts', dataBase, centerId]); // Invalidate queries to fetch updated contacts
+  handleCloseDialog();
+};
 
     // Handle contact deletion
     const handleDelete = async (contactId) => {
