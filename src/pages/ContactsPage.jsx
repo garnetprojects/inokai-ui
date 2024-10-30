@@ -42,7 +42,7 @@ const ContactPage = () => {
         centerInfo: [centerInfo],
     });
 
-    if(centerInfo !== null || "null" || undefined){}
+    if(centerInfo !== null || centerInfo !== "null" || centerInfo !== undefined){}
     // Fetch contacts for the selected database
     const { data: contacts = [], isLoading, isError, error } = useQuery({
         queryKey: ['contacts', dataBase, centerInfo],
