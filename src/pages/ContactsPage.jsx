@@ -150,10 +150,14 @@ const ContactPage = () => {
 
     // Filtro y ordenamiento de contactos
     const filteredContacts = contacts
-        .filter(contact =>
-            contact.firstName.toLowerCase().includes(filterText.toLowerCase()) ||
-            contact.lastName.toLowerCase().includes(filterText.toLowerCase())
-        )
+    .filter(contact =>
+      contact.firstName.toLowerCase().includes(filterText.toLowerCase()) ||
+      contact.lastName.toLowerCase().includes(filterText.toLowerCase()) ||
+      contact.phone1.toLowerCase().includes(filterText.toLowerCase()) ||
+      contact.phone2.toLowerCase().includes(filterText.toLowerCase()) ||
+      contact.email.toLowerCase().includes(filterText.toLowerCase()) ||
+      contact.observations.toLowerCase().includes(filterText.toLowerCase())
+  )
         .sort((a, b) => {
             if (sortOrder === 'asc') {
                 return a[sortField] > b[sortField] ? 1 : -1;
