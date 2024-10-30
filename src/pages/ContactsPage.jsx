@@ -1,202 +1,175 @@
-/* eslint-disable react/prop-types */
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Box,
   Button,
   Container,
   MenuItem,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from '@mui/material';
-import { enqueueSnackbar } from 'notistack';
+import AddIcon from '@mui/icons-material/Add';
+import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { enqueueSnackbar } from 'notistack';
+import { getError } from '../utils/getError';
+
+export const ContactsContext = createContext();
 
 const ContactsPage = () => {
-  const [t] = useTranslation('global');
-  const { dataBase } = useParams();
   const [contacts, setContacts] = useState([]);
-  const [newContact, setNewContact] = useState({ name: '', surname: '', phone1: '', phone2: '', email: '', observations: '' });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContact, setEditedContact] = useState(null);
 
-  const { data, isLoading, isError } = useQuery(['contacts'], () =>
-    axios(`/users/get-all-contacts/${dataBase}`).then((response) => response.data)
-  );
+  // Fetch contacts from the server
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: () => axios.get('/contacts').then(res => res.data),
+    onSuccess: (data) => setContacts(data),
+  });
 
-  useEffect(() => {
-    if (data) {
-      setContacts(data);
-    }
-  }, [data]);
+  const mutation = useMutation({
+    mutationFn: (contact) => {
+      return axios.put(`/contacts/${contact.id}`, contact);
+    },
+    onSuccess: () => {
+      enqueueSnackbar('Contact updated successfully', { variant: 'success' });
+      setIsEditing(false);
+      // Refetch contacts after update
+      refetch();
+    },
+    onError: (error) => {
+      enqueueSnackbar(getError(error), { variant: 'error' });
+    },
+  });
 
-  const handleEditChange = (index, field, value) => {
-    const updatedContacts = [...contacts];
-    updatedContacts[index][field] = value;
-    setContacts(updatedContacts);
+  const handleEdit = (contact) => {
+    setEditedContact(contact);
+    setIsEditing(true);
   };
 
-  const handleDelete = (index) => {
-    const updatedContacts = contacts.filter((_, i) => i !== index);
-    setContacts(updatedContacts);
-    enqueueSnackbar('Contact deleted successfully!', { variant: 'success' });
-  };
-
-  const handleAddContact = () => {
-    if (Object.values(newContact).some((field) => field.trim() === '')) {
-      enqueueSnackbar('Please fill all fields before adding a contact.', { variant: 'error' });
-      return;
-    }
-    
-    setContacts((prevContacts) => [...prevContacts, newContact]);
-    setNewContact({ name: '', surname: '', phone1: '', phone2: '', email: '', observations: '' });
-    enqueueSnackbar('Contact added successfully!', { variant: 'success' });
+  const handleChange = (e) => {
+    setEditedContact({ ...editedContact, [e.target.name]: e.target.value });
   };
 
   const handleSave = () => {
-    // Here you can send the updated contacts to the backend when ready
-    // await axios.post('/your-endpoint', contacts);
-    enqueueSnackbar('Changes saved successfully!', { variant: 'success' });
+    mutation.mutate(editedContact);
   };
 
-  if (isLoading)
-    return <Skeleton variant="rectangular" height={300} sx={{ bgcolor: 'rgb(203 213 225)' }} />;
-  if (isError) return <Typography color="error">Error loading data</Typography>;
+  if (isLoading) return <Skeleton variant="rectangular" height={300} />;
+  if (isError) return <p>Something went wrong...</p>;
 
   return (
     <Container>
-      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
-        {t('menu.contacts')}
-      </Typography>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('inputLabel.name')}</TableCell>
-              <TableCell>{t('inputLabel.surname')}</TableCell>
-              <TableCell>{t('inputLabel.phone1')}</TableCell>
-              <TableCell>{t('inputLabel.phone2')}</TableCell>
-              <TableCell>{t('inputLabel.email')}</TableCell>
-              <TableCell>{t('inputLabel.observations')}</TableCell>
-              <TableCell>{t('inputLabel.action')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {contacts.map((contact, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <TextField
-                    value={contact.name}
-                    onChange={(e) => handleEditChange(index, 'name', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={contact.surname}
-                    onChange={(e) => handleEditChange(index, 'surname', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={contact.phone1}
-                    onChange={(e) => handleEditChange(index, 'phone1', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={contact.phone2}
-                    onChange={(e) => handleEditChange(index, 'phone2', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={contact.email}
-                    onChange={(e) => handleEditChange(index, 'email', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={contact.observations}
-                    onChange={(e) => handleEditChange(index, 'observations', e.target.value)}
-                    variant="standard"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button variant="outlined" onClick={() => handleDelete(index)}>Delete</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            <TableRow>
-              <TableCell>
-                <TextField
-                  value={newContact.name}
-                  onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.name')}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newContact.surname}
-                  onChange={(e) => setNewContact({ ...newContact, surname: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.surname')}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newContact.phone1}
-                  onChange={(e) => setNewContact({ ...newContact, phone1: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.phone1')}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newContact.phone2}
-                  onChange={(e) => setNewContact({ ...newContact, phone2: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.phone2')}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newContact.email}
-                  onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.email')}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newContact.observations}
-                  onChange={(e) => setNewContact({ ...newContact, observations: e.target.value })}
-                  variant="standard"
-                  placeholder={t('inputLabel.observations')}
-                />
-              </TableCell>
-              <TableCell>
-                <Button variant="contained" onClick={handleAddContact}>Add</Button>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Button variant="contained" onClick={handleSave} sx={{ mt: 2 }}>
-        Save Changes
+      <Typography variant={'h2'} mb={2}>Contacts</Typography>
+
+      <Button
+        variant="outlined"
+        onClick={() => setEditedContact({})} // Reset state for new contact
+        startIcon={<AddIcon />}
+      >
+        Add Contact
       </Button>
+
+      <Box mt={3}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellidos</th>
+              <th>Número 1</th>
+              <th>Número 2</th>
+              <th>Correo</th>
+              <th>Observaciones</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.map(contact => (
+              <tr key={contact.id}>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="firstName"
+                      defaultValue={contact.firstName}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.firstName
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="lastName"
+                      defaultValue={contact.lastName}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.lastName
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="phone1"
+                      defaultValue={contact.phone1}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.phone1
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="phone2"
+                      defaultValue={contact.phone2}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.phone2
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="email"
+                      defaultValue={contact.email}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.email
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <TextField
+                      name="observations"
+                      defaultValue={contact.observations}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    contact.observations
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedContact.id === contact.id ? (
+                    <Button onClick={handleSave} variant="contained">
+                      Save
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleEdit(contact)} variant="outlined">
+                      Edit
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Box>
     </Container>
   );
 };
