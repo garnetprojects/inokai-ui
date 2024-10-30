@@ -15,10 +15,10 @@ import {
     TextField,
     Typography,
     CircularProgress,
-    Select,
-    MenuItem,
+    IconButton
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
@@ -33,6 +33,7 @@ const ContactPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [sortField, setSortField] = useState('firstName');
+    const [sortOrder, setSortOrder] = useState('asc'); // Agregar estado para el orden ascendente/descendente
     const [filterText, setFilterText] = useState('');
     const { state } = useContext(UserContext);
 
@@ -61,84 +62,14 @@ const ContactPage = () => {
         },
     });
 
-    // Mutation for creating or updating a contact
-    const mutation = useMutation({
-        mutationFn: async (contactData) => {
-            const url = selectedContact
-                ? `/contacts/${dataBase}/${selectedContact._id}`
-                : `/contacts/${dataBase}`;
-            const method = selectedContact ? 'put' : 'post';
-            const res = await axios[method](url, contactData);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
-            enqueueSnackbar(t('contacts.saveSuccess'), { variant: 'success' });
-            handleCloseDialog();
-        },
-        onError: (err) => {
-            enqueueSnackbar(getError(err), { variant: 'error' });
-        },
-    });
-
-    // Mutation for deleting a contact
-    const deleteContactMutation = useMutation({
-        mutationFn: async (contactId) => {
-            const res = await axios.delete(`/contacts/${dataBase}/${contactId}`);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
-            enqueueSnackbar(t('contacts.deleteSuccess'), { variant: 'success' });
-        },
-        onError: (err) => {
-            enqueueSnackbar(getError(err), { variant: 'error' });
-        },
-    });
-
-    useEffect(() => {
-        if (!openDialog) {
-            setSelectedContact(null);
-            setNewContact({
-                firstName: '',
-                lastName: '',
-                phone1: '',
-                phone2: '',
-                email: '',
-                observations: '',
-                centerInfo: [],
-            });
+    // Función para cambiar el campo de orden y el orden ascendente/descendente
+    const handleSortChange = (field) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortOrder('asc');
         }
-    }, [openDialog]);
-
-    const handleOpenDialog = (contact = null) => {
-        setSelectedContact(contact);
-        setNewContact(contact || {
-            firstName: '',
-            lastName: '',
-            phone1: '',
-            phone2: '',
-            email: '',
-            observations: '',
-            centerInfo: [centerInfo],
-        });
-        setOpenDialog(true);
-    };
-
-    const handleCloseDialog = () => setOpenDialog(false);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        mutation.mutate({
-            ...newContact,
-            centerInfo: [centerInfo],
-        });
-    };
-
-    const handleDelete = (contactId) => deleteContactMutation.mutate(contactId);
-
-    const handleSortChange = (e) => {
-        setSortField(e.target.value);
     };
 
     const filteredContacts = contacts
@@ -146,7 +77,13 @@ const ContactPage = () => {
             contact.firstName.toLowerCase().includes(filterText.toLowerCase()) ||
             contact.lastName.toLowerCase().includes(filterText.toLowerCase())
         )
-        .sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1));
+        .sort((a, b) => {
+            if (sortOrder === 'asc') {
+                return a[sortField] > b[sortField] ? 1 : -1;
+            } else {
+                return a[sortField] < b[sortField] ? 1 : -1;
+            }
+        });
 
     if (isLoading) return <CircularProgress />;
     if (isError) return <Typography>{t('contacts.errorLoading')}</Typography>;
@@ -164,22 +101,23 @@ const ContactPage = () => {
                     onChange={(e) => setFilterText(e.target.value)}
                     sx={{ mr: 2 }}
                 />
-                <Select value={sortField} onChange={handleSortChange}>
-                    <MenuItem value="firstName">{t('contacts.firstName')}</MenuItem>
-                    <MenuItem value="lastName">{t('contacts.lastName')}</MenuItem>
-                    <MenuItem value="email">{t('contacts.email')}</MenuItem>
-                </Select>
             </Box>
             <TableContainer>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>{t('contacts.firstName')}</TableCell>
-                            <TableCell>{t('contacts.lastName')}</TableCell>
-                            <TableCell>{t('contacts.phone1')}</TableCell>
-                            <TableCell>{t('contacts.phone2')}</TableCell>
-                            <TableCell>{t('contacts.email')}</TableCell>
-                            <TableCell>{t('contacts.observations')}</TableCell>
+                            {['firstName', 'lastName', 'phone1', 'phone2', 'email', 'observations'].map((field) => (
+                                <TableCell key={field}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        {t(`contacts.${field}`)}
+                                        <IconButton onClick={() => handleSortChange(field)} size="small">
+                                            {sortField === field ? (
+                                                sortOrder === 'asc' ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />
+                                            ) : null}
+                                        </IconButton>
+                                    </Box>
+                                </TableCell>
+                            ))}
                             <TableCell>{t('contacts.actions')}</TableCell>
                         </TableRow>
                     </TableHead>
