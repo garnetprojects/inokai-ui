@@ -42,6 +42,7 @@ const ContactPage = () => {
         centerInfo: [centerInfo],
     });
 
+    if(centerInfo !== null || "null" || undefined){}
     // Fetch contacts for the selected database
     const { data: contacts = [], isLoading, isError, error } = useQuery({
         queryKey: ['contacts', dataBase, centerInfo],
@@ -52,6 +53,16 @@ const ContactPage = () => {
             return res.data;
         },
     });
+  }else{
+        // Fetch contacts for the selected database
+        const { data: contacts = [], isLoading, isError, error } = useQuery({
+          queryKey: ['contacts', dataBase],
+          queryFn: async () => {
+              const res = await axios.get(`/contacts/${dataBase}/all`);
+              return res.data;
+          },
+      });
+  }
 
     // Mutation for creating or updating a contact
     const mutation = useMutation({
