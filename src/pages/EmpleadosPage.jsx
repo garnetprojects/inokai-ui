@@ -39,6 +39,7 @@ const EmpleadosPage = () => {
   const [t, i18n] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
+  const [loading, setLoading] = useState(false);
 
   return (
     <EmpleadosContext.Provider value={{ open, setOpen }}>
@@ -99,7 +100,6 @@ const Header = ({ dataBase }) => {
       return { serviceName, duration };
     });
   
-    // Crear el objeto de datos del empleado
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
@@ -113,15 +113,12 @@ const Header = ({ dataBase }) => {
       specialities,
     };
   
-    // Verificar si `profileImgUrl` contiene una imagen cargada
     if (profileImgUrl && profileImgUrl[0]) {
-      // Activar un indicador de carga si es necesario
-      setLoading(true);
+      setLoading(true); // Activar el indicador de carga
   
       try {
-        // Subir la imagen y obtener la URL
         const uploadedImgUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24');
-        data.profileImgUrl = uploadedImgUrl; // Agregar la URL al objeto `data`
+        data.profileImgUrl = uploadedImgUrl;
       } catch (error) {
         enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
         console.error(error);
@@ -129,12 +126,12 @@ const Header = ({ dataBase }) => {
         return;
       }
   
-      setLoading(false); // Desactivar indicador de carga
+      setLoading(false); // Desactivar el indicador de carga
     }
   
-    // Realizar la mutación con los datos finales
     mutation.mutate(data);
   };
+  
   console.log({ open, specialities, selectedOption }, 'aqui');
 
   useEffect(() => {
@@ -301,13 +298,12 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url, loading }) => {
   const [t] = useTranslation('global');
-  const [loading, setLoading] = useState(false); // Estado de carga
 
   const handleImageUpload = (e) => {
     if (e.target.files) {
-      setLoading(true);
+      setLoading(true); // Activar carga cuando se selecciona una imagen
       setProfileImgUrl(e.target.files);
       setLoading(false); // Desactivar carga una vez que la imagen se ha procesado
     }
@@ -345,6 +341,7 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
     </Box>
   );
 };
+
 
 
 const TableBody = ({ dataBase }) => {
