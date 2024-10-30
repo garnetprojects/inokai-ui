@@ -30,7 +30,7 @@ const ContactPage = () => {
     const [selectedContact, setSelectedContact] = useState(null);
     const { state } = useContext(UserContext);
 
-    const centerId = state.userInfo.centerId;
+    const centerInfo = state.userInfo.centerId;
 
     const [newContact, setNewContact] = useState({
         firstName: '',
@@ -39,15 +39,15 @@ const ContactPage = () => {
         phone2: '',
         email: '',
         observations: '',
-        centerIds: [centerId],
+        centerInfo: [centerInfo],
     });
 
     // Fetch contacts for the selected database
     const { data: contacts = [], isLoading, isError, error } = useQuery({
-        queryKey: ['contacts', dataBase, centerId],
+        queryKey: ['contacts', dataBase, centerInfo],
         queryFn: async () => {
             const res = await axios.get(`/contacts/${dataBase}`, {
-                params: { centerId },
+                params: { centerInfo },
             });
             return res.data;
         },
@@ -65,7 +65,7 @@ const ContactPage = () => {
         },
         onSuccess: () => {
             console.log(state.userInfo);
-            queryClient.invalidateQueries(['contacts', dataBase, centerId]);
+            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
             enqueueSnackbar('Contact saved successfully', { variant: 'success' });
             handleCloseDialog();
         },
@@ -81,7 +81,7 @@ const ContactPage = () => {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['contacts', dataBase, centerId]);
+            queryClient.invalidateQueries(['contacts', dataBase, centerInfo]);
             enqueueSnackbar('Contact deleted successfully', { variant: 'success' });
         },
         onError: (err) => {
@@ -100,7 +100,7 @@ const ContactPage = () => {
                 phone2: '',
                 email: '',
                 observations: '',
-                centerIds: [],
+                centerInfo: [],
             });
         }
     }, [openDialog]);
@@ -114,7 +114,7 @@ const ContactPage = () => {
             phone2: '',
             email: '',
             observations: '',
-            centerIds: [],
+            centerInfo: [],
         });
         setOpenDialog(true);
     };
@@ -125,7 +125,7 @@ const ContactPage = () => {
         e.preventDefault();
         mutation.mutate({
             ...newContact,
-            centerIds: [centerId],
+            centerInfo: [centerInfo],
         });
     };
 
