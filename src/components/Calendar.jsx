@@ -4,13 +4,15 @@ import {
   Button,
   Chip,
   Divider,
+  Menu,
+  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -18,7 +20,7 @@ function combinarFechaYHora(fecha, hora) {
   return new Date(year, month - 1, day, hour, minute); // mes se indexa desde 0
 }
 
-const Calendar = ({ data, setOpen, selectedDate }) => {
+const Calendar = ({ data, setOpen, selectedDate, openCreateAppointmentModal }) => {
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -31,27 +33,28 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
-      // Sincronizar el scroll horizontal
       hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
     }
   };
 
-  // Manejar el doble clic en celdas vacías para abrir el modal de creación de citas
-  const handleCellDoubleClick = (cellData) => {
-    setOpen({
-      open: true,
-      mode: 'create',
-      selectedDate: cellData.start,
+  // Estado para controlar el menú contextual
+  const [menuPosition, setMenuPosition] = useState(null);
+
+  const handleContextMenu = (event) => {
+    event.preventDefault();
+    setMenuPosition({
+      mouseX: event.clientX + 2,
+      mouseY: event.clientY - 6,
     });
   };
 
-  // Manejar el clic en eventos para abrir el modal de edición de citas
-  const handleEventClick = (eventData) => {
-    setOpen({
-      open: true,
-      mode: 'edit',
-      data: eventData,
-    });
+  const handleCloseMenu = () => {
+    setMenuPosition(null);
+  };
+
+  const handleCreateAppointment = () => {
+    openCreateAppointmentModal(); // Llama a la función para abrir el modal de creación de citas
+    handleCloseMenu();
   };
 
   return (
@@ -71,8 +74,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
           return (
             <Tooltip
-              title={`${availibity.from ? availibity.from : ''}  ${
-                availibity.to ? `a ${availibity.to}` : ''
+              title={`${availibity.from ? availibity.from : ''} ${
+                availibity.to ? availibity.to : ''
               }`}
               arrow
               key={user.user_id}
@@ -95,7 +98,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                       {!user.profileImgUrl && user.name[0].toUpperCase()}
                     </Avatar>
                   </Box>
-
                   <Box display={'flex'} flexDirection={'column'}>
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
@@ -103,7 +105,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                     {!(availibity.from === '10:00' && availibity.to === '22:00') && (
                       <Typography variant="body2" whiteSpace={'nowrap'}>
                         {`${availibity.from ? availibity.from : ''} ${
-                          availibity.to ? `a ${availibity.to}` : ''
+                          availibity.to ? availibity.to : ''
                         }`}
                       </Typography>
                     )}
@@ -114,7 +116,27 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           );
         })}
       </Box>
-      <div className="calendario" ref={scrollableRef} onScroll={handleScroll}>
+
+      {/* Menú contextual */}
+      <Menu
+        open={menuPosition !== null}
+        onClose={handleCloseMenu}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menuPosition !== null
+            ? { top: menuPosition.mouseY, left: menuPosition.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
+      </Menu>
+
+      <div
+        className="calendario"
+        ref={scrollableRef}
+        onScroll={handleScroll}
+        onContextMenu={handleContextMenu} // Añadir evento para menú contextual
+      >
         <Scheduler
           height={1500}
           resourceViewMode="default"
@@ -137,9 +159,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
             subTextField: '',
             avatarField: 'name',
           }}
-          // Eventos para abrir modal en doble clic o clic simple
-          onCellDoubleClick={handleCellDoubleClick}
-          onEventClick={handleEventClick}
           eventRenderer={({ event }) => {
             return (
               <BoxAppointment
@@ -159,11 +178,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    setOpen({
-      open: true,
-      mode: 'edit',
-      data,
-    });
+    setOpen(data);
   };
 
   const isFreeSlot =
@@ -203,7 +218,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
         }}
         variant="contained"
         disabled={isFreeSlot}
-        onDoubleClick={handleClick} // Clic en evento
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -211,7 +225,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           </Typography>
         )}
 
-        <Box>
+        <Box onDoubleClick={handleClick}>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
@@ -229,7 +243,14 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           <Divider sx={{ my: 0.5 }} />
 
           <Box>
-            <Typography component="span" fontWeight="bold" display="block" mb={1} fontSize={11}></Typography>
+            <Typography
+              component="span"
+              fontWeight="bold"
+              display="block"
+              mb={1}
+              fontSize={11}
+            ></Typography>
+
             <Box display="flex" gap={0.5} flexWrap="wrap">
               {data.services.map((item, idx) => (
                 <Chip
