@@ -30,8 +30,6 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
 
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
-
-  // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const handleScroll = () => {
@@ -40,7 +38,6 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
     }
   };
 
-  // Maneja el menú contextual y almacena las coordenadas del clic
   const handleContextMenu = (event) => {
     event.preventDefault();
     setMenuAnchor({
@@ -55,12 +52,16 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    setOpenEdit(true); // Cambia esta línea si el nombre de la función no es correcto
+    setOpenEdit(true); // Abre el modal para crear una cita
   };
 
   const handleAppointmentClick = (appointment) => {
-    setSelectedAppointment(appointment); // Configura la cita seleccionada
-    setOpenEdit(true); // Abre el modal de editar
+    if (setSelectedAppointment) {
+      setSelectedAppointment(appointment); // Establece la cita seleccionada
+    }
+    if (setOpenEdit) {
+      setOpenEdit(true); // Abre el modal de edición
+    }
   };
 
   return (
@@ -155,10 +156,10 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
           eventRenderer={({ event }) => {
             return (
               <BoxAppointment
-                setOpen={setOpenEdit} // Cambia a setOpenEdit
+                setOpen={setOpenEdit}
                 data={event}
                 appointments={data?.appointments2}
-                handleAppointmentClick={handleAppointmentClick} // Asegúrate de pasar la función aquí
+                handleAppointmentClick={handleAppointmentClick} // Pasa la función aquí
               />
             );
           }}
@@ -186,7 +187,9 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    handleAppointmentClick(data); // Asegúrate de que se pase correctamente
+    if (handleAppointmentClick) {
+      handleAppointmentClick(data); // Asegúrate de que se pase correctamente
+    }
   };
 
   const isFreeSlot =
