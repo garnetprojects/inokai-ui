@@ -1,14 +1,30 @@
-import { Box, Button, CircularProgress, TextField, Typography, Chip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Typography,
+} from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 
 const ContactPage = () => {
     const { dataBase } = useParams();
-    const [t] = useTranslation('global');
+    const queryClient = useQueryClient();
+    const [openDialog, setOpenDialog] = useState(false);
+    const [selectedContact, setSelectedContact] = useState(null);
     const [newContact, setNewContact] = useState({
         firstName: '',
         lastName: '',
@@ -16,131 +32,163 @@ const ContactPage = () => {
         phone2: '',
         email: '',
         observations: '',
+        centerIds: [], // This should be an array of center IDs
     });
 
-    const queryClient = useQueryClient();
+    // Fetch contacts for the selected database
+    const { data: contacts = [], isLoading, isError } = useQuery(['contacts', dataBase], () =>
+        axios.get(`/api/contacts/${dataBase}`, { params: { centerId: /* Your center ID */ } })
+    );
 
-    // Fetch contacts using React Query
-    const contactsQuery = useQuery({
-        queryKey: ['contacts', dataBase],
-        queryFn: () => axios.get(`/contacts/${dataBase}`).then(res => res.data),
-    });
+    // Mutation for creating a new contact
+    const createContactMutation = useMutation((newContact) =>
+        axios.post(`/api/contacts/${dataBase}`, newContact)
+    );
 
-    // Create new contact
-    const createContactMutation = useMutation({
-        mutationFn: (contact) => axios.post(`/contacts/${dataBase}`, contact),
-        onSuccess: () => {
-            queryClient.invalidateQueries(['contacts', dataBase]);
-            setNewContact({ firstName: '', lastName: '', phone1: '', phone2: '', email: '', observations: '' }); // Reset form
-        },
-    });
+    // Mutation for updating an existing contact
+    const updateContactMutation = useMutation((updatedContact) =>
+        axios.put(`/api/contacts/${dataBase}/${selectedContact._id}`, updatedContact)
+    );
 
-    // Delete contact
-    const deleteContactMutation = useMutation({
-        mutationFn: (contactId) => axios.delete(`/contacts/${dataBase}/${contactId}`),
-        onSuccess: () => {
-            queryClient.invalidateQueries(['contacts', dataBase]);
-        },
-    });
+    // Mutation for deleting a contact
+    const deleteContactMutation = useMutation((contactId) =>
+        axios.delete(`/api/contacts/${dataBase}/${contactId}`)
+    );
 
-    // Handle form submission for new contact
-    const handleSubmitContact = async (e) => {
+    // Open the dialog for adding/editing a contact
+    const handleOpenDialog = (contact) => {
+        setSelectedContact(contact);
+        if (contact) {
+            setNewContact(contact);
+        } else {
+            setNewContact({
+                firstName: '',
+                lastName: '',
+                phone1: '',
+                phone2: '',
+                email: '',
+                observations: '',
+                centerIds: [], // This should be an array of center IDs
+            });
+        }
+        setOpenDialog(true);
+    };
+
+    // Close the dialog
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedContact(null);
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        await createContactMutation.mutateAsync(newContact);
+        if (selectedContact) {
+            await updateContactMutation.mutateAsync(newContact);
+        } else {
+            await createContactMutation.mutateAsync(newContact);
+        }
+        queryClient.invalidateQueries(['contacts', dataBase]);
+        handleCloseDialog();
     };
 
-    // Handle deleting a contact
-    const handleDeleteContact = (contactId) => {
-        deleteContactMutation.mutate(contactId);
+    // Handle contact deletion
+    const handleDelete = async (contactId) => {
+        await deleteContactMutation.mutateAsync(contactId);
+        queryClient.invalidateQueries(['contacts', dataBase]);
     };
 
-    // Handle input change for new contact
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setNewContact((prev) => ({ ...prev, [name]: value }));
-    };
-
-    // Loading and error states
-    if (contactsQuery.isLoading) return <CircularProgress />;
-    if (contactsQuery.isError) return <Typography>{getError(contactsQuery.error)}</Typography>;
-
-    const contacts = contactsQuery.data || [];
+    if (isLoading) return <Typography>Loading...</Typography>;
+    if (isError) return <Typography>{getError(isError)}</Typography>;
 
     return (
-        <Box padding={2}>
-            <Typography variant="h4">{t('contacts.title')}</Typography>
-            <form onSubmit={handleSubmitContact}>
-                <TextField
-                    label={t('contacts.firstName')}
-                    name="firstName"
-                    value={newContact.firstName}
-                    onChange={handleChange}
-                    required
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label={t('contacts.lastName')}
-                    name="lastName"
-                    value={newContact.lastName}
-                    onChange={handleChange}
-                    required
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label={t('contacts.phone1')}
-                    name="phone1"
-                    value={newContact.phone1}
-                    onChange={handleChange}
-                    required
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label={t('contacts.phone2')}
-                    name="phone2"
-                    value={newContact.phone2}
-                    onChange={handleChange}
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label={t('contacts.email')}
-                    name="email"
-                    type="email"
-                    value={newContact.email}
-                    onChange={handleChange}
-                    required
-                    margin="normal"
-                    fullWidth
-                />
-                <TextField
-                    label={t('contacts.observations')}
-                    name="observations"
-                    value={newContact.observations}
-                    onChange={handleChange}
-                    multiline
-                    rows={2}
-                    margin="normal"
-                    fullWidth
-                />
-                <Button type="submit" variant="contained" color="primary">
-                    {t('contacts.add')}
-                </Button>
-            </form>
-
-            <Typography variant="h6" marginTop={3}>{t('contacts.listTitle')}</Typography>
-            <Box marginTop={2}>
-                {contacts.map((contact) => (
-                    <Chip
-                        key={contact._id}
-                        label={`${contact.firstName} ${contact.lastName}`}
-                        onDelete={() => handleDeleteContact(contact._id)}
-                        style={{ margin: '5px' }}
+        <Box sx={{ padding: 2 }}>
+            <Button variant="contained" onClick={() => handleOpenDialog(null)}>
+                Add Contact
+            </Button>
+            <TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>First Name</TableCell>
+                            <TableCell>Last Name</TableCell>
+                            <TableCell>Phone 1</TableCell>
+                            <TableCell>Phone 2</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Observations</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {contacts.map((contact) => (
+                            <TableRow key={contact._id}>
+                                <TableCell>{contact.firstName}</TableCell>
+                                <TableCell>{contact.lastName}</TableCell>
+                                <TableCell>{contact.phone1}</TableCell>
+                                <TableCell>{contact.phone2}</TableCell>
+                                <TableCell>{contact.email}</TableCell>
+                                <TableCell>{contact.observations}</TableCell>
+                                <TableCell>
+                                    <Button onClick={() => handleOpenDialog(contact)}>Edit</Button>
+                                    <Button onClick={() => handleDelete(contact._id)} color="error">Delete</Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>{selectedContact ? 'Edit Contact' : 'Add Contact'}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="First Name"
+                        fullWidth
+                        value={newContact.firstName}
+                        onChange={(e) => setNewContact({ ...newContact, firstName: e.target.value })}
                     />
-                ))}
-            </Box>
+                    <TextField
+                        margin="dense"
+                        label="Last Name"
+                        fullWidth
+                        value={newContact.lastName}
+                        onChange={(e) => setNewContact({ ...newContact, lastName: e.target.value })}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Phone 1"
+                        fullWidth
+                        value={newContact.phone1}
+                        onChange={(e) => setNewContact({ ...newContact, phone1: e.target.value })}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Phone 2"
+                        fullWidth
+                        value={newContact.phone2}
+                        onChange={(e) => setNewContact({ ...newContact, phone2: e.target.value })}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Email"
+                        fullWidth
+                        value={newContact.email}
+                        onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Observations"
+                        fullWidth
+                        value={newContact.observations}
+                        onChange={(e) => setNewContact({ ...newContact, observations: e.target.value })}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button onClick={handleSubmit}>{selectedContact ? 'Update' : 'Create'}</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
