@@ -13,6 +13,8 @@ import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { memo, useRef, useState } from 'react';
+import SearchModal from './SearchModal'; // Asegúrate de importar el modal de búsqueda
+import EditAppointmentModal from './EditAppointmentModal'; // Modal para editar citas
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -33,6 +35,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null); // Estado para la cita seleccionada
+  const [openSearch, setOpenSearch] = useState(false); // Estado para abrir el modal de búsqueda
+  const [openEdit, setOpenEdit] = useState(false); // Estado para abrir el modal de editar cita
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -56,6 +61,16 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   const handleCreateAppointment = () => {
     handleCloseMenu();
     setOpen(true);
+  };
+
+  const handleAppointmentClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setSelectedAppointment(null);
   };
 
   return (
@@ -153,6 +168,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 setOpen={setOpen}
                 data={event}
                 appointments={data?.appointments2}
+                handleAppointmentClick={handleAppointmentClick} // Pasar el manejador de clics
               />
             );
           }}
@@ -172,15 +188,30 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       >
         <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
       </Menu>
+
+      {/* Modal de búsqueda */}
+      <SearchModal
+        setSelectedDate={setSelectedAppointment}
+        setOpen={setOpenSearch}
+      />
+
+      {/* Modal de edición de cita */}
+      {openEdit && (
+        <EditAppointmentModal
+          open={openEdit}
+          setOpen={handleCloseEdit}
+          appointment={selectedAppointment} // Pasa la cita seleccionada
+        />
+      )}
     </Box>
   );
 };
 
-const BoxAppointment = ({ data, setOpen, appointments }) => {
+const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick }) => {
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    setOpen(data);
+    handleAppointmentClick(data); // Llama a la función para manejar el clic
   };
 
   const isFreeSlot =
@@ -220,6 +251,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
         }}
         variant="contained"
         disabled={isFreeSlot}
+        onClick={handleClick} // Agrega el manejador de clics aquí
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -227,7 +259,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           </Typography>
         )}
 
-        <Box onDoubleClick={handleClick}>
+        <Box>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
