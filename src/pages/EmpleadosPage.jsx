@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+
 import ModalComponent from '../components/ModalComponent';
 import TableComponent from '../components/TableComponent';
 
@@ -35,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const { t } = useTranslation('global');
+  const [t, i18n] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -47,6 +48,7 @@ const EmpleadosPage = () => {
         </Typography>
 
         <Header dataBase={dataBase} />
+
         <TableBody dataBase={dataBase} />
       </Container>
     </EmpleadosContext.Provider>
@@ -54,53 +56,68 @@ const EmpleadosPage = () => {
 };
 
 const Header = ({ dataBase }) => {
-  const { t } = useTranslation('global');
+  const [t] = useTranslation('global');
   const { open, setOpen } = useContext(EmpleadosContext);
   const [selectedOption, setSelectedOption] = useState([]);
   const [specialities, setSpecialities] = useState([]);
   const [center, setCenter] = useState('');
   const [profileImgUrl, setProfileImgUrl] = useState(null);
 
+  const centerId = open?.centerInfo?._id;
+
   const { invalidate } = useInvalidate();
 
   const mutation = useMutation({
     mutationFn: async (data) => {
       if (open?._id) {
-        return await axios.put(`/users/edit-employee/${dataBase}/${open._id}`, data);
+        return await axios
+          .put(`/users/edit-employee/${dataBase}/${open?._id}`, data)
+          .then((response) => response.data);
       }
-      return await axios.post(`/users/create-employee/${dataBase}/${center}`, data);
+
+      return await axios
+        .post(`/users/create-employee/${dataBase}/${center}`, data)
+        .then((response) => response.data);
     },
-    onSuccess: () => {
+
+    onSuccess: (data) => {
       invalidate(['empleados']);
-      enqueueSnackbar('Acción lograda con éxito', { variant: 'success' });
+      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
       setOpen(false);
     },
     onError: (err) => {
+      console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
+
       return { serviceName, duration };
     });
 
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
-      phone: e.target.countryPhone?.value + e.target.phone.value,
+      phone: e.target?.countryPhone?.value
+        ? e.target?.countryPhone?.value + e.target.phone.value
+        : e.target?.phone?.value,
       DNI: e.target.DNI.value,
-      password: e.target.password?.value,
-      isAvailable: e.target.isAvailable?.value,
+      password: e.target?.password?.value,
+      isAvailable: e.target?.isAvailable?.value,
       services,
       specialities,
-      profileImgUrl: profileImgUrl ? await imageUpload(profileImgUrl[0], 'large-l-ino24') : open?.profileImgUrl,
+      profileImgUrl
     };
 
+    console.log(data, 'datos mandando');
+
     if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
+      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
       return;
     }
 
@@ -109,65 +126,171 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
+    if (profileImgUrl) {
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+    }
+
     mutation.mutate(data);
   };
 
+  console.log({ open, specialities, selectedOption }, 'aqui');
+
   useEffect(() => {
+    console.log(open);
+
     if (open?.services) {
-      setSelectedOption(open.services.map((item) => `${item.serviceName} - ${item.duration}`));
+      console.log(open);
+      setSelectedOption(
+        open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
+      );
     }
+
     if (open?.specialities) {
-      setSpecialities(open.specialities);
+      setSpecialities(open?.specialities);
     }
   }, [open]);
 
   return (
-    <Box component="header" mb={5}>
-      <Button variant="outlined" onClick={() => setOpen(true)} startIcon={<AddIcon />}>
+    <Box component={'header'} mb={5}>
+      <Button
+        variant="outlined"
+        onClick={() => setOpen(true)}
+        startIcon={<AddIcon />}
+      >
         {t('buttons.create')}
       </Button>
-      <ModalComponent open={!!open} setOpen={setOpen}>
-        <form onSubmit={handleSubmit}>
+      <ModalComponent
+        open={!!open}
+        setOpen={setOpen}
+        onClose={() => setSelectedOption([])}
+      >
+        <form action="" onSubmit={handleSubmit}>
           <Typography mt={3} variant="h4" sx={{ textTransform: 'capitalize' }}>
             {t('menu.employees')}
           </Typography>
 
           <Grid container spacing={5}>
             <Grid xs={12}>
-              <ServicesBox setSelectedOption={setSelectedOption} selectedOption={selectedOption} disabled={mutation.isPending} />
+              <ServicesBox
+                setSelectedOption={setSelectedOption}
+                selectedOption={selectedOption}
+                disabled={mutation.isPending}
+              />
             </Grid>
             <Grid xs={12}>
-              <SpecialitiesBox selectedOption={specialities} setSelectedOption={setSpecialities} disabled={mutation.isPending} />
+              <SpecialitiesBox
+                selectedOption={specialities}
+                setSelectedOption={setSpecialities}
+                disabled={mutation.isPending}
+              />
             </Grid>
+
             <Grid xs={12} md={6}>
-              <TextField label={t('inputLabel.name')} variant="standard" fullWidth name="name" defaultValue={open?.name || ''} required />
+              <TextField
+                label={t('inputLabel.name')}
+                variant="standard"
+                sx={{ width: '100%' }}
+                name="name"
+                disabled={mutation.isPending}
+                defaultValue={open?.name || ''}
+                required
+              />
             </Grid>
+
             <Grid xs={12} md={6}>
-              <TextField label={t('inputLabel.email')} type="email" variant="standard" fullWidth name="email" defaultValue={open?.email || ''} required />
+              <TextField
+                label={t('inputLabel.email')}
+                name="email"
+                type="email"
+                defaultValue={open?.email || ''}
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending}
+              />
             </Grid>
+
             <Grid xs={12} md={6}>
-              <TextField label={t('inputLabel.dni')} name="DNI" variant="standard" fullWidth defaultValue={open?.DNI || ''} disabled={!!open?._id} required />
+              <TextField
+                label={t('inputLabel.dni')}
+                name="DNI"
+                type="text"
+                defaultValue={open?.DNI || ''}
+                variant="standard"
+                sx={{ width: '100%' }}
+                required
+                disabled={!!open?._id || mutation.isPending}
+              />
             </Grid>
+
             {!open?._id && (
               <Grid xs={12} md={6}>
-                <TextField label={t('inputLabel.password')} type="password" variant="standard" fullWidth name="password" required />
+                <TextField
+                  label={t('inputLabel.password')}
+                  type="password"
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  name="password"
+                  defaultValue={open?.password || ''}
+                  disabled={mutation.isPending}
+                  required
+                />
               </Grid>
             )}
-            <InputPhone nameCountry="countryPhone" defaultValue={eliminarPrimerosCharSiCoinciden(open?.phone ?? '', phoneCountry)} />
+
+            <InputPhone
+              nameCountry={'countryPhone'}
+              disabled={mutation.isPending}
+              defaultValue={eliminarPrimerosCharSiCoinciden(
+                open?.phone ?? '',
+                phoneCountry
+              )}
+            />
+
             <Grid xs={12} md={6}>
-              <SelectComponent fixArrayFn={fixCentersArray} params={`users/get-all-centers/${dataBase}`} label={t('title.center')} onChange={(e) => setCenter(e.target.value)} value={center} />
+              <SelectComponent
+                fixArrayFn={fixCentersArray}
+                params={`users/get-all-centers/${dataBase}`}
+                label={t('title.center')}
+                required={true}
+                aditionalProperties={{
+                  onChange: (e) => setCenter(e.target.value),
+                  value: center || centerId || '',
+                }}
+                disabled={mutation.isPending}
+              />
             </Grid>
+
             <Grid xs={12} md={6}>
-              <TextField label={t('inputLabel.isAvailable')} name="isAvailable" variant="standard" fullWidth select defaultValue={open?.isAvailable || 'yes'}>
-                <MenuItem value="yes">{t('messages.yes')}</MenuItem>
-                <MenuItem value="no">{t('messages.no')}</MenuItem>
+              <TextField
+                label={t('inputLabel.isAvailable')}
+                name="isAvailable"
+                variant="standard"
+                fullWidth
+                disabled={mutation.isPending}
+                select
+                defaultValue={open?.isAvailable || 'yes'}
+              >
+                <MenuItem value={'yes'}>{t('messages.yes')}</MenuItem>
+                <MenuItem value={'no'}>{t('messages.no')}</MenuItem>
               </TextField>
             </Grid>
-            <Box xs={12} display="flex" gap={5} mt={3}>
-              <HandleLogo profileImgUrl={profileImgUrl} setProfileImgUrl={setProfileImgUrl} textBtn={t('buttons.chooseLogo')} cloudinary_url={open?.profileImgUrl || null} />
-            </Box>
           </Grid>
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 5 }} disabled={mutation.isPending}>
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
+            <HandleLogo
+              profileImgUrl={profileImgUrl}
+              setProfileImgUrl={setProfileImgUrl}
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
+              />
+          </Box>
+
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ width: '100%', mt: 5 }}
+            disabled={mutation.isPending}
+          >
             {open?._id ? t('buttons.edit') : t('buttons.create')}
           </Button>
         </form>
@@ -176,44 +299,109 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const TableBody = ({ dataBase }) => {
-  const { t } = useTranslation('global');
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: async () => {
-      const { data } = await axios.get(`/users/get-employees/${dataBase}`);
-      return data;
-    },
-  });
-
-  if (isLoading) return <Skeleton variant="rounded" width="100%" height={60} sx={{ my: 2 }} />;
-  if (isError) return <Typography textAlign="center" variant="h3">{t('error.noEmployees')}</Typography>;
-
-  return (
-    <TableComponent
-      rows={data}
-      columns={[
-        { key: 'name', header: 'Nombre' },
-        { key: 'email', header: 'Email' },
-        { key: 'phone', header: 'Teléfono' },
-        { key: 'DNI', header: 'DNI' },
-        { key: 'isAvailable', header: 'Disponible' },
-        { key: 'actions', header: 'Acciones', render: (row) => <CellActionEmployee nombreEmpresa={dataBase} info={row.original} /> },
-      ]}
-    />
-  );
-};
-
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const [t] = useTranslation('global');
+  console.log(profileImgUrl);
+
   return (
-    <Box display="flex" flexDirection="column" gap={1} width="100%">
-      <Button variant="outlined" component="label" fullWidth startIcon={<CloudUploadIcon />}>
-        {textBtn}
-        <input type="file" accept="image/*" hidden onChange={(e) => setProfileImgUrl(e.target.files)} />
-      </Button>
-      {(profileImgUrl || cloudinary_url) && <img src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url} alt="preview" style={{ maxHeight: '100px' }} />}
+    <Box mb={2}>
+      <Box mb={2}>
+        <Button
+          component="label"
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+        >
+          {textBtn}
+
+          <input
+            accept="image/*"
+            type="file"
+            hidden
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setProfileImgUrl(e.target.files);
+              }
+            }}
+          />
+        </Button>
+      </Box>
+
+      {(cloudinary_url || profileImgUrl) && (
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
+      )}
     </Box>
   );
 };
 
+
+const TableBody = ({ dataBase }) => {
+  const [t] = useTranslation('global');
+
+  const columns = [
+    {
+      header: t('inputLabel.dni'),
+      accessorKey: 'DNI',
+    },
+    {
+      header: t('inputLabel.name'),
+      accessorKey: 'name',
+    },
+
+    {
+      header: t('inputLabel.email'),
+      accessorKey: 'email',
+    },
+    {
+      header: t('inputLabel.phoneNumber'),
+      accessorKey: 'phone',
+    },
+    {
+      header: t('title.center'),
+      accessorKey: 'centerInfo.centerName',
+    },
+    {
+      header: t('inputLabel.action'),
+      cell: (info) => (
+        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
+      ),
+    },
+  ];
+
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: () =>
+      axios(`/users/get-all-employees/${dataBase}`).then(
+        (response) => response.data
+      ),
+  });
+
+  if (isLoading)
+    return (
+      <Skeleton
+        variant="rectangular"
+        // animation="wave"
+        height={300}
+        sx={{ bgcolor: 'rgb(203 213 225)' }}
+      />
+    );
+
+  if (isError) return <p>Ocurrio algo</p>;
+
+  console.log(data);
+
+  return <TableComponent columns={columns} data={data} />;
+};
+// comentario
 export default EmpleadosPage;
