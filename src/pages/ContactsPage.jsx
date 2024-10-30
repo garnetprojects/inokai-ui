@@ -14,12 +14,14 @@ import {
     TableRow,
     TextField,
     Typography,
+    CircularProgress,
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { getError } from '../utils/getError';
 import { UserContext } from '../context';
+import { enqueueSnackbar } from 'notistack';
 
 const ContactPage = () => {
     const { dataBase } = useParams();
@@ -39,25 +41,67 @@ const ContactPage = () => {
         centerIds: [],
     });
 
-    const { data: contacts = [], isLoading, isError } = useQuery(
-        ['contacts', dataBase, centerId],
-        () =>
-            axios.get(`/api/contacts/${dataBase}`, {
+    // Fetch contacts for the selected database
+    const { data: contacts = [], isLoading, isError, error } = useQuery({
+        queryKey: ['contacts', dataBase, centerId],
+        queryFn: async () => {
+            const res = await axios.get(`/api/contacts/${dataBase}`, {
                 params: { centerId },
-            })
-    );
+            });
+            return res.data;
+        },
+    });
 
-    const createContactMutation = useMutation(newContact =>
-        axios.post(`/api/contacts/${dataBase}`, newContact)
-    );
+    // Mutation for creating or updating a contact
+    const mutation = useMutation({
+        mutationFn: async (contactData) => {
+            const url = selectedContact
+                ? `/api/contacts/${dataBase}/${selectedContact._id}`
+                : `/api/contacts/${dataBase}`;
+            const method = selectedContact ? 'put' : 'post';
+            const res = await axios[method](url, contactData);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['contacts', dataBase, centerId]);
+            enqueueSnackbar('Contact saved successfully', { variant: 'success' });
+            handleCloseDialog();
+        },
+        onError: (err) => {
+            enqueueSnackbar(getError(err), { variant: 'error' });
+        },
+    });
 
-    const updateContactMutation = useMutation(updatedContact =>
-        axios.put(`/api/contacts/${dataBase}/${selectedContact._id}`, updatedContact)
-    );
+    // Mutation for deleting a contact
+    const deleteContactMutation = useMutation({
+        mutationFn: async (contactId) => {
+            const res = await axios.delete(`/api/contacts/${dataBase}/${contactId}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['contacts', dataBase, centerId]);
+            enqueueSnackbar('Contact deleted successfully', { variant: 'success' });
+        },
+        onError: (err) => {
+            enqueueSnackbar(getError(err), { variant: 'error' });
+        },
+    });
 
-    const deleteContactMutation = useMutation(contactId =>
-        axios.delete(`/api/contacts/${dataBase}/${contactId}`)
-    );
+    useEffect(() => {
+        // Reset dialog fields if closed or after successful mutation
+        if (!openDialog) {
+            setSelectedContact(null);
+            setNewContact({
+                firstName: '',
+                lastName: '',
+                phone1: '',
+                phone2: '',
+                email: '',
+                observations: '',
+                centerIds: [],
+            });
+        }
+    }, [openDialog]);
 
     const handleOpenDialog = (contact = null) => {
         setSelectedContact(contact);
@@ -73,36 +117,20 @@ const ContactPage = () => {
         setOpenDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setSelectedContact(null);
-    };
+    const handleCloseDialog = () => setOpenDialog(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-
-        const contactToSubmit = {
+        mutation.mutate({
             ...newContact,
             centerIds: [centerId],
-        };
-
-        if (selectedContact) {
-            await updateContactMutation.mutateAsync(contactToSubmit);
-        } else {
-            await createContactMutation.mutateAsync(contactToSubmit);
-        }
-
-        queryClient.invalidateQueries(['contacts', dataBase, centerId]);
-        handleCloseDialog();
+        });
     };
 
-    const handleDelete = async (contactId) => {
-        await deleteContactMutation.mutateAsync(contactId);
-        queryClient.invalidateQueries(['contacts', dataBase]);
-    };
+    const handleDelete = (contactId) => deleteContactMutation.mutate(contactId);
 
-    if (isLoading) return <Typography>Loading...</Typography>;
-    if (isError) return <Typography>{getError(isError)}</Typography>;
+    if (isLoading) return <CircularProgress />;
+    if (isError) return <Typography>{getError(error)}</Typography>;
 
     return (
         <Box sx={{ padding: 2 }}>
