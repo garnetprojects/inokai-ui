@@ -146,9 +146,15 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
             endHour: 22,
             cellRenderer: ({ date, resource }) => (
               <Box
-                onContextMenu={(e) =>
-                  handleContextMenu(e, { startTime: convertirAMPMa24Horas(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), user: resource.name })
-                }
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  handleContextMenu(e, { 
+                    startTime: convertirAMPMa24Horas(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 
+                    user: resource.name 
+                  });
+                }}
+                height="100%" // Asegurando que la celda sea interactiva
+                sx={{ cursor: 'context-menu' }} // Cambia el cursor al pasar sobre la celda
               />
             ),
             navigation: false,
