@@ -30,7 +30,7 @@ const ContactPage = () => {
     const [selectedContact, setSelectedContact] = useState(null);
     const { state } = useContext(UserContext);
 
-    const centerId = state.userInfo?.centerInfo?_id;
+    const centerId = state.userInfo?.centerInfo?._id;
 
     const [newContact, setNewContact] = useState({
         firstName: '',
