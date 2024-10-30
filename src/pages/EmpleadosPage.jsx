@@ -32,14 +32,13 @@ import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
 import { phoneCountry } from '../utils/selectData';
 import { imageUpload } from '../utils/helpers';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { CircularProgress } from '@mui/material';
+
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
   const [t, i18n] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
-  const [loading, setLoading] = useState(false);
 
   return (
     <EmpleadosContext.Provider value={{ open, setOpen }}>
@@ -92,14 +91,15 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
+
       return { serviceName, duration };
     });
-  
+
     const data = {
       name: e.target.name.value,
       email: e.target.email.value,
@@ -112,26 +112,26 @@ const Header = ({ dataBase }) => {
       services,
       specialities,
     };
-  
-    if (profileImgUrl && profileImgUrl[0]) {
-      setLoading(true); // Activar el indicador de carga
-  
-      try {
-        const uploadedImgUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24');
-        data.profileImgUrl = uploadedImgUrl;
-      } catch (error) {
-        enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
-        console.error(error);
-        setLoading(false);
-        return;
-      }
-  
-      setLoading(false); // Desactivar el indicador de carga
+
+    console.log(data, 'datos mandando');
+
+    if (!selectedOption.length || !services.length) {
+      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      return;
     }
-  
+
+    if (open?._id) {
+      delete data.password;
+      delete data.DNI;
+    }
+
+    if (profileImgUrl) {
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+    }
+
     mutation.mutate(data);
   };
-  
+
   console.log({ open, specialities, selectedOption }, 'aqui');
 
   useEffect(() => {
@@ -298,16 +298,9 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url, loading }) => {
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
-
-  const handleImageUpload = (e) => {
-    if (e.target.files) {
-      setLoading(true); // Activar carga cuando se selecciona una imagen
-      setProfileImgUrl(e.target.files);
-      setLoading(false); // Desactivar carga una vez que la imagen se ha procesado
-    }
-  };
+  console.log(profileImgUrl);
 
   return (
     <Box mb={2}>
@@ -318,30 +311,38 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url, 
           startIcon={<CloudUploadIcon />}
         >
           {textBtn}
+
           <input
             accept="image/*"
             type="file"
             hidden
-            onChange={handleImageUpload}
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setProfileImgUrl(e.target.files);
+              }
+            }}
           />
         </Button>
       </Box>
 
-      {loading ? (
-        <CircularProgress />
-      ) : (cloudinary_url || profileImgUrl) && (
-        <img
-          src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-          alt="Logo"
-          decoding="async"
-          height={130}
-          width={250}
-        />
+      {(cloudinary_url || profileImgUrl) && (
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
       )}
     </Box>
   );
 };
-
 
 
 const TableBody = ({ dataBase }) => {
