@@ -33,7 +33,10 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   // Estado para el menú contextual y la información de la celda
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedCellData, setSelectedCellData] = useState({});
+  const [selectedCellData, setSelectedCellData] = useState({
+    startTime: '',
+    user: ''
+  });
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -127,7 +130,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         className="calendario"
         ref={scrollableRef}
         onScroll={handleScroll}
-        onContextMenu={(e) => handleContextMenu(e, { startTime: '10:00', user: 'empleadoId' })}
       >
         <Scheduler
           height={1500}
@@ -145,7 +147,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
             cellRenderer: ({ date, resource }) => (
               <Box
                 onContextMenu={(e) =>
-                  handleContextMenu(e, { startTime: date, user: resource })
+                  handleContextMenu(e, { startTime: convertirAMPMa24Horas(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), user: resource.name })
                 }
               />
             ),
