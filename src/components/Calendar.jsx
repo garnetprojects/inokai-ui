@@ -36,6 +36,24 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
+  // Manejar el doble clic en celdas vacías para abrir el modal de creación de citas
+  const handleCellDoubleClick = (cellData) => {
+    setOpen({
+      open: true,
+      mode: 'create',
+      selectedDate: cellData.start,
+    });
+  };
+
+  // Manejar el clic en eventos para abrir el modal de edición de citas
+  const handleEventClick = (eventData) => {
+    setOpen({
+      open: true,
+      mode: 'edit',
+      data: eventData,
+    });
+  };
+
   return (
     <Box position={'relative'}>
       <Box
@@ -43,12 +61,10 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         ref={hiddenScrollRef}
         position={'sticky'}
         top={0}
-        // position={'absolute'}
         zIndex={1000}
         display={'flex'}
         maxWidth={'100%'}
         overflow={'hidden'}
-        // width={'100%'}
       >
         {data.usersInAppointments.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
@@ -62,39 +78,37 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
               key={user.user_id}
             >
               <Box bgcolor={'white'} flex={'1'} className="boxPerfil">
-              <Box
-  display={'flex'}
-  mx={'auto'}
-  border={'1px solid #e0e0e0'}
-  py={1}
-  px={'10px'}
-  flexDirection={'row'} // Keep horizontal for avatar + text
->
-  {/* Show user profile image in Avatar */}
-  <Box mx={1} textTransform={'uppercase'}>
-  <Avatar
-  src={user.profileImgUrl || ''}
-  alt={user.name}
-  sx={{ width: 40, height: 40 }}
->
-  {!user.profileImgUrl && user.name[0].toUpperCase()} {/* Show initial if no image */}
-</Avatar>
-  </Box>
+                <Box
+                  display={'flex'}
+                  mx={'auto'}
+                  border={'1px solid #e0e0e0'}
+                  py={1}
+                  px={'10px'}
+                  flexDirection={'row'}
+                >
+                  <Box mx={1} textTransform={'uppercase'}>
+                    <Avatar
+                      src={user.profileImgUrl || ''}
+                      alt={user.name}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      {!user.profileImgUrl && user.name[0].toUpperCase()}
+                    </Avatar>
+                  </Box>
 
-  <Box display={'flex'} flexDirection={'column'}>
-    {/* Stack typography vertically */}
-    <Typography variant="body2" whiteSpace={'nowrap'}>
-      {user.name}
-    </Typography>
-    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
-      <Typography variant="body2" whiteSpace={'nowrap'}>
-        {`${availibity.from ? availibity.from : ''} ${
-          availibity.to ? `a ${availibity.to}` : ''
-        }`}
-      </Typography>
-    )}
-  </Box>
-</Box>
+                  <Box display={'flex'} flexDirection={'column'}>
+                    <Typography variant="body2" whiteSpace={'nowrap'}>
+                      {user.name}
+                    </Typography>
+                    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
+                      <Typography variant="body2" whiteSpace={'nowrap'}>
+                        {`${availibity.from ? availibity.from : ''} ${
+                          availibity.to ? `a ${availibity.to}` : ''
+                        }`}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
               </Box>
             </Tooltip>
           );
@@ -104,7 +118,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         <Scheduler
           height={1500}
           resourceViewMode="default"
-          // resourceViewMode="tabs"
           view="day"
           disableViewNavigator
           disableViewer
@@ -124,6 +137,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
             subTextField: '',
             avatarField: 'name',
           }}
+          // Eventos para abrir modal en doble clic o clic simple
+          onCellDoubleClick={handleCellDoubleClick}
+          onEventClick={handleEventClick}
           eventRenderer={({ event }) => {
             return (
               <BoxAppointment
@@ -143,7 +159,11 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    setOpen(data);
+    setOpen({
+      open: true,
+      mode: 'edit',
+      data,
+    });
   };
 
   const isFreeSlot =
@@ -160,7 +180,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
       ? data.services[0].color
       : 'grey.300';
 
-  // Crear el texto para el tooltip con los servicios
   const servicesTooltip = data.services
     .map((item) => item.serviceName)
     .join(', ');
@@ -184,6 +203,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
         }}
         variant="contained"
         disabled={isFreeSlot}
+        onDoubleClick={handleClick} // Clic en evento
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -191,7 +211,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           </Typography>
         )}
 
-        <Box onDoubleClick={handleClick}>
+        <Box>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
@@ -209,14 +229,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           <Divider sx={{ my: 0.5 }} />
 
           <Box>
-            <Typography
-              component="span"
-              fontWeight="bold"
-              display="block"
-              mb={1}
-              fontSize={11}
-            ></Typography>
-
+            <Typography component="span" fontWeight="bold" display="block" mb={1} fontSize={11}></Typography>
             <Box display="flex" gap={0.5} flexWrap="wrap">
               {data.services.map((item, idx) => (
                 <Chip
