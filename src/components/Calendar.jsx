@@ -30,7 +30,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
-  
+
   // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
 
@@ -40,10 +40,13 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
-  // Maneja el menú contextual
+  // Maneja el menú contextual y almacena las coordenadas del clic
   const handleContextMenu = (event) => {
     event.preventDefault();
-    setMenuAnchor(event.currentTarget);
+    setMenuAnchor({
+      mouseX: event.clientX,
+      mouseY: event.clientY,
+    });
   };
 
   const handleCloseMenu = () => {
@@ -52,7 +55,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    setOpen(true); // Abre el modal de creación de cita
+    setOpen(true);
   };
 
   return (
@@ -116,7 +119,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         })}
       </Box>
 
-      {/* Elemento del calendario con menú contextual */}
       <div
         className="calendario"
         ref={scrollableRef}
@@ -159,7 +161,12 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
       {/* Menú contextual */}
       <Menu
-        anchorEl={menuAnchor}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menuAnchor !== null
+            ? { top: menuAnchor.mouseY, left: menuAnchor.mouseX }
+            : undefined
+        }
         open={Boolean(menuAnchor)}
         onClose={handleCloseMenu}
       >
