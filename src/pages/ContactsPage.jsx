@@ -1,236 +1,186 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useContext, useEffect, useState } from 'react';
+import { UserContext } from '../context/UserContext';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import {
   Box,
   Button,
   Container,
-  TextField,
-  Typography,
+  Grid,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Snackbar,
+  Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
-import { getError } from '../utils/getError';
+
+// Your existing components would be imported here as needed.
 
 const ContactsPage = () => {
-  const [contacts, setContacts] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedContact, setEditedContact] = useState(null);
-  const [newContact, setNewContact] = useState({}); // State for new contact
+  const { state } = useContext(UserContext);
+  const centerId = state.userInfo?.centerInfo; // Assuming this is the correct structure
 
-  // Fetch contacts from the server
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['contacts'],
-    queryFn: () => axios.get('/contacts').then(res => res.data),
-    onSuccess: (data) => setContacts(data),
+  const [contacts, setContacts] = useState([]);
+  const [newContact, setNewContact] = useState({
+    firstName: '',
+    lastName: '',
+    phone1: '',
+    phone2: '',
+    email: '',
+    observations: '',
   });
+
+  // Fetch contacts based on centerId
+  const { isLoading, isError, data: fetchedContacts } = useQuery(
+    ['contacts', centerId],
+    () => axios.get(`/contacts?centerId=${centerId}`).then(res => res.data),
+    {
+      enabled: !!centerId, // Only run the query if centerId is available
+      onSuccess: (data) => {
+        setContacts(data);
+      },
+    }
+  );
 
   const mutation = useMutation({
-    mutationFn: (contact) => {
-      return axios.put(`/contacts/${contact.id}`, contact);
+    mutationFn: (newContact) => {
+      return axios.post('/contacts', newContact);
     },
-    onSuccess: () => {
-      enqueueSnackbar('Contact updated successfully', { variant: 'success' });
-      setIsEditing(false);
-      refetch(); // Refetch contacts after update
+    onSuccess: (data) => {
+      enqueueSnackbar('Contact created successfully', { variant: 'success' });
+      setContacts((prev) => [...prev, data.data]);
+      setNewContact({
+        firstName: '',
+        lastName: '',
+        phone1: '',
+        phone2: '',
+        email: '',
+        observations: '',
+      });
     },
-    onError: (error) => {
-      enqueueSnackbar(getError(error), { variant: 'error' });
+    onError: (err) => {
+      enqueueSnackbar('Error creating contact', { variant: 'error' });
+      console.error(err);
     },
   });
 
-  const handleEdit = (contact) => {
-    setEditedContact(contact);
-    setIsEditing(true);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewContact((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleChange = (e) => {
-    setEditedContact({ ...editedContact, [e.target.name]: e.target.value });
+  const handleAddContact = (e) => {
+    e.preventDefault();
+    // Include the centerId from the user context
+    const contactToAdd = {
+      ...newContact,
+      centerIds: [centerId], // Assuming you want to store it as an array
+    };
+    mutation.mutate(contactToAdd);
   };
 
-  const handleSave = () => {
-    mutation.mutate(editedContact);
-  };
-
-  const handleAddChange = (e) => {
-    setNewContact({ ...newContact, [e.target.name]: e.target.value });
-  };
-
-  const handleAddContact = () => {
-    // Logic to add new contact
-    if (!newContact.firstName || !newContact.lastName) {
-      enqueueSnackbar('Please fill in all fields', { variant: 'error' });
-      return;
-    }
-
-    // Simulating adding a new contact
-    setContacts([...contacts, { id: Date.now(), ...newContact }]);
-    enqueueSnackbar('Contact added successfully', { variant: 'success' });
-
-    // Reset new contact state
-    setNewContact({});
-  };
-
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (isError) return <Typography>Something went wrong...</Typography>;
+  if (isLoading) return <Typography>Loading contacts...</Typography>;
+  if (isError) return <Typography>Error loading contacts</Typography>;
 
   return (
     <Container>
-      <Typography variant={'h2'} mb={2}>Contacts</Typography>
+      <Typography variant="h2" gutterBottom>
+        Contacts
+      </Typography>
+      <form onSubmit={handleAddContact}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={newContact.firstName}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={newContact.lastName}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <input
+              type="text"
+              name="phone1"
+              placeholder="Phone 1"
+              value={newContact.phone1}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <input
+              type="text"
+              name="phone2"
+              placeholder="Phone 2 (optional)"
+              value={newContact.phone2}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={newContact.email}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <textarea
+              name="observations"
+              placeholder="Observations"
+              value={newContact.observations}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button type="submit" variant="contained" color="primary">
+              Add Contact
+            </Button>
+          </Grid>
+        </Grid>
+      </form>
 
-      <Box mb={2}>
-        <TextField
-          label="First Name"
-          name="firstName"
-          value={newContact.firstName || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <TextField
-          label="Last Name"
-          name="lastName"
-          value={newContact.lastName || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <TextField
-          label="Number 1"
-          name="phone1"
-          value={newContact.phone1 || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <TextField
-          label="Number 2"
-          name="phone2"
-          value={newContact.phone2 || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <TextField
-          label="Email"
-          name="email"
-          value={newContact.email || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <TextField
-          label="Observations"
-          name="observations"
-          value={newContact.observations || ''}
-          onChange={handleAddChange}
-          sx={{ marginRight: 1 }}
-        />
-        <Button
-          variant="contained"
-          onClick={handleAddContact}
-          startIcon={<AddIcon />}
-        >
-          Add Contact
-        </Button>
-      </Box>
-
-      <TableContainer component={Paper}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Apellidos</TableCell>
-              <TableCell>Número 1</TableCell>
-              <TableCell>Número 2</TableCell>
-              <TableCell>Correo</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
+              <TableCell>Phone 1</TableCell>
+              <TableCell>Phone 2</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Observations</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {contacts.map(contact => (
-              <TableRow key={contact.id}>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="firstName"
-                      defaultValue={contact.firstName}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.firstName
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="lastName"
-                      defaultValue={contact.lastName}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.lastName
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="phone1"
-                      defaultValue={contact.phone1}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.phone1
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="phone2"
-                      defaultValue={contact.phone2}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.phone2
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="email"
-                      defaultValue={contact.email}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.email
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <TextField
-                      name="observations"
-                      defaultValue={contact.observations}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    contact.observations
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isEditing && editedContact.id === contact.id ? (
-                    <Button onClick={handleSave} variant="contained">
-                      Save
-                    </Button>
-                  ) : (
-                    <Button onClick={() => handleEdit(contact)} variant="outlined">
-                      Edit
-                    </Button>
-                  )}
-                </TableCell>
+            {contacts.map((contact) => (
+              <TableRow key={contact._id}>
+                <TableCell>{contact.firstName}</TableCell>
+                <TableCell>{contact.lastName}</TableCell>
+                <TableCell>{contact.phone1}</TableCell>
+                <TableCell>{contact.phone2}</TableCell>
+                <TableCell>{contact.email}</TableCell>
+                <TableCell>{contact.observations}</TableCell>
               </TableRow>
             ))}
           </TableBody>
