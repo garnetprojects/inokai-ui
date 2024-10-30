@@ -13,8 +13,6 @@ import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { memo, useRef, useState } from 'react';
-import SearchModal from './SearchModal'; // Asegúrate de importar el modal de búsqueda
-import EditAppointmentModal from './EditAppointmentModal'; // Modal para editar citas
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -22,7 +20,7 @@ function combinarFechaYHora(fecha, hora) {
   return new Date(year, month - 1, day, hour, minute);
 }
 
-const Calendar = ({ data, setOpen, selectedDate }) => {
+const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) => {
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -35,9 +33,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedAppointment, setSelectedAppointment] = useState(null); // Estado para la cita seleccionada
-  const [openSearch, setOpenSearch] = useState(false); // Estado para abrir el modal de búsqueda
-  const [openEdit, setOpenEdit] = useState(false); // Estado para abrir el modal de editar cita
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -60,17 +55,12 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    setOpen(true);
+    setOpenEdit(true); // Cambia esta línea si el nombre de la función no es correcto
   };
 
   const handleAppointmentClick = (appointment) => {
-    setSelectedAppointment(appointment);
-    setOpenEdit(true);
-  };
-
-  const handleCloseEdit = () => {
-    setOpenEdit(false);
-    setSelectedAppointment(null);
+    setSelectedAppointment(appointment); // Configura la cita seleccionada
+    setOpenEdit(true); // Abre el modal de editar
   };
 
   return (
@@ -165,10 +155,10 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           eventRenderer={({ event }) => {
             return (
               <BoxAppointment
-                setOpen={setOpen}
+                setOpen={setOpenEdit} // Cambia a setOpenEdit
                 data={event}
                 appointments={data?.appointments2}
-                handleAppointmentClick={handleAppointmentClick} // Pasar el manejador de clics
+                handleAppointmentClick={handleAppointmentClick} // Asegúrate de pasar la función aquí
               />
             );
           }}
@@ -188,21 +178,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       >
         <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
       </Menu>
-
-      {/* Modal de búsqueda */}
-      <SearchModal
-        setSelectedDate={setSelectedAppointment}
-        setOpen={setOpenSearch}
-      />
-
-      {/* Modal de edición de cita */}
-      {openEdit && (
-        <EditAppointmentModal
-          open={openEdit}
-          setOpen={handleCloseEdit}
-          appointment={selectedAppointment} // Pasa la cita seleccionada
-        />
-      )}
     </Box>
   );
 };
@@ -211,7 +186,7 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    handleAppointmentClick(data); // Llama a la función para manejar el clic
+    handleAppointmentClick(data); // Asegúrate de que se pase correctamente
   };
 
   const isFreeSlot =
@@ -251,7 +226,7 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
         }}
         variant="contained"
         disabled={isFreeSlot}
-        onClick={handleClick} // Agrega el manejador de clics aquí
+        onClick={handleClick} // Asegúrate de que el clic esté manejado
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
