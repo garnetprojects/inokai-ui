@@ -16,7 +16,9 @@
     "appointment": "cita",
     "service": "servicio",
     "specialities": "especialidades",
-    "schedules": "horarios"
+    "schedules": "horarios",
+    "contactsPage": "agenda"
+
   },
   "buttons": {
     "register": "registrar",

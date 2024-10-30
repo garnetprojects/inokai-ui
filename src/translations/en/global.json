@@ -16,7 +16,8 @@
     "appointment": "appointment",
     "service": "service",
     "specialities": "specialities",
-    "schedules": "schedules"
+    "schedules": "schedules",
+    "contactsPage": "contacts"
   },
   "buttons": {
     "register": "register",
