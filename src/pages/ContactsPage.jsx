@@ -45,7 +45,7 @@ const ContactPage = () => {
     const { data: contacts = [], isLoading, isError, error } = useQuery({
         queryKey: ['contacts', dataBase, centerId],
         queryFn: async () => {
-            const res = await axios.get(`/api/contacts/${dataBase}`, {
+            const res = await axios.get(`/contacts/${dataBase}`, {
                 params: { centerId },
             });
             return res.data;
@@ -56,8 +56,8 @@ const ContactPage = () => {
     const mutation = useMutation({
         mutationFn: async (contactData) => {
             const url = selectedContact
-                ? `/api/contacts/${dataBase}/${selectedContact._id}`
-                : `/api/contacts/${dataBase}`;
+                ? `/contacts/${dataBase}/${selectedContact._id}`
+                : `/contacts/${dataBase}`;
             const method = selectedContact ? 'put' : 'post';
             const res = await axios[method](url, contactData);
             return res.data;
@@ -75,7 +75,7 @@ const ContactPage = () => {
     // Mutation for deleting a contact
     const deleteContactMutation = useMutation({
         mutationFn: async (contactId) => {
-            const res = await axios.delete(`/api/contacts/${dataBase}/${contactId}`);
+            const res = await axios.delete(`/contacts/${dataBase}/${contactId}`);
             return res.data;
         },
         onSuccess: () => {
