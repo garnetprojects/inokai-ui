@@ -30,7 +30,7 @@ const ContactPage = () => {
     const [selectedContact, setSelectedContact] = useState(null);
     const { state } = useContext(UserContext);
 
-    const centerId = state.userInfo?.centerId;
+    const centerId = state.userInfo.centerId;
 
     const [newContact, setNewContact] = useState({
         firstName: '',
@@ -39,7 +39,7 @@ const ContactPage = () => {
         phone2: '',
         email: '',
         observations: '',
-        centerIds: [],
+        centerIds: [centerId],
     });
 
     // Fetch contacts for the selected database
