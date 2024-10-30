@@ -84,6 +84,12 @@
     "delete": "Delete",
     "saveSuccess": "Contact saved successfully",
     "deleteSuccess": "Contact deleted successfully",
-    "errorLoading": "Error loading contacts"
+    "errorLoading": "Error loading contacts",
+    "filterContacts": "Filter Contacts",
+    "sortByFirstName": "Sort by First Name",
+    "sortByLastName": "Sort by Last Name",
+    "sortByEmail": "Sort by Email",
+    "asc": "⬆️",
+    "desc": "⬇️"
   }
 }

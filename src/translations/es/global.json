@@ -85,6 +85,12 @@
     "delete": "Borrar",
     "saveSuccess": "Contacto guardado correctamente",
     "deleteSuccess": "Contacto borrado correctamente",
-    "errorLoading": "Error cargando contactos"
+    "errorLoading": "Error cargando contactos",
+    "filterContacts": "Filtrar",
+    "sortByFirstName": "Ordenar por nombre",
+    "sortByLastName": "Ordenar por apellido",
+    "sortByEmail": "Ordenar por email",
+    "asc": "⬆️",
+    "desc": "⬇️"
   }
 }
