@@ -31,12 +31,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
 
-  // Estado para el menú contextual y la información de la celda
+  // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedCellData, setSelectedCellData] = useState({
-    startTime: '',
-    user: ''
-  });
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -44,15 +40,13 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     }
   };
 
-  // Maneja el menú contextual y almacena las coordenadas del clic y los datos de la celda
-  const handleContextMenu = (event, cellData) => {
+  // Maneja el menú contextual y almacena las coordenadas del clic
+  const handleContextMenu = (event) => {
     event.preventDefault();
     setMenuAnchor({
       mouseX: event.clientX,
       mouseY: event.clientY,
     });
-    // Guardamos la información de la celda seleccionada
-    setSelectedCellData(cellData);
   };
 
   const handleCloseMenu = () => {
@@ -61,8 +55,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    // Pasamos la hora de inicio y empleado seleccionado al modal
-    setOpen({ open: true, ...selectedCellData });
+    setOpen(true);
   };
 
   return (
@@ -130,6 +123,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         className="calendario"
         ref={scrollableRef}
         onScroll={handleScroll}
+        onContextMenu={handleContextMenu}
       >
         <Scheduler
           height={1500}
@@ -144,19 +138,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           day={{
             startHour: 10,
             endHour: 22,
-            cellRenderer: ({ date, resource }) => (
-              <Box
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  handleContextMenu(e, { 
-                    startTime: convertirAMPMa24Horas(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 
-                    user: resource.name 
-                  });
-                }}
-                height="100%" // Asegurando que la celda sea interactiva
-                sx={{ cursor: 'context-menu' }} // Cambia el cursor al pasar sobre la celda
-              />
-            ),
+            cellRenderer: () => <></>,
             navigation: false,
           }}
           resourceFields={{
