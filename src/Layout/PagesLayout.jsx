@@ -2,6 +2,8 @@ import { Outlet } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { Box } from '@mui/material';
+import NotesSidebar from '../components/NotesSidebar'; 
+
 
 const PagesLayout = () => {
   return (
@@ -13,6 +15,7 @@ const PagesLayout = () => {
       }}
     >
       <Navbar />
+      <NotesSidebar />
       <Box component={'main'} my={5}>
         <Outlet />
       </Box>
