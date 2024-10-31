@@ -80,6 +80,8 @@ const Home = () => {
 
   return (
     <Box>
+                <NotesSidebar />
+
       <Container maxWidth="xl">
         <Box
           display={'flex'}
@@ -117,7 +119,6 @@ const Home = () => {
               // disabled={mutation.isPending || canEdit}
             />
           </LocationProvider>
-          <NotesSidebar />
         </Box>
       </Container>
 
