@@ -20,7 +20,7 @@ function combinarFechaYHora(fecha, hora) {
   return new Date(year, month - 1, day, hour, minute);
 }
 
-const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) => {
+const Calendar = ({ data, setOpen, selectedDate }) => {
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -30,6 +30,8 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
 
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
+
+  // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const handleScroll = () => {
@@ -38,6 +40,7 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
     }
   };
 
+  // Maneja el menú contextual y almacena las coordenadas del clic
   const handleContextMenu = (event) => {
     event.preventDefault();
     setMenuAnchor({
@@ -52,23 +55,7 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
 
   const handleCreateAppointment = () => {
     handleCloseMenu();
-    if (setOpenEdit) {
-      setOpenEdit(true); // Abre el modal para crear una cita
-    } else {
-      console.error("setOpenEdit no está definido");
-    }
-  };
-
-  const handleAppointmentClick = (appointment) => {
-    console.log("Cita seleccionada:", appointment); // Depuración
-    if (setSelectedAppointment) {
-      setSelectedAppointment(appointment); // Establece la cita seleccionada
-    } else {
-      console.error("setSelectedAppointment no está definido");
-    }
-    if (setOpenEdit) {
-      setOpenEdit(true); // Abre el modal de edición
-    }
+    setOpen(true);
   };
 
   return (
@@ -163,10 +150,9 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
           eventRenderer={({ event }) => {
             return (
               <BoxAppointment
-                setOpen={setOpenEdit}
+                setOpen={setOpen}
                 data={event}
                 appointments={data?.appointments2}
-                handleAppointmentClick={handleAppointmentClick} // Pasa la función aquí
               />
             );
           }}
@@ -190,16 +176,11 @@ const Calendar = ({ data, setOpenEdit, setSelectedAppointment, selectedDate }) =
   );
 };
 
-const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick }) => {
+const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
 
   const handleClick = () => {
-    console.log("Botón de cita clicado:", data); // Depuración
-    if (handleAppointmentClick) {
-      handleAppointmentClick(data); // Asegúrate de que se pase correctamente
-    } else {
-      console.error("handleAppointmentClick no está definido");
-    }
+    setOpen(data);
   };
 
   const isFreeSlot =
@@ -239,7 +220,6 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
         }}
         variant="contained"
         disabled={isFreeSlot}
-        onClick={handleClick} // Asegúrate de que el clic esté manejado
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -247,7 +227,7 @@ const BoxAppointment = ({ data, setOpen, appointments, handleAppointmentClick })
           </Typography>
         )}
 
-        <Box>
+        <Box onDoubleClick={handleClick}>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
