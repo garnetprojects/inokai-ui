@@ -47,7 +47,7 @@ const NotesSidebar = () => {
       right={0}
       top={0}
       bottom={0}
-      width={isOpen ? '30%' : '5%'}
+      width={isOpen ? '30%' : '50px'}
       bgcolor="black"
       color="white"
       display="flex"
@@ -55,18 +55,42 @@ const NotesSidebar = () => {
       alignItems="center"
       justifyContent="start"
       p={2}
-      style={{ transition: 'width 0.3s', z-index: 100000 }}
+      style={{ transition: 'width 0.3s', zIndex: 1000 }}
     >
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        variant="contained"
-        style={{ backgroundColor: 'gray', width: '100%' }}
+      {/* Pestaña en vertical en el borde derecho */}
+      <Box
+        display={isOpen ? 'none' : 'flex'}
+        alignItems="center"
+        justifyContent="center"
+        height="100px"
+        width="50px"
+        bgcolor="gray"
+        color="white"
+        style={{
+          writingMode: 'vertical-rl', // hace que el texto esté en vertical
+          textAlign: 'center',
+          cursor: 'pointer',
+          borderRadius: '4px 0 0 4px',
+          position: 'absolute',
+          left: '-50px',
+          top: '20px',
+        }}
+        onClick={() => setIsOpen(true)}
       >
         Notas
-      </Button>
+      </Box>
 
+      {/* Panel desplegable completo */}
       {isOpen && (
         <Box width="100%" mt={2}>
+          <Button
+            onClick={() => setIsOpen(false)}
+            variant="contained"
+            style={{ backgroundColor: 'gray', width: '100%' }}
+          >
+            Cerrar
+          </Button>
+
           <TextField
             label="Nueva Nota"
             value={noteInput}
@@ -74,7 +98,7 @@ const NotesSidebar = () => {
             variant="outlined"
             fullWidth
             inputProps={{ maxLength: 100 }}
-            style={{ backgroundColor: 'white', color: 'black' }}
+            style={{ backgroundColor: 'white', color: 'black', marginTop: '8px' }}
           />
           <Button
             onClick={handleSaveNote}
