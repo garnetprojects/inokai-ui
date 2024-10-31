@@ -55,7 +55,7 @@ const NotesSidebar = () => {
       alignItems="center"
       justifyContent="start"
       p={2}
-      style={{ transition: 'width 0.3s' }}
+      style={{ transition: 'width 0.3s', z-index: 100000 }}
     >
       <Button
         onClick={() => setIsOpen(!isOpen)}
