@@ -42,47 +42,50 @@ const NotesSidebar = () => {
   };
 
   return (
-    <Box
-      position="fixed"
-      right={0}
-      top={0}
-      bottom={0}
-      width={isOpen ? '30%' : '50px'}
-      bgcolor="black"
-      color="white"
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="start"
-      p={2}
-      style={{ transition: 'width 0.3s', zIndex: 1000 }}
-    >
+    <>
       {/* Pestaña en vertical en el borde derecho */}
-      <Box
-        display={isOpen ? 'none' : 'flex'}
-        alignItems="center"
-        justifyContent="center"
-        height="100px"
-        width="50px"
-        bgcolor="gray"
-        color="white"
-        style={{
-          writingMode: 'vertical-rl', // hace que el texto esté en vertical
-          textAlign: 'center',
-          cursor: 'pointer',
-          borderRadius: '4px 0 0 4px',
-          position: 'absolute',
-          left: '-50px',
-          top: '20px',
-        }}
-        onClick={() => setIsOpen(true)}
-      >
-        Notas
-      </Box>
+      {!isOpen && (
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          height="100px"
+          width="50px"
+          bgcolor="gray"
+          color="white"
+          style={{
+            writingMode: 'vertical-rl', // hace que el texto esté en vertical
+            textAlign: 'center',
+            cursor: 'pointer',
+            borderRadius: '4px 0 0 4px',
+            position: 'fixed',
+            right: 0,
+            top: '20px',
+            zIndex: 10000,
+          }}
+          onClick={() => setIsOpen(true)}
+        >
+          Notas
+        </Box>
+      )}
 
       {/* Panel desplegable completo */}
       {isOpen && (
-        <Box width="100%" mt={2}>
+        <Box
+          position="fixed"
+          right={0}
+          top={0}
+          bottom={0}
+          width="30%"
+          bgcolor="black"
+          color="white"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="start"
+          p={2}
+          style={{ transition: 'width 0.3s', zIndex: 1000 }}
+        >
           <Button
             onClick={() => setIsOpen(false)}
             variant="contained"
@@ -143,7 +146,7 @@ const NotesSidebar = () => {
           </Box>
         </Box>
       )}
-    </Box>
+    </>
   );
 };
 
