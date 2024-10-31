@@ -54,7 +54,7 @@ const NotesSidebar = () => {
           bgcolor="gray"
           color="white"
           style={{
-            writingMode: 'vertical-rl', // hace que el texto esté en vertical
+            writingMode: 'vertical-rl',
             textAlign: 'center',
             cursor: 'pointer',
             borderRadius: '4px 0 0 4px',
@@ -77,19 +77,23 @@ const NotesSidebar = () => {
           top={0}
           bottom={0}
           width="30%"
-          bgcolor="black"
-          color="white"
+          bgcolor="white" // Color de fondo blanco
+          color="black"
           display="flex"
           flexDirection="column"
           alignItems="center"
           justifyContent="start"
           p={2}
-          style={{ transition: 'width 0.3s', zIndex: 1000 }}
+          style={{
+            transition: 'width 0.3s',
+            zIndex: 10000,
+            borderLeft: '3px solid gray', // borde gris en el lado izquierdo
+          }}
         >
           <Button
             onClick={() => setIsOpen(false)}
             variant="contained"
-            style={{ backgroundColor: 'gray', width: '100%' }}
+            style={{ backgroundColor: 'gray', width: '100%', color: 'white' }}
           >
             Cerrar
           </Button>
@@ -113,7 +117,7 @@ const NotesSidebar = () => {
             {editIndex !== null ? 'Actualizar' : 'Guardar'}
           </Button>
 
-          <Box mt={2}>
+          <Box mt={2} width="100%" overflow="auto">
             <Typography variant="h6">Lista de Notas</Typography>
             {notes.map((note, index) => (
               <Box
@@ -122,11 +126,20 @@ const NotesSidebar = () => {
                 alignItems="center"
                 justifyContent="space-between"
                 my={1}
-                bgcolor="gray"
+                bgcolor="white"
+                boxShadow={2}
                 px={1}
+                py={1}
                 borderRadius="4px"
+                style={{
+                  overflowWrap: 'break-word', // ajusta el texto a la caja
+                  width: '100%',
+                  border: '1px solid gray',
+                }}
               >
-                <Typography>{note}</Typography>
+                <Typography style={{ wordBreak: 'break-word', maxWidth: '70%' }}>
+                  {note}
+                </Typography>
                 <Box>
                   <IconButton
                     onClick={() => handleEditNote(index)}
