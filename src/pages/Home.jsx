@@ -28,6 +28,7 @@ import {
 import { Navigate, useParams } from 'react-router-dom';
 import { fixCentersArray, fixUserArray } from '../utils/fixArray';
 import Calendar from '../components/Calendar';
+import NotesSidebar from '../components/NotesSidebar'; 
 import {
   defaultTime,
   eliminarPrimerosCharSiCoinciden,
@@ -116,6 +117,7 @@ const Home = () => {
               // disabled={mutation.isPending || canEdit}
             />
           </LocationProvider>
+          <NotesSidebar />
         </Box>
       </Container>
 
