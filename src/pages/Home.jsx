@@ -80,6 +80,7 @@ const Home = () => {
 
   return (
     <Box>
+      <NotesSidebar />
       <Container maxWidth="xl">
         <Box
           display={'flex'}

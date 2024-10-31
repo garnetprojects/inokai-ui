@@ -15,7 +15,6 @@ const PagesLayout = () => {
       }}
     >
       <Navbar />
-      <NotesSidebar />
       <Box component={'main'} my={5}>
         <Outlet />
       </Box>
