@@ -123,7 +123,7 @@ const NotesSidebar = () => {
               borderRadius="4px"
               style={{
                 overflowWrap: 'break-word',
-                width: '100%',
+                width: '95.5%',
                 border: '1px solid gray',
               }}
             >
