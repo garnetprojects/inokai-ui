@@ -51,16 +51,16 @@ const NotesSidebar = () => {
           justifyContent="center"
           height="100px"
           width="50px"
-          bgcolor="gray"
+          bgcolor="black"
           color="white"
           style={{
             writingMode: 'vertical-rl',
             textAlign: 'center',
             cursor: 'pointer',
-            borderRadius: '4px 0 0 4px',
+            borderRadius: '20px 0 0 20px',
             position: 'fixed',
             right: 0,
-            top: '20px',
+            top: '165px',
             zIndex: 10000,
           }}
           onClick={() => setIsOpen(true)}
@@ -87,13 +87,13 @@ const NotesSidebar = () => {
           style={{
             transition: 'width 0.3s',
             zIndex: 10000,
-            borderLeft: '3px solid gray', // borde gris en el lado izquierdo
+            borderLeft: '3px solid black', // borde gris en el lado izquierdo
           }}
         >
           <Button
             onClick={() => setIsOpen(false)}
             variant="contained"
-            style={{ backgroundColor: 'gray', width: '100%', color: 'white' }}
+            style={{ backgroundColor: 'black', width: '100%', color: 'white' }}
           >
             Cerrar
           </Button>
