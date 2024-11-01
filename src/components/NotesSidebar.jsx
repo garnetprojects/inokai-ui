@@ -17,14 +17,19 @@ const NotesSidebar = () => {
   const handleSaveNote = () => {
     if (!noteInput.trim()) return;
 
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}/${currentDate.getFullYear()}`;
+
     if (editIndex !== null) {
       const updatedNotes = notes.map((note, index) =>
-        index === editIndex ? noteInput : note
+        index === editIndex ? { ...note, text: noteInput } : note
       );
       setNotes(updatedNotes);
       setEditIndex(null);
     } else {
-      setNotes([...notes, noteInput]);
+      setNotes([...notes, { text: noteInput, date: formattedDate }]);
     }
 
     setNoteInput('');
@@ -37,7 +42,7 @@ const NotesSidebar = () => {
 
   // Función para iniciar la edición de una nota
   const handleEditNote = (index) => {
-    setNoteInput(notes[index]);
+    setNoteInput(notes[index].text);
     setEditIndex(index);
   };
 
@@ -50,7 +55,7 @@ const NotesSidebar = () => {
         justifyContent="center"
         height="100px"
         width="50px"
-        bgcolor="black"
+        bgcolor={notes.length > 0 ? 'black' : 'red'}
         color="white"
         style={{
           writingMode: 'vertical-rl',
@@ -63,9 +68,9 @@ const NotesSidebar = () => {
           zIndex: 10000,
           transition: 'right 0.3s ease',
         }}
-        onClick={() => setIsOpen(!isOpen)} // Toggle para abrir/cerrar el panel
+        onClick={() => setIsOpen(!isOpen)}
       >
-        Notas
+        {`NOTAS${notes.length > 0 ? ` (${notes.length})` : ''}`}
       </Box>
 
       {/* Panel desplegable completo */}
@@ -83,7 +88,7 @@ const NotesSidebar = () => {
         justifyContent="start"
         p={2}
         style={{
-          transition: 'right 0.3s ease', // Transición suave de apertura/cierre
+          transition: 'right 0.3s ease',
           zIndex: 9999,
           borderLeft: '3px solid black',
         }}
@@ -113,8 +118,7 @@ const NotesSidebar = () => {
             <Box
               key={index}
               display="flex"
-              alignItems="center"
-              justifyContent="space-between"
+              flexDirection="column"
               my={1}
               bgcolor="white"
               boxShadow={2}
@@ -127,10 +131,27 @@ const NotesSidebar = () => {
                 border: '1px solid gray',
               }}
             >
-              <Typography style={{ wordBreak: 'break-word', maxWidth: '70%' }}>
-                {note}
+              {/* Fecha de la nota */}
+              <Box
+                display="flex"
+                justifyContent="center"
+                bgcolor="black"
+                color="white"
+                width="fit-content"
+                px={1}
+                py={0.5}
+                borderRadius="4px"
+                style={{
+                  fontSize: '12px',
+                  marginBottom: '4px',
+                }}
+              >
+                {note.date}
+              </Box>
+              <Typography style={{ wordBreak: 'break-word', maxWidth: '100%' }}>
+                {note.text}
               </Typography>
-              <Box>
+              <Box display="flex" justifyContent="flex-end">
                 <IconButton
                   onClick={() => handleEditNote(index)}
                   color="primary"
