@@ -55,7 +55,7 @@ const NotesSidebar = () => {
         justifyContent="center"
         height="100px"
         width="50px"
-        bgcolor={notes.length > 0 ? 'black' : 'red'}
+        bgcolor={notes.length > 0 ? 'red' : 'black'}
         color="white"
         style={{
           writingMode: 'vertical-rl',
