@@ -58,7 +58,7 @@ const NotesSidebar = () => {
           cursor: 'pointer',
           borderRadius: '20px 0 0 20px',
           position: 'fixed',
-          right: isOpen ? '30%' : 0,
+          right: isOpen ? '32.4%' : 0,
           top: '165px',
           zIndex: 10000,
           transition: 'right 0.3s ease',
@@ -71,7 +71,7 @@ const NotesSidebar = () => {
       {/* Panel desplegable completo */}
       <Box
         position="fixed"
-        right={isOpen ? 0 : '-30%'}
+        right={isOpen ? 0 : '-32.5%'}
         top={0}
         bottom={0}
         width="30%"
