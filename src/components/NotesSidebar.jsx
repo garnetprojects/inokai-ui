@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { UserContext } from '../context';
 import { enqueueSnackbar } from 'notistack';
+import { useParams } from 'react-router-dom';
 
 const NotesSidebar = () => {
     const { state } = useContext(UserContext);
@@ -20,14 +21,14 @@ const NotesSidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [noteInput, setNoteInput] = useState('');
     const [editNoteId, setEditNoteId] = useState(null);
-
+    const { dataBase } = useParams();
     const centerInfo = state.userInfo.centerId;
 
     // Fetch notes with the centerInfo from the backend
     const { data: notes = [], isLoading, isError } = useQuery({
         queryKey: ['notes', centerInfo],
         queryFn: async () => {
-            const res = await axios.get(`/notes`, { params: { centerInfo } });
+            const res = await axios.get(`/notes/${dataBase}/`, { params: { centerInfo } });
             return res.data;
         }
     });
@@ -35,7 +36,7 @@ const NotesSidebar = () => {
     // Mutation for adding/updating notes
     const saveNoteMutation = useMutation({
         mutationFn: async (noteData) => {
-            const url = editNoteId ? `/notes/${editNoteId}` : `/notes`;
+            const url = editNoteId ? `/notes/${dataBase}/${editNoteId}` : `/notes`;
             const method = editNoteId ? 'put' : 'post';
             const res = await axios[method](url, noteData);
             return res.data;
@@ -54,7 +55,7 @@ const NotesSidebar = () => {
     // Mutation for deleting notes
     const deleteNoteMutation = useMutation({
         mutationFn: async (noteId) => {
-            await axios.delete(`/notes/${noteId}`);
+            await axios.delete(`/notes/${dataBase}/${noteId}`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['notes', centerInfo]);
