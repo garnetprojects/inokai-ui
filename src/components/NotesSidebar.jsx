@@ -36,7 +36,7 @@ const NotesSidebar = () => {
     // Mutation for adding/updating notes
     const saveNoteMutation = useMutation({
         mutationFn: async (noteData) => {
-            const url = editNoteId ? `/notes/${dataBase}/${editNoteId}` : `/notes`;
+            const url `/notes/${dataBase}/${editNoteId}`;
             const method = editNoteId ? 'put' : 'post';
             const res = await axios[method](url, noteData);
             return res.data;
