@@ -26,7 +26,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
   const [highlightedAppointment, setHighlightedAppointment] = useState(null);
-  const [allCenters, setAllCenters] = useState(false); // Estado para el checkbox "TODOS LOS CENTROS"
+  const [allCenters, setAllCenters] = useState(false); // Estado del checkbox
 
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
@@ -43,7 +43,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
     const params = {
       clientName: e.target.name.value,
       clientPhone: e.target.phone.value,
-      centerInfo: allCenters ? '' : filterCenter, // Si "TODOS LOS CENTROS" está activado, no filtramos por centro
+      centerInfo: allCenters ? '' : filterCenter, // No filtra por centro si "TODOS LOS CENTROS" está activado
     };
 
     mutate.mutate(params);
@@ -78,27 +78,30 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
           <Box display={'flex'} gap={2} alignItems="center">
             {state.userInfo.role === 'admin' && (
               <>
+                {/* Checkbox para seleccionar todos los centros */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={allCenters}
+                      onChange={() => setAllCenters(!allCenters)}
+                      disabled={mutate.isPending}
+                    />
+                  }
+                  label="TODOS LOS CENTROS"
+                />
+
+                {/* Selector de centro, deshabilitado si "TODOS LOS CENTROS" está activado */}
                 <SelectComponent
                   fixArrayFn={fixCentersArray}
                   params={`users/get-all-centers/${dataBase}`}
                   label={t('title.center')}
-                  required={!allCenters} // Solo es obligatorio si "TODOS LOS CENTROS" no está activado
-                  disabled={mutate.isPending || allCenters} // Deshabilitado si "TODOS LOS CENTROS" está activado
+                  required={!allCenters} // Solo obligatorio si no está activado el checkbox
+                  disabled={mutate.isPending || allCenters} // Deshabilitar si "TODOS LOS CENTROS" está activado
                   maxWidth={'250px'}
                   aditionalProperties={{
                     onChange: (e) => setFilterCenter(e.target.value),
                     value: filterCenter,
                   }}
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={allCenters}
-                      onChange={() => setAllCenters(!allCenters)} // Alterna el estado del checkbox
-                      disabled={mutate.isPending}
-                    />
-                  }
-                  label="TODOS LOS CENTROS"
                 />
               </>
             )}
@@ -119,7 +122,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
 
             <Box>
               <IconButton
-                aria-label="delete"
+                aria-label="search"
                 size="large"
                 type="submit"
                 disabled={mutate.isPending}
