@@ -2,7 +2,6 @@ import { SearchOutlined } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Card,
   CardContent,
   Chip,
   CircularProgress,
@@ -10,6 +9,8 @@ import {
   IconButton,
   TextField,
   Typography,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import { useContext, useState } from 'react';
 import ModalComponent from './ModalComponent';
@@ -24,7 +25,8 @@ import axios from 'axios';
 const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
-  const [highlightedAppointment, setHighlightedAppointment] = useState(null); // Nuevo estado para la cita resaltada
+  const [highlightedAppointment, setHighlightedAppointment] = useState(null);
+  const [allCenters, setAllCenters] = useState(false); // Estado para el checkbox "TODOS LOS CENTROS"
 
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
@@ -41,7 +43,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
     const params = {
       clientName: e.target.name.value,
       clientPhone: e.target.phone.value,
-      centerInfo: filterCenter,
+      centerInfo: allCenters ? '' : filterCenter, // Si "TODOS LOS CENTROS" está activado, no filtramos por centro
     };
 
     mutate.mutate(params);
@@ -54,11 +56,11 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   };
 
   const handleMouseEnter = (appointment) => {
-    setHighlightedAppointment(appointment); // Resaltar cita al pasar el mouse
+    setHighlightedAppointment(appointment);
   };
 
   const handleMouseLeave = () => {
-    setHighlightedAppointment(null); // Quitar resaltado al salir del mouse
+    setHighlightedAppointment(null);
   };
 
   return (
@@ -73,20 +75,32 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
 
       <ModalComponent open={isOpen} setOpen={setIsOpen}>
         <Box component={'form'} pt={5} onSubmit={handleSubmit}>
-          <Box display={'flex'} gap={2}>
+          <Box display={'flex'} gap={2} alignItems="center">
             {state.userInfo.role === 'admin' && (
-              <SelectComponent
-                fixArrayFn={fixCentersArray}
-                params={`users/get-all-centers/${dataBase}`}
-                label={t('title.center')}
-                required={true}
-                disabled={mutate.isPending}
-                maxWidth={'250px'}
-                aditionalProperties={{
-                  onChange: (e) => setFilterCenter(e.target.value),
-                  value: filterCenter,
-                }}
-              />
+              <>
+                <SelectComponent
+                  fixArrayFn={fixCentersArray}
+                  params={`users/get-all-centers/${dataBase}`}
+                  label={t('title.center')}
+                  required={!allCenters} // Solo es obligatorio si "TODOS LOS CENTROS" no está activado
+                  disabled={mutate.isPending || allCenters} // Deshabilitado si "TODOS LOS CENTROS" está activado
+                  maxWidth={'250px'}
+                  aditionalProperties={{
+                    onChange: (e) => setFilterCenter(e.target.value),
+                    value: filterCenter,
+                  }}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={allCenters}
+                      onChange={() => setAllCenters(!allCenters)} // Alterna el estado del checkbox
+                      disabled={mutate.isPending}
+                    />
+                  }
+                  label="TODOS LOS CENTROS"
+                />
+              </>
             )}
             <TextField
               id="outlined-basic"
@@ -97,7 +111,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
             />
             <TextField
               id="outlined-basic"
-              label="Telefono"
+              label="Teléfono"
               variant="filled"
               disabled={mutate.isPending}
               name="phone"
@@ -124,13 +138,13 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
               <Box
                 key={item._id}
                 onClick={() => handleSelectAppointment(item)}
-                onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
-                onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
+                onMouseEnter={() => handleMouseEnter(item)}
+                onMouseLeave={handleMouseLeave}
                 style={{
                   cursor: 'pointer',
                   backgroundColor:
                     highlightedAppointment?._id === item._id
-                      ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
+                      ? 'rgba(0, 0, 255, 0.1)'
                       : 'transparent',
                 }}
               >
@@ -139,7 +153,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
                     Nombre: {item.clientName}
                   </Typography>
                   <Typography gutterBottom component="div">
-                    Telefono: {item.clientPhone}
+                    Teléfono: {item.clientPhone}
                   </Typography>
                   <Typography gutterBottom component="div">
                     Fecha: {item.date}
