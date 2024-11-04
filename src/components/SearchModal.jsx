@@ -32,6 +32,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
   const { state } = useContext(UserContext);
+  const centerInfo = state.userInfo.centerId;
 
   const mutate = useMutation({
     mutationFn: (params) =>
@@ -44,7 +45,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
     const params = {
       clientName: e.target.name.value,
       clientPhone: e.target.phone.value,
-      centerInfo: isAllCenters ? '' : filterCenter, // Ignora el centro si isAllCenters está activo
+      centerInfo: isAllCenters ? '' : centerInfo, // Ignora el centro si isAllCenters está activo
     };
 
     mutate.mutate(params);
