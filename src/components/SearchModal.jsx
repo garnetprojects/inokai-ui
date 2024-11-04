@@ -4,9 +4,11 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Divider,
+  FormControlLabel,
   IconButton,
   TextField,
   Typography,
@@ -24,6 +26,7 @@ import axios from 'axios';
 const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
+  const [isAllCenters, setIsAllCenters] = useState(false); // Nuevo estado para el checkbox
   const [highlightedAppointment, setHighlightedAppointment] = useState(null); // Nuevo estado para la cita resaltada
 
   const { dataBase } = useParams();
@@ -41,7 +44,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
     const params = {
       clientName: e.target.name.value,
       clientPhone: e.target.phone.value,
-      centerInfo: filterCenter,
+      centerInfo: isAllCenters ? '' : filterCenter, // Ignora el centro si isAllCenters está activo
     };
 
     mutate.mutate(params);
@@ -79,8 +82,8 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
                 fixArrayFn={fixCentersArray}
                 params={`users/get-all-centers/${dataBase}`}
                 label={t('title.center')}
-                required={true}
-                disabled={mutate.isPending}
+                required={!isAllCenters} // Deshabilita si el checkbox está activo
+                disabled={mutate.isPending || isAllCenters}
                 maxWidth={'250px'}
                 aditionalProperties={{
                   onChange: (e) => setFilterCenter(e.target.value),
@@ -101,6 +104,18 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
               variant="filled"
               disabled={mutate.isPending}
               name="phone"
+            />
+
+            {/* Checkbox para TODOS LOS CENTROS */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isAllCenters}
+                  onChange={() => setIsAllCenters(!isAllCenters)}
+                  color="primary"
+                />
+              }
+              label="TODOS LOS CENTROS"
             />
 
             <Box>
