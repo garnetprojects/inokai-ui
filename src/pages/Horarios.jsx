@@ -41,15 +41,22 @@ const Horarios = () => {
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Función para convertir formato de fecha de Excel a una cadena MM/DD/YYYY
+  // Función para convertir formato de fecha de Excel a una cadena DD/MM/YYYY
   function excelDateToString(excelDate) {
     const date = new Date((excelDate - 25569) * 86400 * 1000); // Convertir desde número de Excel a milisegundos
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
 
     return `${month}/${day}/${year}`;
   }
+
+    // Función para convertir cadena de fecha de DD/MM/YYYY a MM/DD/YYYY
+    function convertDateToUSFormat(dateStr) {
+      const [day, month, year] = dateStr.split('/');
+      return `${month}/${day}/${year}`;
+    }
+    
 
   // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
@@ -93,8 +100,13 @@ const Horarios = () => {
             const columnName = keys[index];
             
             // Verificar si la columna es Fecha y el valor es un número
-            if (columnName === 'Fecha' && typeof value === 'number') {
-              obj[columnName] = excelDateToString(value);
+            if (columnName === 'Fecha'){
+                if(typeof value === 'number'){
+                  obj[columnName] = excelDateToString(value);
+                }else{
+                // Si el valor es texto, asumir que está en DD/MM/YYYY y convertir a MM/DD/YYYY
+                obj[columnName] = convertDateToUSFormat(value);
+                }
             } 
             // Verificar si la columna es Hora_Entrada o Hora_Salida y si el valor es un número
             else if (
