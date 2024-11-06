@@ -53,7 +53,6 @@ const Horarios = () => {
       });
     }
 
-    // Analizar Excel (.xls, .xlsx)
     else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -63,21 +62,44 @@ const Horarios = () => {
         const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
           header: 1,
         });
-
+    
         const keys = sheet[0];
         const parsedData = sheet.slice(1).map((row) =>
           row.reduce((obj, value, index) => {
-            obj[keys[index]] = value;
+            // Si el valor es un número y corresponde a una columna de tiempo, lo convertimos
+            if (typeof value === 'number' && isTimeColumn(keys[index])) {
+              obj[keys[index]] = excelTimeToString(value);
+            } else {
+              obj[keys[index]] = value;
+            }
             return obj;
           }, {})
         );
         setFileData(parsedData);
-
+    
         console.log(dateSelected);
       };
       reader.readAsArrayBuffer(file);
+    };
+    
+    // Función para identificar si una columna es de tipo tiempo
+    function isTimeColumn(columnName) {
+      // Agrega lógica para verificar si la columna es de tiempo, por ejemplo:
+      return columnName.toLowerCase().includes('hora');
     }
-  };
+    
+    // Función para convertir el formato de tiempo de Excel a una cadena
+    function excelTimeToString(excelTime) {
+      const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+    
+      // Formatear como hh:mm:ss
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
 
   const handleSubmit = async () => {
     let confirmContinue = true;
