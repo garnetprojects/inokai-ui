@@ -41,6 +41,16 @@ const Horarios = () => {
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  // Función para convertir formato de fecha de Excel a una cadena MM/DD/YYYY
+  function excelDateToString(excelDate) {
+    const date = new Date((excelDate - 25569) * 86400 * 1000); // Convertir desde número de Excel a milisegundos
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${month}/${day}/${year}`;
+  }
+
   // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
     if (!e.target.files[0]) return;
@@ -82,8 +92,12 @@ const Horarios = () => {
           row.reduce((obj, value, index) => {
             const columnName = keys[index];
             
+            // Verificar si la columna es Fecha y el valor es un número
+            if (columnName === 'Fecha' && typeof value === 'number') {
+              obj[columnName] = excelDateToString(value);
+            } 
             // Verificar si la columna es Hora_Entrada o Hora_Salida y si el valor es un número
-            if (
+            else if (
               (columnName === 'Hora_Entrada' || columnName === 'Hora_Salida') &&
               typeof value === 'number'
             ) {

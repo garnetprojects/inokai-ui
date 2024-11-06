@@ -62,3 +62,9 @@
 .boxPerfil {
   min-width: 200px;
 }
+
+@media (min-width: 1536px) {
+  .css-bluahz {
+      max-width: 0px;
+  }
+}
