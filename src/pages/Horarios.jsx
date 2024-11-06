@@ -28,7 +28,20 @@ const Horarios = () => {
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
 
-  // Manejar la carga del archivo
+  // Función para convertir formato de tiempo de Excel a una cadena hh:mm:ss
+  function excelTimeToString(excelTime) {
+    const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    // Formatear como hh:mm:ss
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
     if (!e.target.files[0]) return;
     const file = e.target.files[0];
@@ -53,6 +66,7 @@ const Horarios = () => {
       });
     }
 
+    // Analizar Excel (.xls, .xlsx)
     else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -62,44 +76,31 @@ const Horarios = () => {
         const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
           header: 1,
         });
-    
+
         const keys = sheet[0];
         const parsedData = sheet.slice(1).map((row) =>
           row.reduce((obj, value, index) => {
-            // Si el valor es un número y corresponde a una columna de tiempo, lo convertimos
-            if (typeof value === 'number' && isTimeColumn(keys[index])) {
-              obj[keys[index]] = excelTimeToString(value);
+            const columnName = keys[index];
+            
+            // Verificar si la columna es Hora_Entrada o Hora_Salida y si el valor es un número
+            if (
+              (columnName === 'Hora_Entrada' || columnName === 'Hora_Salida') &&
+              typeof value === 'number'
+            ) {
+              obj[columnName] = excelTimeToString(value);
             } else {
-              obj[keys[index]] = value;
+              obj[columnName] = value;
             }
             return obj;
           }, {})
         );
         setFileData(parsedData);
-    
+
         console.log(dateSelected);
       };
       reader.readAsArrayBuffer(file);
-    };
-    
-    // Función para identificar si una columna es de tipo tiempo
-    function isTimeColumn(columnName) {
-      // Agrega lógica para verificar si la columna es de tiempo, por ejemplo:
-      return columnName.toLowerCase().includes('hora');
     }
-    
-    // Función para convertir el formato de tiempo de Excel a una cadena
-    function excelTimeToString(excelTime) {
-      const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-    
-      // Formatear como hh:mm:ss
-      return `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+  };
 
   const handleSubmit = async () => {
     let confirmContinue = true;
