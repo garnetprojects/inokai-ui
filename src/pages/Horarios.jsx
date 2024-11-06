@@ -56,7 +56,7 @@ const Horarios = () => {
       const [day, month, year] = dateStr.split('/');
       return `${month}/${day}/${year}`;
     }
-    
+
 
   // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
@@ -65,23 +65,30 @@ const Horarios = () => {
 
     const fileExtension = file.name.split('.').pop();
 
-    // Analizar CSV
-    if (fileExtension === 'csv') {
-      Papa.parse(file, {
-        complete: (result) => {
-          const data = result.data;
-          const keys = data[0];
-          const parsedData = data.slice(1).map((row) =>
-            row.reduce((obj, value, index) => {
-              obj[keys[index]] = value;
-              return obj;
-            }, {})
-          );
-          setFileData(parsedData);
-        },
-        header: false,
-      });
-    }
+ // Analizar CSV
+if (fileExtension === 'csv') {
+  Papa.parse(file, {
+    complete: (result) => {
+      const data = result.data;
+      const keys = data[0];
+      const parsedData = data.slice(1).map((row) =>
+        row.reduce((obj, value, index) => {
+          const columnName = keys[index];
+          
+          // Verificar si la columna es "Fecha" y si el valor es una cadena en formato DD/MM/YYYY
+          if (columnName === 'Fecha' && typeof value === 'string' && value.includes('/')) {
+            obj[columnName] = convertDateToUSFormat(value);
+          } else {
+            obj[columnName] = value;
+          }
+          return obj;
+        }, {})
+      );
+      setFileData(parsedData);
+    },
+    header: false,
+  });
+}
 
     // Analizar Excel (.xls, .xlsx)
     else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
