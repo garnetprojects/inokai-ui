@@ -36,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const [t, i18n] = useTranslation('global');
+  const [t] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -64,25 +64,23 @@ const Header = ({ dataBase }) => {
   const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
-
   const { invalidate } = useInvalidate();
 
   const mutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async (formData) => {
       if (open?._id) {
         return await axios
-          .put(`/users/edit-employee/${dataBase}/${open?._id}`, data)
+          .put(`/users/edit-employee/${dataBase}/${open?._id}`, formData)
           .then((response) => response.data);
       }
 
       return await axios
-        .post(`/users/create-employee/${dataBase}/${center}`, data)
+        .post(`/users/create-employee/${dataBase}/${center}`, formData)
         .then((response) => response.data);
     },
-
-    onSuccess: (data) => {
+    onSuccess: () => {
       invalidate(['empleados']);
-      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
+      enqueueSnackbar('Acción realizada con éxito', { variant: 'success' });
       setOpen(false);
     },
     onError: (err) => {
@@ -91,12 +89,11 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
-
       return { serviceName, duration };
     });
 
@@ -113,10 +110,8 @@ const Header = ({ dataBase }) => {
       specialities,
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
+      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
       return;
     }
 
@@ -125,25 +120,37 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
-    if (profileImgUrl) {
-      console.log("Hay logo para subir");
-      console.log("Esta profileImgUrl", profileImgUrl);
+    try {
+      let profileImgUrlData = null;
+      if (profileImgUrl) {
+        profileImgUrlData = await imageUpload(profileImgUrl, 'large-l-ino24');
+      }
 
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
-      console.log("Esta data.profileImgUrl", data.profileImgUrl);
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('email', data.email);
+      formData.append('phone', data.phone);
+      formData.append('DNI', data.DNI);
+      formData.append('password', data.password || '');
+      formData.append('isAvailable', data.isAvailable);
+      formData.append('services', JSON.stringify(services));
+      formData.append('specialities', JSON.stringify(specialities));
 
+      if (profileImgUrlData) {
+        formData.append('profileImgUrl', profileImgUrlData);
+      } else if (profileImgUrl) {
+        formData.append('profileImage', profileImgUrl[0]);
+      }
+
+      mutation.mutate(formData);
+    } catch (error) {
+      console.error('Error al manejar la imagen:', error);
+      enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
     }
-
-    mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -279,133 +286,60 @@ const Header = ({ dataBase }) => {
                 <MenuItem value={'no'}>{t('messages.no')}</MenuItem>
               </TextField>
             </Grid>
-          </Grid>
-          <Box xs={12} display={'flex'} gap={5} mt={3}>
-            <HandleLogo
-              profileImgUrl={profileImgUrl}
-              setProfileImgUrl={setProfileImgUrl}
-              textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
-              />
-          </Box>
 
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ width: '100%', mt: 5 }}
-            disabled={mutation.isPending}
-          >
-            {open?._id ? t('buttons.edit') : t('buttons.create')}
-          </Button>
+            <Grid xs={12}>
+              <label htmlFor="profileImg" style={{ cursor: 'pointer' }}>
+                <CloudUploadIcon />
+                <input
+                  type="file"
+                  id="profileImg"
+                  style={{ display: 'none' }}
+                  accept="image/*"
+                  onChange={(e) => setProfileImgUrl(e.target.files)}
+                />
+                {profileImgUrl ? (
+                  <span> {profileImgUrl[0]?.name} </span>
+                ) : (
+                  <span> {t('inputLabel.uploadProfileImage')} </span>
+                )}
+              </label>
+            </Grid>
+          </Grid>
+
+          <Box mt={4}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? t('loading') : t('buttons.submit')}
+            </Button>
+          </Box>
         </form>
       </ModalComponent>
     </Box>
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
-  const [t] = useTranslation('global');
-  console.log(profileImgUrl);
+const TableBody = ({ dataBase }) => {
+  const { open, setOpen } = useContext(EmpleadosContext);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: async () =>
+      await axios
+        .get(`/users/get-all-employees/${dataBase}`)
+        .then((response) => response.data),
+  });
 
   return (
-    <Box mb={2}>
-      <Box mb={2}>
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-        >
-          {textBtn}
-
-          <input
-            accept="image/*"
-            type="file"
-            hidden
-            // name="uploadImages"
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
-              }
-            }}
-          />
-        </Button>
-      </Box>
-
-      {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
-      )}
-    </Box>
+    <TableComponent
+      isLoading={isLoading}
+      rows={data}
+      rowActions={(params) => <CellActionEmployee {...params} />}
+    />
   );
 };
 
-
-const TableBody = ({ dataBase }) => {
-  const [t] = useTranslation('global');
-
-  const columns = [
-    {
-      header: t('inputLabel.dni'),
-      accessorKey: 'DNI',
-    },
-    {
-      header: t('inputLabel.name'),
-      accessorKey: 'name',
-    },
-
-    {
-      header: t('inputLabel.email'),
-      accessorKey: 'email',
-    },
-    {
-      header: t('inputLabel.phoneNumber'),
-      accessorKey: 'phone',
-    },
-    {
-      header: t('title.center'),
-      accessorKey: 'centerInfo.centerName',
-    },
-    {
-      header: t('inputLabel.action'),
-      cell: (info) => (
-        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
-      ),
-    },
-  ];
-
-  const { isLoading, isError, data } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: () =>
-      axios(`/users/get-all-employees/${dataBase}`).then(
-        (response) => response.data
-      ),
-  });
-
-  if (isLoading)
-    return (
-      <Skeleton
-        variant="rectangular"
-        // animation="wave"
-        height={300}
-        sx={{ bgcolor: 'rgb(203 213 225)' }}
-      />
-    );
-
-  if (isError) return <p>Ocurrio algo</p>;
-
-  console.log(data);
-
-  return <TableComponent columns={columns} data={data} />;
-};
-// comentario
 export default EmpleadosPage;
