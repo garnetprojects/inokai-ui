@@ -331,40 +331,61 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
 };
 
 const TableBody = ({ dataBase }) => {
-  const { data, isLoading } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: () =>
-      axios.get(`/users/get-all-employees/${dataBase}`).then((res) => res.data),
-  });
+  const [t] = useTranslation('global');
 
   const columns = [
-    { Header: 'Name', accessor: 'name' },
-    { Header: 'Email', accessor: 'email' },
-    { Header: 'Phone', accessor: 'phone' },
-    { Header: 'DNI', accessor: 'DNI' },
-    { Header: 'Available', accessor: 'isAvailable' },
-    { Header: 'Actions', accessor: 'actions' },
+    {
+      header: t('inputLabel.dni'),
+      accessorKey: 'DNI',
+    },
+    {
+      header: t('inputLabel.name'),
+      accessorKey: 'name',
+    },
+
+    {
+      header: t('inputLabel.email'),
+      accessorKey: 'email',
+    },
+    {
+      header: t('inputLabel.phoneNumber'),
+      accessorKey: 'phone',
+    },
+    {
+      header: t('title.center'),
+      accessorKey: 'centerInfo.centerName',
+    },
+    {
+      header: t('inputLabel.action'),
+      cell: (info) => (
+        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
+      ),
+    },
   ];
 
-  if (isLoading) {
+  const { isLoading, isError, data } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: () =>
+      axios(/users/get-all-employees/${dataBase}).then(
+        (response) => response.data
+      ),
+  });
+
+  if (isLoading)
     return (
-      <Skeleton variant="rectangular" width="100%" height={400} sx={{ mb: 3 }} />
+      <Skeleton
+        variant="rectangular"
+        // animation="wave"
+        height={300}
+        sx={{ bgcolor: 'rgb(203 213 225)' }}
+      />
     );
-  }
 
-  return (
-    <TableComponent
-      columns={columns}
-      data={data}
-      cellActions={(row) => (
-        <CellActionEmployee
-          row={row}
-          dataBase={dataBase}
-          center={row.center?._id}
-        />
-      )}
-    />
-  );
+  if (isError) return <p>Ocurrio algo</p>;
+
+  console.log(data);
+
+  return <TableComponent columns={columns} data={data} />;
 };
-
+// comentario
 export default EmpleadosPage;
