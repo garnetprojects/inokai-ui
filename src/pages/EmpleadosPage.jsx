@@ -254,7 +254,6 @@ const TableBody = ({ dataBase }) => {
       return response.data;
     }
   );
-
   const handleDelete = (id) => {
     axios
       .delete(`/users/delete-employee/${dataBase}/${id}`)
