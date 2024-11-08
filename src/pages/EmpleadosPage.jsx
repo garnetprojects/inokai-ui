@@ -1,296 +1,338 @@
 /* eslint-disable react/prop-types */
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { Box, Button, CircularProgress, Container, Divider, IconButton, TextField, Typography, Grid } from '@mui/material';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { Link, useParams } from 'react-router-dom';
-import { getError } from '../utils/getError';
-import TableComponent from '../components/TableComponent';
-import { CellActionCenter, CellActionService } from '../components/CellActionComponents';
-import { useInvalidate } from '../utils/Invalidate';
-import { useEffect, useState } from 'react';
-import AddIcon from '@mui/icons-material/Add';
+
 import ModalComponent from '../components/ModalComponent';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { SelectNoFetchComponent } from '../components/SelectComponent';
-import { enqueueSnackbar } from 'notistack';
-import { urlBD } from '../utils/urlBD';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import TableComponent from '../components/TableComponent';
+
+import {
+  Box,
+  Button,
+  Container,
+  MenuItem,
+  Skeleton,
+  TextField,
+  Typography,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import Grid from '@mui/material/Unstable_Grid2';
+import axios from 'axios';
+import { CellActionEmployee } from '../components/CellActionComponents';
+import { useInvalidate } from '../utils/Invalidate';
 import { useTranslation } from 'react-i18next';
-import { imageUpload } from '../utils/helpers';
+import { useParams } from 'react-router-dom';
+import SelectComponent from '../components/SelectComponent';
+import { fixCentersArray } from '../utils/fixArray';
+import ServicesBox from '../components/ServicesBox';
+import { enqueueSnackbar } from 'notistack';
+import { getError } from '../utils/getError';
 import SpecialitiesBox from '../components/SpecialitiesBox';
-import HandleLogo from '../components/HandleLogo'; // Importa el componente HandleLogo
+import InputPhone from '../components/InputPhone';
+import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
+import { phoneCountry } from '../utils/selectData';
+import { imageUpload } from '../utils/helpers';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-const EmpresaEditPage = () => {
-  const { nombreEmpresa } = useParams();
-  const { isLoading, isError, data, error } = useQuery({
-    queryKey: ['empresa', nombreEmpresa],
-    queryFn: async () => await axios(`/users/get-empresa/${nombreEmpresa}`).then((res) => res.data),
-  });
+export const EmpleadosContext = createContext();
 
-  if (isLoading)
-    return (
-      <Container>
-        <CircularProgress />
-      </Container>
-    );
-
-  if (isError)
-    return (
-      <Container>
-        <p>{getError(error)}</p>
-      </Container>
-    );
+const EmpleadosPage = () => {
+  const [t] = useTranslation('global');
+  const [open, setOpen] = useState(null);
+  const { dataBase } = useParams();
 
   return (
-    <Container>
-      <Header data={data} nombreEmpresa={nombreEmpresa} />
-      <Settings nombreEmpresa={nombreEmpresa} />
-      <Centers data={data.centers} centerToEdit={{ nombreEmpresa }} />
-      <Services data={data.services} centerToEdit={{ nombreEmpresa }} />
-    </Container>
+    <EmpleadosContext.Provider value={{ open, setOpen }}>
+      <Container>
+        <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+          {t('menu.employees')}
+        </Typography>
+
+        <Header dataBase={dataBase} />
+
+        <TableBody dataBase={dataBase} />
+      </Container>
+    </EmpleadosContext.Provider>
   );
 };
 
-const Header = ({ data, nombreEmpresa }) => {
+const Header = ({ dataBase }) => {
   const [t] = useTranslation('global');
+  const { open, setOpen } = useContext(EmpleadosContext);
+  const [selectedOption, setSelectedOption] = useState([]);
+  const [specialities, setSpecialities] = useState([]);
+  const [center, setCenter] = useState('');
+  const [profileImgUrl, setProfileImgUrl] = useState(null);
+
+  const centerId = open?.centerInfo?._id;
+
   const { invalidate } = useInvalidate();
-  
-  const [profileImgUrl, setProfileImgUrl] = useState(null); // Estado para la URL de la imagen de perfil
 
   const mutation = useMutation({
-    mutationFn: async (dataUpd) =>
-      await axios.put(`/users/edit-admin/${nombreEmpresa}/${data.users._id}`, dataUpd).then((response) => response.data),
-    onSuccess: (data) => {
-      invalidate(['empresa', nombreEmpresa]);
-      enqueueSnackbar('Se editó con éxito', { variant: 'success' });
-    },
-    onError: (err) => {
-      enqueueSnackbar(getError(err), { variant: 'error' });
-    },
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const dataupd = {
-      name: e.target.name.value,
-      email: e.target.email.value,
-      DNI: e.target.DNI.value,
-    };
-
-    // Si hay una imagen seleccionada, agregarla a los datos a enviar
-    if (profileImgUrl) {
-      dataupd.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
-    }
-
-    mutation.mutate(dataupd); // Enviar los datos, incluyendo la URL de la imagen si se seleccionó una
-  };
-
-  return (
-    <>
-      <Button LinkComponent={Link} to={-1} startIcon={<ArrowBackIosNewIcon />}>
-        {t('buttons.back')}
-      </Button>
-
-      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
-        {t('title.company')}:{' '}
-        <Box component={'span'} fontWeight={'300'}>
-          {nombreEmpresa}
-        </Box>
-      </Typography>
-
-      <Typography sx={{ textTransform: 'lowercase' }}>
-        {urlBD(nombreEmpresa)}{' '}
-        <IconButton
-          onClick={() => {
-            navigator.clipboard.writeText(urlBD(nombreEmpresa));
-            enqueueSnackbar('Copied', { variant: 'success' });
-          }}
-        >
-          <ContentCopyIcon />
-        </IconButton>
-      </Typography>
-
-      <Divider sx={{ mb: 2 }} />
-
-      <Typography variant={'h4'} sx={{ textTransform: 'capitalize' }} mb={2}>
-        {t('title.manager')}
-      </Typography>
-
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={2} mb={1}>
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.name')}
-              name="name"
-              variant="standard"
-              sx={{ width: '100%' }}
-              required
-              defaultValue={data.users.name}
-            />
-          </Grid>
-
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.email')}
-              name="email"
-              type="email"
-              variant="standard"
-              defaultValue={data.users.email}
-              required
-              sx={{ width: '100%' }}
-            />
-          </Grid>
-
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.dni')}
-              type="text"
-              name="DNI"
-              required
-              variant="standard"
-              defaultValue={data.users.DNI}
-              sx={{ width: '100%' }}
-            />
-          </Grid>
-        </Grid>
-
-        {/* Componente HandleLogo para manejar la imagen de perfil */}
-        <HandleLogo
-          urlLogo={profileImgUrl}
-          setUrlLogo={setProfileImgUrl}
-          textBtn={`${t('buttons.chooseLogo')} 1`}
-          cloudinary_url={data?.profileImgUrl || null} // Usa la URL existente si ya tiene una imagen
-        />
-
-        <Button variant="contained" type="submit" disabled={mutation.isPending}>
-          {t('buttons.edit')}
-        </Button>
-      </form>
-
-      <Divider sx={{ my: 3 }} />
-    </>
-  );
-};
-
-const Settings = ({ nombreEmpresa }) => {
-  const [t] = useTranslation('global');
-  const { invalidate } = useInvalidate();
-  const { isLoading, isError, data, error } = useQuery({
-    queryKey: ['settings', nombreEmpresa],
-    queryFn: async () => await axios(`/settings/get-settings/${nombreEmpresa}`).then((res) => res.data),
-  });
-
-  const [selectValue, setSelectValue] = useState('');
-  const [urlLogo, setUrlLogo] = useState(null);
-  const [urlLogo2, setUrlLogo2] = useState(null);
-
-  const mutation = useMutation({
-    mutationFn: async (dataBody) => {
-      if (data?._id) {
+    mutationFn: async (data) => {
+      if (open?._id) {
         return await axios
-          .put(`/settings/edit-settings/${nombreEmpresa}/${data?._id}`, dataBody)
-          .then((res) => res.data);
+          .put(`/users/edit-employee/${dataBase}/${open?._id}`, data)
+          .then((response) => response.data);
       }
 
       return await axios
-        .post(`/settings/crear-settings/${nombreEmpresa}`, dataBody)
-        .then((res) => res.data);
+        .post(`/users/create-employee/${dataBase}/${center}`, data)
+        .then((response) => response.data);
     },
+
     onSuccess: (data) => {
-      invalidate(['settings']);
-      enqueueSnackbar('Cambios Subidos', { variant: 'success' });
+      invalidate(['empleados']);
+      enqueueSnackbar('Acción lograda con éxito', { variant: 'success' });
+      setOpen(false);
     },
     onError: (err) => {
+      console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     },
   });
 
-  useEffect(() => {
-    setSelectValue(data?.status || 'active');
-  }, [isLoading]);
-
-  if (isLoading) return <CircularProgress />;
-
-  if (isError) return <p>{getError(error)}</p>;
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const confirmUpload = confirm(t('messages.confirmChanges'));
 
-    if (!confirmUpload) return;
+    const services = selectedOption.map((item) => {
+      const [serviceName, duration] = item.split(' - ');
+      return { serviceName, duration };
+    });
 
-    const dataForm = new FormData(e.target);
+    const data = {
+      name: e.target.name.value,
+      email: e.target.email.value,
+      phone: e.target?.countryPhone?.value
+        ? e.target?.countryPhone?.value + e.target.phone.value
+        : e.target?.phone?.value,
+      DNI: e.target.DNI.value,
+      password: e.target?.password?.value,
+      isAvailable: e.target?.isAvailable?.value,
+      services,
+      specialities,
+    };
 
-    if (urlLogo) {
-      dataForm.append('uploadImages', imageUpload(urlLogo, 'large-l-ino24'));
+    if (!selectedOption.length || !services.length) {
+      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
+      return;
     }
 
-    if (urlLogo2) {
-      dataForm.append('uploadImages', imageUpload(urlLogo2, 'small-l-ino24'));
+    if (open?._id) {
+      delete data.password;
+      delete data.DNI;
     }
 
-    mutation.mutate(dataForm);
+    try {
+      // Subir imagen de perfil si existe
+      if (profileImgUrl) {
+        const uploadedImageUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
+        data.profileImgUrl = uploadedImageUrl;
+      }
+
+      mutation.mutate(data);
+    } catch (error) {
+      console.log(error);
+      enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+    }
   };
 
+  useEffect(() => {
+    if (open?.services) {
+      setSelectedOption(
+        open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
+      );
+    }
+
+    if (open?.specialities) {
+      setSpecialities(open?.specialities);
+    }
+  }, [open]);
+
   return (
-    <>
-      <Typography variant={'h4'} sx={{ textTransform: 'capitalize' }} mb={2}>
-        {t('title.setting')}
-      </Typography>
+    <Box component={'header'} mb={5}>
+      <Button
+        variant="outlined"
+        onClick={() => setOpen(true)}
+        startIcon={<AddIcon />}
+      >
+        {t('buttons.create')}
+      </Button>
+      <ModalComponent
+        open={!!open}
+        setOpen={setOpen}
+        onClose={() => setSelectedOption([])}
+      >
+        <form action="" onSubmit={handleSubmit}>
+          <Typography mt={3} variant="h4" sx={{ textTransform: 'capitalize' }}>
+            {t('menu.employees')}
+          </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={2} mb={1}>
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.address')}
-              name="companyAddress"
-              variant="standard"
-              sx={{ width: '100%' }}
-              defaultValue={data?.companyAddress}
-            />
-          </Grid>
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.companyId')}
-              name="companyId"
-              variant="standard"
-              sx={{ width: '100%' }}
-              defaultValue={data?.companyId}
-            />
-          </Grid>
+          <Grid container spacing={5}>
+            <Grid xs={12}>
+              <ServicesBox
+                setSelectedOption={setSelectedOption}
+                selectedOption={selectedOption}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+            <Grid xs={12}>
+              <SpecialitiesBox
+                selectedOption={specialities}
+                setSelectedOption={setSpecialities}
+                disabled={mutation.isPending}
+              />
+            </Grid>
 
-          <Grid xs={12} md={6}>
-            <TextField
-              label={t('inputLabel.phone')}
-              name="companyPhone"
-              variant="standard"
-              sx={{ width: '100%' }}
-              defaultValue={data?.companyPhone}
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.name')}
+                variant="standard"
+                sx={{ width: '100%' }}
+                name="name"
+                disabled={mutation.isPending}
+                defaultValue={open?.name || ''}
+                required
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.email')}
+                name="email"
+                type="email"
+                defaultValue={open?.email || ''}
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.dni')}
+                name="DNI"
+                type="text"
+                defaultValue={open?.DNI || ''}
+                variant="standard"
+                sx={{ width: '100%' }}
+                required
+                disabled={!!open?._id || mutation.isPending}
+              />
+            </Grid>
+
+            {!open?._id && (
+              <Grid xs={12} md={6}>
+                <TextField
+                  label={t('inputLabel.password')}
+                  type="password"
+                  variant="standard"
+                  sx={{ width: '100%' }}
+                  name="password"
+                  defaultValue={open?.password || ''}
+                  disabled={mutation.isPending}
+                  required
+                />
+              </Grid>
+            )}
+
+            <InputPhone
+              nameCountry={'countryPhone'}
+              disabled={mutation.isPending}
+              defaultValue={eliminarPrimerosCharSiCoinciden(
+                open?.phone ?? '',
+                phoneCountry
+              )}
             />
+
+            <Grid xs={12} md={6}>
+              <SelectComponent
+                fixArrayFn={fixCentersArray}
+                params={`users/get-all-centers/${dataBase}`}
+                label={t('title.center')}
+                required={true}
+                aditionalProperties={{
+                  onChange: (e) => setCenter(e.target.value),
+                  value: center || centerId || '',
+                }}
+                disabled={mutation.isPending}
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.isAvailable')}
+                name="isAvailable"
+                variant="standard"
+                fullWidth
+                disabled={mutation.isPending}
+                select
+                defaultValue={open?.isAvailable || 'yes'}
+              >
+                <MenuItem value={'yes'}>{t('messages.yes')}</MenuItem>
+                <MenuItem value={'no'}>{t('messages.no')}</MenuItem>
+              </TextField>
+            </Grid>
           </Grid>
-        </Grid>
-        {/* Agrega la imagen del logo */}
-        <HandleLogo
-          urlLogo={urlLogo}
-          setUrlLogo={setUrlLogo}
-          textBtn={`${t('buttons.chooseLogo')} 1`}
-          cloudinary_url={data?.companyLogo || null}
-        />
-        {/* Agrega otra imagen de logo si es necesario */}
-        <HandleLogo
-          urlLogo={urlLogo2}
-          setUrlLogo={setUrlLogo2}
-          textBtn={`${t('buttons.chooseLogo')} 2`}
-          cloudinary_url={data?.companyLogo2 || null}
-        />
-        <Button variant="contained" type="submit" disabled={mutation.isPending}>
-          {t('buttons.edit')}
-        </Button>
-      </form>
-    </>
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
+            <HandleLogo
+              profileImgUrl={profileImgUrl}
+              setProfileImgUrl={setProfileImgUrl}
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={open?.profileImgUrl || null}
+            />
+          </Box>
+
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ width: '100%', mt: 5 }}
+            disabled={mutation.isPending}
+          >
+            {open?._id ? t('buttons.edit') : t('buttons.create')}
+          </Button>
+        </form>
+      </ModalComponent>
+    </Box>
   );
 };
 
-export default EmpresaEditPage;
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const [t] = useTranslation('global');
+
+  return (
+    <Box mb={2}>
+      <Button
+        component="label"
+        variant="contained"
+        startIcon={<CloudUploadIcon />}
+      >
+        {textBtn}
+        <input
+          accept="image/*"
+          type="file"
+          hidden
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setProfileImgUrl(e.target.files[0]); // Set single file
+            }
+          }}
+        />
+      </Button>
+
+      {(cloudinary_url || profileImgUrl) && (
+        <img
+          src={profileImgUrl ? URL.createObjectURL(profileImgUrl) : cloudinary_url}
+          alt="Logo"
+          decoding="async"
+          height={130}
+          width={250}
+        />
+      )}
+    </Box>
+  );
+};
+
+// Aquí agregas el componente TableBody y cualquier otra parte de la lógica que falte para completar la aplicación.
+
+export default EmpleadosPage;
