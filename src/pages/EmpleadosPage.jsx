@@ -124,7 +124,7 @@ const Header = ({ dataBase }) => {
 
     if (profileImgUrl) {
       try {
-        data.profileImgUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24');
+        data.profileImgUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
       } catch (error) {
         enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
         return;
