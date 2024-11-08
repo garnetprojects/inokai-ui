@@ -36,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const [t] = useTranslation('global');
+  const [t, i18n] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -126,14 +126,24 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
+      console.log("Hay logo para subir");
+      console.log("Esta profileImgUrl", profileImgUrl);
+
       data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+      console.log("Esta data.profileImgUrl", data.profileImgUrl);
+
     }
 
     mutation.mutate(data);
   };
 
+  console.log({ open, specialities, selectedOption }, 'aqui');
+
   useEffect(() => {
+    console.log(open);
+
     if (open?.services) {
+      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -276,7 +286,7 @@ const Header = ({ dataBase }) => {
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
               cloudinary_url={open?.profileImgUrl || null} // Ensure data source
-            />
+              />
           </Box>
 
           <Button
@@ -295,40 +305,50 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
+  console.log(profileImgUrl);
 
   return (
     <Box mb={2}>
       <Box mb={2}>
         <Button
           component="label"
-          variant="outlined"
-          sx={{ display: 'flex', gap: 2 }}
-          disabled={mutation.isPending}
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
         >
-          <CloudUploadIcon /> {textBtn}
+          {textBtn}
+
           <input
-            type="file"
             accept="image/*"
-            onChange={(e) => setProfileImgUrl(e.target.files[0])}
+            type="file"
             hidden
-          />
-        </Button>
-        {cloudinary_url && (
-          <img
-            src={cloudinary_url}
-            alt="Profile"
-            style={{
-              width: 80,
-              height: 80,
-              objectFit: 'cover',
-              borderRadius: '50%',
+            // name="uploadImages"
+            onChange={(e) => {
+              if (e.target.files) {
+                setProfileImgUrl(e.target.files);
+              }
             }}
           />
-        )}
+        </Button>
       </Box>
+
+      {(cloudinary_url || profileImgUrl) && (
+        <>
+          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
+
+          <img
+            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+            alt="Logo"
+            decoding="async"
+            height={130}
+            width={250}
+          />
+          {/* <img src={urlLogo} height={70} width={150} /> */}
+        </>
+      )}
     </Box>
   );
 };
+
 
 const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
@@ -366,7 +386,7 @@ const TableBody = ({ dataBase }) => {
   const { isLoading, isError, data } = useQuery({
     queryKey: ['empleados'],
     queryFn: () =>
-      axios(/users/get-all-employees/${dataBase}).then(
+      axios(`/users/get-all-employees/${dataBase}`).then(
         (response) => response.data
       ),
   });

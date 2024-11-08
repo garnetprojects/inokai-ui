@@ -249,7 +249,6 @@ const Settings = ({ nombreEmpresa }) => {
 
   useEffect(() => {
     setSelectValue(data?.status || 'active');
-    // setUrlLogo(data?.logo[0]?.cloudinary_url || '');
   }, [isLoading]);
 
   if (isLoading) return <CircularProgress />;
