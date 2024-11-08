@@ -1,32 +1,23 @@
 /* eslint-disable react/prop-types */
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Box, Button, Container, Grid, Skeleton, TextField, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import ModalComponent from '../components/ModalComponent';
 import TableComponent from '../components/TableComponent';
-import {
-  Box,
-  Button,
-  Container,
-  MenuItem,
-  Skeleton,
-  TextField,
-  Typography,
-  Grid,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import axios from 'axios';
 import { useInvalidate } from '../utils/Invalidate';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
   const [t] = useTranslation('global');
-  const [open, setOpen] = useState(false); // Simplificado a booleano
-  const { dataBase, centerId } = useParams(); // Aquí agregamos centerId
+  const [open, setOpen] = useState(false);
+  const { dataBase, centerId } = useParams(); // Added centerId to params
 
   return (
     <EmpleadosContext.Provider value={{ open, setOpen }}>
@@ -50,43 +41,32 @@ const Header = ({ dataBase, centerId }) => {
     phone: '',
     DNI: '',
     password: '',
-    services: [], // Debe ser un array de servicios
+    services: [],
     specialities: [],
-    profileImgUrl: null, // Para la imagen de perfil
+    profileImgUrl: null,
   });
 
   const { invalidate } = useInvalidate();
-  const [isEditMode, setIsEditMode] = useState(false); // Modo de edición o creación
-  const [currentEmployeeId, setCurrentEmployeeId] = useState(null); // ID del empleado en edición
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentEmployeeId, setCurrentEmployeeId] = useState(null);
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      if (isEditMode) {
-        // Editar empleado
-        const url = `/users/edit-employee/${dataBase}/${currentEmployeeId}`;
-        return await axios.put(url, data).then((response) => response.data);
-      } else {
-        // Crear nuevo empleado
-        const url = `/users/create-employee/${dataBase}/${centerId}`;
-        return await axios.post(url, data).then((response) => response.data);
-      }
+      const url = isEditMode
+        ? `/users/edit-employee/${dataBase}/${currentEmployeeId}`
+        : `/users/create-employee/${dataBase}/${centerId}`;
+      const response = await axios({
+        method: isEditMode ? 'put' : 'post',
+        url,
+        data,
+      });
+      return response.data;
     },
     onSuccess: () => {
       invalidate(['empleados']);
       enqueueSnackbar(isEditMode ? 'Empleado editado correctamente' : 'Empleado creado correctamente', { variant: 'success' });
       setOpen(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        DNI: '',
-        password: '',
-        services: [],
-        specialities: [],
-        profileImgUrl: null,
-      });
-      setIsEditMode(false);
-      setCurrentEmployeeId(null);
+      resetForm();
     },
     onError: (err) => {
       enqueueSnackbar(getError(err), { variant: 'error' });
@@ -106,7 +86,6 @@ const Header = ({ dataBase, centerId }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Subir imagen
       const formData = new FormData();
       formData.append('file', file);
 
@@ -117,16 +96,30 @@ const Header = ({ dataBase, centerId }) => {
         .then((response) => {
           setFormData((prevData) => ({
             ...prevData,
-            profileImgUrl: response.data.url, // Asumimos que la respuesta devuelve la URL de la imagen
+            profileImgUrl: response.data.url,
           }));
         })
         .catch((error) => enqueueSnackbar(getError(error), { variant: 'error' }));
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      DNI: '',
+      password: '',
+      services: [],
+      specialities: [],
+      profileImgUrl: null,
+    });
+    setIsEditMode(false);
+    setCurrentEmployeeId(null);
+  };
+
   useEffect(() => {
     if (open && currentEmployeeId) {
-      // Si estamos en modo edición, cargar los datos del empleado
       axios.get(`/users/get-employee/${dataBase}/${currentEmployeeId}`).then((response) => {
         const employee = response.data;
         setFormData({
@@ -150,7 +143,7 @@ const Header = ({ dataBase, centerId }) => {
         variant="outlined"
         onClick={() => {
           setOpen(true);
-          setIsEditMode(false); // Reseteamos a modo creación
+          setIsEditMode(false);
         }}
         startIcon={<AddIcon />}
       >
@@ -243,7 +236,7 @@ const Header = ({ dataBase, centerId }) => {
               )}
             </Grid>
             <Grid xs={12}>
-              <Button variant="contained" type="submit" fullWidth>
+              <Button variant="contained" type="submit" fullWidth disabled={mutation.isLoading}>
                 {isEditMode ? t('buttons.edit') : t('buttons.create')}
               </Button>
             </Grid>
@@ -256,14 +249,12 @@ const Header = ({ dataBase, centerId }) => {
 
 const TableBody = ({ dataBase }) => {
   const { data, isLoading, isError } = useQuery(
-    ['empleados'],
+    ['empleados', dataBase],
     async () => {
       const response = await axios.get(`/users/get-all-employees/${dataBase}`);
       return response.data;
     }
   );
-
-  const { enqueueSnackbar } = useSnackbar();
 
   const handleDelete = (id) => {
     axios
@@ -276,15 +267,11 @@ const TableBody = ({ dataBase }) => {
       .catch((error) => enqueueSnackbar(getError(error), { variant: 'error' }));
   };
 
-  if (isLoading) return <Skeleton variant="rectangular" height={400} />;
-  if (isError || !data) return <Typography>Error al cargar datos</Typography>;
+  if (isLoading) return <Skeleton variant="rectangular" height={200} />;
 
-  return (
-    <TableComponent
-      data={data}
-      handleDelete={handleDelete} // Pasamos la función de eliminar
-    />
-  );
+  if (isError) return <p>{getError(error)}</p>;
+
+  return <TableComponent data={data} onDelete={handleDelete} />;
 };
 
 export default EmpleadosPage;
