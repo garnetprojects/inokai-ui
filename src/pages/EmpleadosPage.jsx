@@ -91,12 +91,11 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
-
       return { serviceName, duration };
     });
 
@@ -113,8 +112,6 @@ const Header = ({ dataBase }) => {
       specialities,
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
       enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
       return;
@@ -126,19 +123,19 @@ const Header = ({ dataBase }) => {
     }
 
     if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+      try {
+        data.profileImgUrl = await imageUpload(profileImgUrl[0], 'large-l-ino24');
+      } catch (error) {
+        enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+        return;
+      }
     }
 
     mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -280,8 +277,8 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
-              />
+              cloudinary_url={open?.profileImgUrl || null}
+            />
           </Box>
 
           <Button
@@ -298,52 +295,32 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
-  const [t] = useTranslation('global');
-  console.log(profileImgUrl);
-
-  return (
-    <Box mb={2}>
-      <Box mb={2}>
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-        >
-          {textBtn}
-
-          <input
-            accept="image/*"
-            type="file"
-            hidden
-            // name="uploadImages"
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);
-              }
-            }}
-          />
-        </Button>
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => (
+  <Box>
+    <Button
+      variant="contained"
+      component="label"
+      startIcon={<CloudUploadIcon />}
+    >
+      {textBtn}
+      <input
+        type="file"
+        hidden
+        onChange={(e) => setProfileImgUrl(e.target.files)}
+        accept="image/*"
+      />
+    </Button>
+    {profileImgUrl && (
+      <Typography>{profileImgUrl[0].name}</Typography>
+    )}
+    {cloudinary_url && (
+      <Box>
+        <Typography>{'Imagen actual en Cloudinary'}</Typography>
+        <img src={cloudinary_url} alt="profile" style={{ maxHeight: '150px' }} />
       </Box>
-
-      {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
-      )}
-    </Box>
-  );
-};
-
+    )}
+  </Box>
+);
 
 const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
@@ -390,7 +367,6 @@ const TableBody = ({ dataBase }) => {
     return (
       <Skeleton
         variant="rectangular"
-        // animation="wave"
         height={300}
         sx={{ bgcolor: 'rgb(203 213 225)' }}
       />
@@ -398,9 +374,7 @@ const TableBody = ({ dataBase }) => {
 
   if (isError) return <p>Ocurrio algo</p>;
 
-  console.log(data);
-
   return <TableComponent columns={columns} data={data} />;
 };
-// comentario
+
 export default EmpleadosPage;
