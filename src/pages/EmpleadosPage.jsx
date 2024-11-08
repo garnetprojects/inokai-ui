@@ -26,7 +26,7 @@ export const EmpleadosContext = createContext();
 const EmpleadosPage = () => {
   const [t] = useTranslation('global');
   const [open, setOpen] = useState(false); // Simplificado a booleano
-  const { dataBase } = useParams();
+  const { dataBase, centerId } = useParams(); // Aquí agregamos centerId
 
   return (
     <EmpleadosContext.Provider value={{ open, setOpen }}>
@@ -34,14 +34,14 @@ const EmpleadosPage = () => {
         <Typography variant="h2" sx={{ textTransform: 'capitalize' }} mb={2}>
           {t('menu.employees')}
         </Typography>
-        <Header dataBase={dataBase} />
+        <Header dataBase={dataBase} centerId={centerId} />
         <TableBody dataBase={dataBase} />
       </Container>
     </EmpleadosContext.Provider>
   );
 };
 
-const Header = ({ dataBase }) => {
+const Header = ({ dataBase, centerId }) => {
   const [t] = useTranslation('global');
   const { open, setOpen } = useContext(EmpleadosContext);
   const [formData, setFormData] = useState({
@@ -50,7 +50,8 @@ const Header = ({ dataBase }) => {
     phone: '',
     DNI: '',
     password: '',
-    isAvailable: 'yes',
+    services: [], // Debe ser un array de servicios
+    specialities: [],
     profileImgUrl: null, // Para la imagen de perfil
   });
 
@@ -66,7 +67,7 @@ const Header = ({ dataBase }) => {
         return await axios.put(url, data).then((response) => response.data);
       } else {
         // Crear nuevo empleado
-        const url = `/users/create-employee/${dataBase}`;
+        const url = `/users/create-employee/${dataBase}/${centerId}`;
         return await axios.post(url, data).then((response) => response.data);
       }
     },
@@ -74,7 +75,16 @@ const Header = ({ dataBase }) => {
       invalidate(['empleados']);
       enqueueSnackbar(isEditMode ? 'Empleado editado correctamente' : 'Empleado creado correctamente', { variant: 'success' });
       setOpen(false);
-      setFormData({ name: '', email: '', phone: '', DNI: '', password: '', isAvailable: 'yes', profileImgUrl: null });
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        DNI: '',
+        password: '',
+        services: [],
+        specialities: [],
+        profileImgUrl: null,
+      });
       setIsEditMode(false);
       setCurrentEmployeeId(null);
     },
@@ -125,7 +135,8 @@ const Header = ({ dataBase }) => {
           phone: employee.phone,
           DNI: employee.DNI,
           password: '',
-          isAvailable: employee.isAvailable || 'yes',
+          services: employee.services || [],
+          specialities: employee.specialities || [],
           profileImgUrl: employee.profileImgUrl || null,
         });
         setIsEditMode(true);
@@ -145,7 +156,7 @@ const Header = ({ dataBase }) => {
       >
         {t('buttons.create')}
       </Button>
-      <ModalComponent open={!!open} setOpen={setOpen}>
+      <ModalComponent open={open} setOpen={setOpen}>
         <form onSubmit={handleSubmit}>
           <Typography mt={3} variant="h4" sx={{ textTransform: 'capitalize' }}>
             {isEditMode ? t('buttons.edit') : t('buttons.create')}
@@ -210,20 +221,6 @@ const Header = ({ dataBase }) => {
                 fullWidth
               />
             </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                label={t('inputLabel.isAvailable')}
-                name="isAvailable"
-                variant="standard"
-                value={formData.isAvailable}
-                onChange={handleInputChange}
-                fullWidth
-                select
-              >
-                <MenuItem value="yes">{t('messages.yes')}</MenuItem>
-                <MenuItem value="no">{t('messages.no')}</MenuItem>
-              </TextField>
-            </Grid>
             <Grid xs={12}>
               <input
                 type="file"
@@ -261,7 +258,7 @@ const TableBody = ({ dataBase }) => {
   const { data, isLoading, isError } = useQuery(
     ['empleados'],
     async () => {
-      const response = await axios.get(`/users/get-employees/${dataBase}`);
+      const response = await axios.get(`/users/get-all-employees/${dataBase}`);
       return response.data;
     }
   );
