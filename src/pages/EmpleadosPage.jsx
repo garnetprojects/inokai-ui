@@ -297,9 +297,28 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
-  const [t] = useTranslation('global');
+const TableBody = ({ dataBase }) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['empleados'],
+    queryFn: () => axios.get(`/users/get-employees/${dataBase}`).then((res) => res.data),
+  });
 
+  if (isLoading) {
+    return (
+      <Skeleton variant="rectangular" height={200} animation="wave" />
+    );
+  }
+
+  return (
+    <TableComponent
+      data={data}
+      columns={['name', 'email', 'phone', 'DNI', 'isAvailable', 'actions']}
+      cellActions={(row) => <CellActionEmployee row={row} />}
+    />
+  );
+};
+
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   return (
     <Box mb={2}>
       <Button
@@ -332,7 +351,5 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
     </Box>
   );
 };
-
-// Aquí agregas el componente TableBody y cualquier otra parte de la lógica que falte para completar la aplicación.
 
 export default EmpleadosPage;
