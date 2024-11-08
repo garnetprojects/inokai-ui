@@ -1,5 +1,4 @@
-/* eslint-disable react/prop-types */
-import { useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button, Container, Grid, Skeleton, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -12,7 +11,7 @@ import { getError } from '../utils/getError';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-export const EmpleadosContext = createContext();
+export const EmpleadosContext = createContext();  // Here, createContext is defined properly
 
 const EmpleadosPage = () => {
   const [t] = useTranslation('global');
