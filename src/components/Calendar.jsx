@@ -8,7 +8,6 @@ import {
   MenuItem,
   Tooltip,
   Typography,
-  Modal,
 } from '@mui/material';
 import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
@@ -34,8 +33,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
   // Estado para el menú contextual
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
-  const [modalOpen, setModalOpen] = useState(false);
 
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
@@ -57,26 +54,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   };
 
   const handleCreateAppointment = () => {
-    // Calcula la posición del modal
-    const modalWidth = 400; // Ancho del modal, ajusta según tus necesidades
-    const modalHeight = 300; // Alto del modal, ajusta según tus necesidades
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
-    let posX = menuAnchor.mouseX;
-    let posY = menuAnchor.mouseY;
-
-    // Ajustar la posición para que el modal se vea en la pantalla
-    if (posX + modalWidth > screenWidth) {
-      posX = screenWidth - modalWidth; // Mover a la izquierda si hay poco espacio
-    }
-    if (posY + modalHeight > screenHeight) {
-      posY = screenHeight - modalHeight; // Mover hacia arriba si hay poco espacio
-    }
-
-    setModalPosition({ top: posY, left: posX });
     handleCloseMenu();
-    setModalOpen(true);
+    setOpen(true);
   };
 
   return (
@@ -193,27 +172,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
       >
         <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
       </Menu>
-
-      {/* Modal de creación de cita */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        style={{
-          position: 'absolute',
-          top: modalPosition.top,
-          left: modalPosition.left,
-          width: 400,
-          height: 300,
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Box p={2}>
-          <Typography variant="h6">Crear Cita</Typography>
-          {/* Agrega el contenido del modal aquí */}
-        </Box>
-      </Modal>
     </Box>
   );
 };
