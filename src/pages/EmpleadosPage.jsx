@@ -334,7 +334,7 @@ const TableBody = ({ dataBase }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['empleados'],
     queryFn: () =>
-      axios.get(`/users/get-employees/${dataBase}`).then((res) => res.data),
+      axios.get(`/users/get-all-employees/${dataBase}`).then((res) => res.data),
   });
 
   const columns = [
