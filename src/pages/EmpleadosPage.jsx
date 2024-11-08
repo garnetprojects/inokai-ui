@@ -36,7 +36,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 export const EmpleadosContext = createContext();
 
 const EmpleadosPage = () => {
-  const [t, i18n] = useTranslation('global');
+  const [t] = useTranslation('global');
   const [open, setOpen] = useState(null);
   const { dataBase } = useParams();
 
@@ -113,8 +113,6 @@ const Header = ({ dataBase }) => {
       specialities,
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
       enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
       return;
@@ -125,20 +123,16 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
+    // Subir imagen si fue seleccionada
     if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24'); // Aquí se sube la imagen y se guarda la URL
     }
 
     mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -280,8 +274,8 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
-              />
+              cloudinary_url={open?.profileImgUrl || null}
+            />
           </Box>
 
           <Button
@@ -300,7 +294,6 @@ const Header = ({ dataBase }) => {
 
 const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
   const [t] = useTranslation('global');
-  console.log(profileImgUrl);
 
   return (
     <Box mb={2}>
@@ -311,15 +304,13 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
           startIcon={<CloudUploadIcon />}
         >
           {textBtn}
-
           <input
             accept="image/*"
             type="file"
             hidden
-            // name="uploadImages"
             onChange={(e) => {
               if (e.target.files) {
-                setProfileImgUrl(e.target.files);
+                setProfileImgUrl(e.target.files);  // Guardar el archivo seleccionado
               }
             }}
           />
@@ -327,80 +318,15 @@ const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }
       </Box>
 
       {(cloudinary_url || profileImgUrl) && (
-        <>
-          {/* <Typography>{t('messages.logoPreview')}</Typography> */}
-
-          <img
-            src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-            alt="Logo"
-            decoding="async"
-            height={130}
-            width={250}
-          />
-          {/* <img src={urlLogo} height={70} width={150} /> */}
-        </>
+        <img
+          src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
+          alt="Logo"
+          height={130}
+          width={250}
+        />
       )}
     </Box>
   );
 };
 
-
-const TableBody = ({ dataBase }) => {
-  const [t] = useTranslation('global');
-
-  const columns = [
-    {
-      header: t('inputLabel.dni'),
-      accessorKey: 'DNI',
-    },
-    {
-      header: t('inputLabel.name'),
-      accessorKey: 'name',
-    },
-
-    {
-      header: t('inputLabel.email'),
-      accessorKey: 'email',
-    },
-    {
-      header: t('inputLabel.phoneNumber'),
-      accessorKey: 'phone',
-    },
-    {
-      header: t('title.center'),
-      accessorKey: 'centerInfo.centerName',
-    },
-    {
-      header: t('inputLabel.action'),
-      cell: (info) => (
-        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
-      ),
-    },
-  ];
-
-  const { isLoading, isError, data } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: () =>
-      axios(`/users/get-all-employees/${dataBase}`).then(
-        (response) => response.data
-      ),
-  });
-
-  if (isLoading)
-    return (
-      <Skeleton
-        variant="rectangular"
-        // animation="wave"
-        height={300}
-        sx={{ bgcolor: 'rgb(203 213 225)' }}
-      />
-    );
-
-  if (isError) return <p>Ocurrio algo</p>;
-
-  console.log(data);
-
-  return <TableComponent columns={columns} data={data} />;
-};
-// comentario
 export default EmpleadosPage;
