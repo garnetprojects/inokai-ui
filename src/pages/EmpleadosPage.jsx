@@ -1,10 +1,7 @@
-/* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-
 import ModalComponent from '../components/ModalComponent';
 import TableComponent from '../components/TableComponent';
-
 import {
   Box,
   Button,
@@ -123,9 +120,8 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
-    // Subir imagen si fue seleccionada
     if (profileImgUrl) {
-      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24'); // Aquí se sube la imagen y se guarda la URL
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
     }
 
     mutation.mutate(data);
@@ -292,40 +288,63 @@ const Header = ({ dataBase }) => {
   );
 };
 
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
 
-  return (
-    <Box mb={2}>
-      <Box mb={2}>
-        <Button
-          component="label"
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-        >
-          {textBtn}
-          <input
-            accept="image/*"
-            type="file"
-            hidden
-            onChange={(e) => {
-              if (e.target.files) {
-                setProfileImgUrl(e.target.files);  // Guardar el archivo seleccionado
-              }
-            }}
-          />
-        </Button>
-      </Box>
+  const columns = [
+    {
+      header: t('inputLabel.dni'),
+      accessorKey: 'DNI',
+    },
+    {
+      header: t('inputLabel.name'),
+      accessorKey: 'name',
+    },
 
-      {(cloudinary_url || profileImgUrl) && (
-        <img
-          src={profileImgUrl ? URL.createObjectURL(profileImgUrl[0]) : cloudinary_url}
-          alt="Logo"
-          height={130}
-          width={250}
-        />
-      )}
-    </Box>
+    {
+      header: t('inputLabel.email'),
+      accessorKey: 'email',
+    },
+    {
+      header: t('inputLabel.phoneNumber'),
+      accessorKey: 'phone',
+    },
+    {
+      header: t('title.center'),
+      accessorKey: 'centerInfo.centerName',
+    },
+    {
+      header: t('inputLabel.action'),
+      cell: (info) => (
+        <CellActionEmployee nombreEmpresa={dataBase} info={info.row.original} />
+      ),
+    },
+  ];
+
+  const { data: dataEmployees, isLoading, error } = useQuery(
+    ['empleados', dataBase],
+    async () => {
+      return await axios
+        .get(`/users/get-all-employees/${dataBase}`)
+        .then((response) => response.data);
+    }
+  );
+
+  if (isLoading) {
+    return <SkeletonTable />;
+  }
+
+  if (error) {
+    return <div>{t('messages.errorData')}</div>;
+  }
+
+  return (
+    <TableComponent
+      columns={columns}
+      data={dataEmployees}
+      title={t('title.employees')}
+      dataBase={dataBase}
+    />
   );
 };
 
