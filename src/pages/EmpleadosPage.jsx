@@ -82,7 +82,7 @@ const Header = ({ dataBase }) => {
 
     onSuccess: (data) => {
       invalidate(['empleados']);
-      enqueueSnackbar('Acción lograda con éxito', { variant: 'success' });
+      enqueueSnackbar('Accion logrado con exito', { variant: 'success' });
       setOpen(false);
     },
     onError: (err) => {
@@ -91,11 +91,12 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
+
       return { serviceName, duration };
     });
 
@@ -112,8 +113,10 @@ const Header = ({ dataBase }) => {
       specialities,
     };
 
+    console.log(data, 'datos mandando');
+
     if (!selectedOption.length || !services.length) {
-      enqueueSnackbar('Todos los campos son requeridos', { variant: 'error' });
+      enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
       return;
     }
 
@@ -122,18 +125,11 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
-    try {
-      // Subir imagen de perfil si existe
-      if (profileImgUrl) {
-        const uploadedImageUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
-        data.profileImgUrl = uploadedImageUrl;
-      }
-
-      mutation.mutate(data);
-    } catch (error) {
-      console.log(error);
-      enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+    if (profileImgUrl) {
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
     }
+
+    mutation.mutate(data);
   };
 
   useEffect(() => {
@@ -279,7 +275,7 @@ const Header = ({ dataBase }) => {
               profileImgUrl={profileImgUrl}
               setProfileImgUrl={setProfileImgUrl}
               textBtn={`${t('buttons.chooseLogo')} 1`}
-              cloudinary_url={open?.profileImgUrl || null}
+              cloudinary_url={open?.profileImgUrl || null} // Ensure data source
             />
           </Box>
 
@@ -297,58 +293,77 @@ const Header = ({ dataBase }) => {
   );
 };
 
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const [t] = useTranslation('global');
+
+  return (
+    <Box mb={2}>
+      <Box mb={2}>
+        <Button
+          component="label"
+          variant="outlined"
+          sx={{ display: 'flex', gap: 2 }}
+          disabled={mutation.isPending}
+        >
+          <CloudUploadIcon /> {textBtn}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setProfileImgUrl(e.target.files[0])}
+            hidden
+          />
+        </Button>
+        {cloudinary_url && (
+          <img
+            src={cloudinary_url}
+            alt="Profile"
+            style={{
+              width: 80,
+              height: 80,
+              objectFit: 'cover',
+              borderRadius: '50%',
+            }}
+          />
+        )}
+      </Box>
+    </Box>
+  );
+};
+
 const TableBody = ({ dataBase }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['empleados'],
-    queryFn: () => axios.get(`/users/get-employees/${dataBase}`).then((res) => res.data),
+    queryFn: () =>
+      axios.get(`/users/get-employees/${dataBase}`).then((res) => res.data),
   });
+
+  const columns = [
+    { Header: 'Name', accessor: 'name' },
+    { Header: 'Email', accessor: 'email' },
+    { Header: 'Phone', accessor: 'phone' },
+    { Header: 'DNI', accessor: 'DNI' },
+    { Header: 'Available', accessor: 'isAvailable' },
+    { Header: 'Actions', accessor: 'actions' },
+  ];
 
   if (isLoading) {
     return (
-      <Skeleton variant="rectangular" height={200} animation="wave" />
+      <Skeleton variant="rectangular" width="100%" height={400} sx={{ mb: 3 }} />
     );
   }
 
   return (
     <TableComponent
+      columns={columns}
       data={data}
-      columns={['name', 'email', 'phone', 'DNI', 'isAvailable', 'actions']}
-      cellActions={(row) => <CellActionEmployee row={row} />}
-    />
-  );
-};
-
-const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
-  return (
-    <Box mb={2}>
-      <Button
-        component="label"
-        variant="contained"
-        startIcon={<CloudUploadIcon />}
-      >
-        {textBtn}
-        <input
-          accept="image/*"
-          type="file"
-          hidden
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              setProfileImgUrl(e.target.files[0]); // Set single file
-            }
-          }}
-        />
-      </Button>
-
-      {(cloudinary_url || profileImgUrl) && (
-        <img
-          src={profileImgUrl ? URL.createObjectURL(profileImgUrl) : cloudinary_url}
-          alt="Logo"
-          decoding="async"
-          height={130}
-          width={250}
+      cellActions={(row) => (
+        <CellActionEmployee
+          row={row}
+          dataBase={dataBase}
+          center={row.center?._id}
         />
       )}
-    </Box>
+    />
   );
 };
 
