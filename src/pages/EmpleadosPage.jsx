@@ -43,12 +43,10 @@ const EmpleadosPage = () => {
   return (
     <EmpleadosContext.Provider value={{ open, setOpen }}>
       <Container>
-        <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+        <Typography variant="h2" sx={{ textTransform: 'capitalize' }} mb={2}>
           {t('menu.employees')}
         </Typography>
-
         <Header dataBase={dataBase} />
-
         <TableBody dataBase={dataBase} />
       </Container>
     </EmpleadosContext.Provider>
@@ -64,32 +62,29 @@ const Header = ({ dataBase }) => {
   const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
+
   const { invalidate } = useInvalidate();
 
   const mutation = useMutation({
-    mutationFn: async (formData) => {
-      if (open?._id) {
-        return await axios
-          .put(`/users/edit-employee/${dataBase}/${open?._id}`, formData)
-          .then((response) => response.data);
-      }
+    mutationFn: async (data) => {
+      const url = open?._id
+        ? `/users/edit-employee/${dataBase}/${open?._id}`
+        : `/users/create-employee/${dataBase}/${center}`;
+      const method = open?._id ? 'put' : 'post';
 
-      return await axios
-        .post(`/users/create-employee/${dataBase}/${center}`, formData)
-        .then((response) => response.data);
+      return await axios({ method, url, data }).then((response) => response.data);
     },
     onSuccess: () => {
       invalidate(['empleados']);
-      enqueueSnackbar('Acción realizada con éxito', { variant: 'success' });
+      enqueueSnackbar('Acción lograda con éxito', { variant: 'success' });
       setOpen(false);
     },
     onError: (err) => {
-      console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
@@ -120,33 +115,11 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
-    try {
-      let profileImgUrlData = null;
-      if (profileImgUrl) {
-        profileImgUrlData = await imageUpload(profileImgUrl, 'large-l-ino24');
-      }
-
-      const formData = new FormData();
-      formData.append('name', data.name);
-      formData.append('email', data.email);
-      formData.append('phone', data.phone);
-      formData.append('DNI', data.DNI);
-      formData.append('password', data.password || '');
-      formData.append('isAvailable', data.isAvailable);
-      formData.append('services', JSON.stringify(services));
-      formData.append('specialities', JSON.stringify(specialities));
-
-      if (profileImgUrlData) {
-        formData.append('profileImgUrl', profileImgUrlData);
-      } else if (profileImgUrl) {
-        formData.append('profileImage', profileImgUrl[0]);
-      }
-
-      mutation.mutate(formData);
-    } catch (error) {
-      console.error('Error al manejar la imagen:', error);
-      enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+    if (profileImgUrl) {
+      data.profileImgUrl = imageUpload(profileImgUrl, 'large-l-ino24');
     }
+
+    mutation.mutate(data);
   };
 
   useEffect(() => {
@@ -155,14 +128,13 @@ const Header = ({ dataBase }) => {
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
     }
-
     if (open?.specialities) {
       setSpecialities(open?.specialities);
     }
   }, [open]);
 
   return (
-    <Box component={'header'} mb={5}>
+    <Box component="header" mb={5}>
       <Button
         variant="outlined"
         onClick={() => setOpen(true)}
@@ -175,11 +147,10 @@ const Header = ({ dataBase }) => {
         setOpen={setOpen}
         onClose={() => setSelectedOption([])}
       >
-        <form action="" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <Typography mt={3} variant="h4" sx={{ textTransform: 'capitalize' }}>
             {t('menu.employees')}
           </Typography>
-
           <Grid container spacing={5}>
             <Grid xs={12}>
               <ServicesBox
@@ -195,19 +166,17 @@ const Header = ({ dataBase }) => {
                 disabled={mutation.isPending}
               />
             </Grid>
-
             <Grid xs={12} md={6}>
               <TextField
                 label={t('inputLabel.name')}
                 variant="standard"
                 sx={{ width: '100%' }}
                 name="name"
-                disabled={mutation.isPending}
                 defaultValue={open?.name || ''}
                 required
+                disabled={mutation.isPending}
               />
             </Grid>
-
             <Grid xs={12} md={6}>
               <TextField
                 label={t('inputLabel.email')}
@@ -220,7 +189,6 @@ const Header = ({ dataBase }) => {
                 disabled={mutation.isPending}
               />
             </Grid>
-
             <Grid xs={12} md={6}>
               <TextField
                 label={t('inputLabel.dni')}
@@ -233,7 +201,6 @@ const Header = ({ dataBase }) => {
                 disabled={!!open?._id || mutation.isPending}
               />
             </Grid>
-
             {!open?._id && (
               <Grid xs={12} md={6}>
                 <TextField
@@ -242,28 +209,26 @@ const Header = ({ dataBase }) => {
                   variant="standard"
                   sx={{ width: '100%' }}
                   name="password"
+                  required
                   defaultValue={open?.password || ''}
                   disabled={mutation.isPending}
-                  required
                 />
               </Grid>
             )}
-
             <InputPhone
-              nameCountry={'countryPhone'}
+              nameCountry="countryPhone"
               disabled={mutation.isPending}
               defaultValue={eliminarPrimerosCharSiCoinciden(
                 open?.phone ?? '',
                 phoneCountry
               )}
             />
-
             <Grid xs={12} md={6}>
               <SelectComponent
                 fixArrayFn={fixCentersArray}
                 params={`users/get-all-centers/${dataBase}`}
                 label={t('title.center')}
-                required={true}
+                required
                 aditionalProperties={{
                   onChange: (e) => setCenter(e.target.value),
                   value: center || centerId || '',
@@ -271,7 +236,6 @@ const Header = ({ dataBase }) => {
                 disabled={mutation.isPending}
               />
             </Grid>
-
             <Grid xs={12} md={6}>
               <TextField
                 label={t('inputLabel.isAvailable')}
@@ -282,42 +246,54 @@ const Header = ({ dataBase }) => {
                 select
                 defaultValue={open?.isAvailable || 'yes'}
               >
-                <MenuItem value={'yes'}>{t('messages.yes')}</MenuItem>
-                <MenuItem value={'no'}>{t('messages.no')}</MenuItem>
+                <MenuItem value="yes">{t('messages.yes')}</MenuItem>
+                <MenuItem value="no">{t('messages.no')}</MenuItem>
               </TextField>
             </Grid>
-
-            <Grid xs={12}>
-              <label htmlFor="profileImg" style={{ cursor: 'pointer' }}>
-                <CloudUploadIcon />
-                <input
-                  type="file"
-                  id="profileImg"
-                  style={{ display: 'none' }}
-                  accept="image/*"
-                  onChange={(e) => setProfileImgUrl(e.target.files)}
-                />
-                {profileImgUrl ? (
-                  <span> {profileImgUrl[0]?.name} </span>
-                ) : (
-                  <span> {t('inputLabel.uploadProfileImage')} </span>
-                )}
-              </label>
-            </Grid>
           </Grid>
-
-          <Box mt={4}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? t('loading') : t('buttons.submit')}
-            </Button>
+          <Box xs={12} display="flex" gap={5} mt={3}>
+            <HandleLogo
+              profileImgUrl={profileImgUrl}
+              setProfileImgUrl={setProfileImgUrl}
+              textBtn={`${t('buttons.chooseLogo')}`}
+              cloudinary_url={open?.profileImgUrl || null}
+            />
           </Box>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ width: '100%', mt: 5 }}
+            disabled={mutation.isPending}
+          >
+            {open?._id ? t('buttons.edit') : t('buttons.create')}
+          </Button>
         </form>
       </ModalComponent>
+    </Box>
+  );
+};
+
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => {
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImgUrl(file);
+    }
+  };
+
+  return (
+    <Box display="flex" alignItems="center" gap={2}>
+      <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
+        {textBtn}
+        <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
+      </Button>
+      {profileImgUrl || cloudinary_url ? (
+        <img
+          src={profileImgUrl ? URL.createObjectURL(profileImgUrl) : cloudinary_url}
+          alt="Selected"
+          style={{ height: '50px' }}
+        />
+      ) : null}
     </Box>
   );
 };
@@ -325,13 +301,25 @@ const Header = ({ dataBase }) => {
 const TableBody = ({ dataBase }) => {
   const { open, setOpen } = useContext(EmpleadosContext);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['empleados'],
     queryFn: async () =>
       await axios
         .get(`/users/get-all-employees/${dataBase}`)
         .then((response) => response.data),
   });
+
+  if (isLoading) {
+    return <Skeleton variant="rectangular" height={200} />;
+  }
+
+  if (isError) {
+    return <Typography color="error">Error: {error.message}</Typography>;
+  }
+
+  if (!data || data.length === 0) {
+    return <Typography>No employees found.</Typography>;
+  }
 
   return (
     <TableComponent
