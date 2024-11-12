@@ -28,30 +28,67 @@ const Horarios = () => {
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
 
-  // Manejar la carga del archivo
+  // Función para convertir formato de tiempo de Excel a una cadena hh:mm:ss
+  function excelTimeToString(excelTime) {
+    const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    // Formatear como hh:mm:ss
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  // Función para convertir formato de fecha de Excel a una cadena DD/MM/YYYY
+  function excelDateToString(excelDate) {
+    const date = new Date((excelDate - 25569) * 86400 * 1000); // Convertir desde número de Excel a milisegundos
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${month}/${day}/${year}`;
+  }
+
+    // Función para convertir cadena de fecha de DD/MM/YYYY a MM/DD/YYYY
+    function convertDateToUSFormat(dateStr) {
+      const [day, month, year] = dateStr.split('/');
+      return `${month}/${day}/${year}`;
+    }
+
+
+  // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
     if (!e.target.files[0]) return;
     const file = e.target.files[0];
 
     const fileExtension = file.name.split('.').pop();
 
-    // Analizar CSV
-    if (fileExtension === 'csv') {
-      Papa.parse(file, {
-        complete: (result) => {
-          const data = result.data;
-          const keys = data[0];
-          const parsedData = data.slice(1).map((row) =>
-            row.reduce((obj, value, index) => {
-              obj[keys[index]] = value;
-              return obj;
-            }, {})
-          );
-          setFileData(parsedData);
-        },
-        header: false,
-      });
-    }
+ // Analizar CSV
+if (fileExtension === 'csv') {
+  Papa.parse(file, {
+    complete: (result) => {
+      const data = result.data;
+      const keys = data[0];
+      const parsedData = data.slice(1).map((row) =>
+        row.reduce((obj, value, index) => {
+          const columnName = keys[index];
+          
+          // Verificar si la columna es "Fecha" y si el valor es una cadena en formato DD/MM/YYYY
+          if (columnName === 'Fecha' && typeof value === 'string' && value.includes('/')) {
+            obj[columnName] = convertDateToUSFormat(value);
+          } else {
+            obj[columnName] = value;
+          }
+          return obj;
+        }, {})
+      );
+      setFileData(parsedData);
+    },
+    header: false,
+  });
+}
 
     // Analizar Excel (.xls, .xlsx)
     else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
@@ -67,7 +104,26 @@ const Horarios = () => {
         const keys = sheet[0];
         const parsedData = sheet.slice(1).map((row) =>
           row.reduce((obj, value, index) => {
-            obj[keys[index]] = value;
+            const columnName = keys[index];
+            
+            // Verificar si la columna es Fecha y el valor es un número
+            if (columnName === 'Fecha'){
+                if(typeof value === 'number'){
+                  obj[columnName] = excelDateToString(value);
+                }else{
+                // Si el valor es texto, asumir que está en DD/MM/YYYY y convertir a MM/DD/YYYY
+                obj[columnName] = convertDateToUSFormat(value);
+                }
+            } 
+            // Verificar si la columna es Hora_Entrada o Hora_Salida y si el valor es un número
+            else if (
+              (columnName === 'Hora_Entrada' || columnName === 'Hora_Salida') &&
+              typeof value === 'number'
+            ) {
+              obj[columnName] = excelTimeToString(value);
+            } else {
+              obj[columnName] = value;
+            }
             return obj;
           }, {})
         );
