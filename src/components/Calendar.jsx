@@ -199,7 +199,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
 
   const servicesTooltip = data.services
     .map((item) => item.serviceName)
-    .join(', ');
+    .join(', ') + "CITA CREADA EN " + data.createdBy;
 
   return (
     <Tooltip title={servicesTooltip} arrow>
