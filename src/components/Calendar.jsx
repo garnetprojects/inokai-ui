@@ -85,7 +85,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 <Box
                   display={'flex'}
                   mx={'auto'}
-                  border={'1px solid #e0e0e0'}
+                  border={'1px solid #1f1f1f'}
                   py={1}
                   px={'10px'}
                   flexDirection={'row'}
