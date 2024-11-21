@@ -211,6 +211,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           bgcolor: serviceColor,
           opacity: 1,
           boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+          border: `2px solid white`, 
           ':disabled': {
             cursor: 'not-allowed',
           },
