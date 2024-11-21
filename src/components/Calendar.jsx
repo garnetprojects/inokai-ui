@@ -233,6 +233,9 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
               {t('inputLabel.initTime')}: {data.initTime}
               {t(' - ')}
               {t('inputLabel.endTime')}: {data.finalTime}
+              {t('   (')}
+              {data.createdBy}
+              {t(')')}    
             </Typography>
           </Box>
 
