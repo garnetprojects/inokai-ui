@@ -85,7 +85,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                 <Box
                   display={'flex'}
                   mx={'auto'}
-                  border={'1px solid #1f1f1f'}
+                  border={'1px solid #e0e0e0'}
                   py={1}
                   px={'10px'}
                   flexDirection={'row'}
@@ -210,6 +210,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           color: 'black',
           bgcolor: serviceColor,
           opacity: 1,
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
           ':disabled': {
             cursor: 'not-allowed',
           },
