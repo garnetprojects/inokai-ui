@@ -197,10 +197,10 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
       ? data.services[0].color
       : 'grey.300';
 
-const servicesTooltip = data.services
+  const servicesTooltip = data.services
     .map((item) => item.serviceName)
-    .join(', ') + "<br> Cita creada en " + data.createdBy;
-    
+    .join(', ') + "\nCita creada en " + data.createdBy;
+
   return (
     <Tooltip title={servicesTooltip} arrow>
       <Button
