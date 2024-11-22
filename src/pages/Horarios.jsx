@@ -309,9 +309,11 @@ const Horarios = () => {
             label="Empleado"
             required={true}
             aditionalProperties={{
-              onChange: (e) => handleManualChange(e.target.value.userInfo),
-              value: name || '',
-            }}
+              onChange: (e) => {
+                // Aquí actualizamos el estado con el empleado seleccionado
+                handleManualChange('employee', e.target.value.userInfo.name);
+              },
+              value: manualData.employee || '',
             disabled={loading}
             sx={{ flexGrow: 1 }}
           />
