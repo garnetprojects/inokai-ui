@@ -46,25 +46,38 @@ const Horarios = () => {
   const handleManualChange = (field, value) => {
     setManualData((prev) => ({ ...prev, [field]: value }));
   };
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     const { date, employee, startTime, endTime } = manualData;
+    
     if (!date || !employee || !startTime || !endTime) {
       enqueueSnackbar('Por favor, completa todos los campos', {
         variant: 'warning',
       });
       return;
     }
-
+  
     const manualEntry = {
       date: date.format('MM/DD/YYYY'),
       employee,
       startTime: startTime.format('HH:mm:ss'),
       endTime: endTime.format('HH:mm:ss'),
     };
-
+  
     console.log('Datos ingresados manualmente:', JSON.stringify(manualEntry, null, 2));
-    enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
-    toggleManualModal();
+  
+    try {
+      const response = await axios.post(
+        `/horario-manual/mySelectedDB`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
+        manualEntry
+      );
+  
+      enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
+      console.log('Respuesta del servidor:', response.data);
+      toggleManualModal();
+    } catch (error) {
+      console.error('Error al registrar la entrada manual:', error);
+      enqueueSnackbar('Error al registrar la entrada manual', { variant: 'error' });
+    }
   };
 
   function excelTimeToString(excelTime) {
