@@ -17,7 +17,7 @@ import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
-import { fixCentersArray } from '../utils/fixArray';
+import { fixCentersArray, fixUserArray  } from '../utils/fixArray';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import SelectComponent from '../components/SelectComponent';
 
@@ -298,12 +298,12 @@ const Horarios = () => {
         {/* Empleado */}
         <Grid item xs={12} md={6}>
            <SelectComponent
-            fixArrayFn={fixCentersArray}
+            fixArrayFn={fixUserArray}
             params={`users/get-all-employees/${dataBase}`}
             label="Empleado"
             required={true}
             aditionalProperties={{
-              onChange: (e) => handleManualChange(e.target.value.name),
+              onChange: (e) => handleManualChange(e.target.value.userInfo),
               value: manualData.employee,
             }}
             disabled={loading}
