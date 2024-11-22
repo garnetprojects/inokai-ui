@@ -94,7 +94,7 @@ const handleExchangeChange = (field, value) => {
   setExchangeData((prev) => ({ ...prev, [field]: value }));
 };
 
-const handleExchangeSubmit = () => {
+const handleExchangeSubmit = async () => {
   const { employee1, employee2, date1, date2 } = exchangeData;
 
   if (!employee1 || !employee2 || !date1 || !date2) {
@@ -111,10 +111,24 @@ const handleExchangeSubmit = () => {
     date2: date2.format('MM/DD/YYYY'),
   };
 
-  console.log('Datos de intercambio:', JSON.stringify(exchangePayload, null, 2));
-  enqueueSnackbar('Datos de intercambio generados correctamente', { variant: 'success' });
-  toggleExchangeModal();
+  try {
+    console.log('Enviando datos de intercambio:', JSON.stringify(exchangePayload, null, 2));
+    
+    const response = await axios.post(
+      `/appointment/intercambio-horarios/${dataBase}`,
+      exchangePayload
+    );
+
+    enqueueSnackbar('Intercambio realizado correctamente', { variant: 'success' });
+    console.log('Respuesta del servidor:', response.data);
+
+    toggleExchangeModal(); // Cierra el modal después de un intercambio exitoso
+  } catch (error) {
+    console.error('Error al realizar el intercambio:', error);
+    enqueueSnackbar('Error al realizar el intercambio', { variant: 'error' });
+  }
 };
+
 
   function excelTimeToString(excelTime) {
     const totalSeconds = Math.round(excelTime * 86400);
