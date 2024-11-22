@@ -315,6 +315,7 @@ import { Close } from '@mui/icons-material';
         {/* Empleado */}
         <Grid item xs={12} md={6}>
         <SelectComponent
+            fixArrayFn={fixUserArray}
             params={`users/get-all-employees/${dataBase}`}
             label="Empleado"
             required={true}
