@@ -67,7 +67,7 @@ const Horarios = () => {
   
     try {
       const response = await axios.post(
-        `/Sappointment/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
+        `/appointment/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
         manualEntry
       );
   
@@ -329,26 +329,28 @@ const Horarios = () => {
                 sx={{ mb: 2 }}
               />
         </Grid>
-
-        {/* Hora de Entrada */}
-        <Grid item xs={12} md={6}>
-          <TimePicker
-            label="Hora de Entrada"
-            value={manualData.startTime}
-            onChange={(value) => handleManualChange('startTime', value)}
-            fullWidth
-          />
-        </Grid>
-
-        {/* Hora de Salida */}
-        <Grid item xs={12} md={6}>
-          <TimePicker
-            label="Hora de Salida"
-            value={manualData.endTime}
-            onChange={(value) => handleManualChange('endTime', value)}
-            fullWidth
-          />
-        </Grid>
+        <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.initTime')}
+                  sx={{ width: '100%' }}
+                  value={manualData.startTime}
+                  onChange={(value) => handleManualChange('startTime', value)}
+                  ampm={false}
+                />
+              </LocationProvider>
+            </Grid>
+            <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.endTime')}
+                  sx={{ width: '100%' }}
+                  value={manualData.endTime}
+                  onChange={(value) => handleManualChange('endTime', value)}
+                  ampm={false}
+                />
+              </LocationProvider>
+            </Grid>
       </Grid>
     </LocationProvider>
 
