@@ -315,24 +315,19 @@ const Horarios = () => {
 
         {/* Empleado */}
         <Grid item xs={12} md={6}>
-          <SelectComponent
-            fixArrayFn={fixUserArray}
-            params={`users/get-all-employees/${dataBase}`}
-            label="Empleado"
-            required={true}
-            aditionalProperties={{
-              onChange: (e) => {
-                console.log("Empleado seleccionado:", e.target.value);
-                // Aquí actualizamos el estado con el empleado seleccionado
-                // Asumiendo que e.target.value es un objeto, tomamos el ID o el nombre
-                const selectedEmployee = e.target.value;
-                handleManualChange('employee', selectedEmployee); // Actualizar el estado
-              },
-              value: manualData.employee || '', // En caso de que no haya un valor, dejar vacío
-            }}
-            disabled={loading}
-            sx={{ flexGrow: 1 }}
-          />
+        <SelectComponent
+                appointmentData={appointmentData?.appointments2}
+                disabled={mutation.isPending || canEdit}
+                fixArrayFn={fixUserArray}
+                params={`appointment/get-all-employees/${dataBase}`}
+                label={t('menu.employees')}
+                required={true}
+                aditionalProperties={{
+                  onChange: (e) => handleManualChange(e.target.value),
+                  value: user,
+                  name: 'userInfo',
+                }}
+              />
         </Grid>
 
         {/* Hora de Entrada */}
