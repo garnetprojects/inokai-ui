@@ -67,7 +67,7 @@ const Horarios = () => {
   
     try {
       const response = await axios.post(
-        `/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
+        `/Sappointment/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
         manualEntry
       );
   
