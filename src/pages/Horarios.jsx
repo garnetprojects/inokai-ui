@@ -317,7 +317,7 @@ const Horarios = () => {
         <Grid item xs={12} md={6}>
         <SelectComponent
                 fixArrayFn={fixUserArray}
-                params={`appointment/get-all-employees/${dataBase}`}
+                params={`users/get-all-employees/${dataBase}`}
                 label={t('menu.employees')}
                 required={true}
                 aditionalProperties={{
