@@ -80,6 +80,42 @@ const Horarios = () => {
     }
   };
 
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+const [exchangeData, setExchangeData] = useState({
+  employee1: '',
+  employee2: '',
+  date1: null,
+  date2: null,
+});
+
+const toggleExchangeModal = () => setExchangeModalOpen(!exchangeModalOpen);
+
+const handleExchangeChange = (field, value) => {
+  setExchangeData((prev) => ({ ...prev, [field]: value }));
+};
+
+const handleExchangeSubmit = () => {
+  const { employee1, employee2, date1, date2 } = exchangeData;
+
+  if (!employee1 || !employee2 || !date1 || !date2) {
+    enqueueSnackbar('Por favor, completa todos los campos', {
+      variant: 'warning',
+    });
+    return;
+  }
+
+  const exchangePayload = {
+    employee1,
+    employee2,
+    date1: date1.format('MM/DD/YYYY'),
+    date2: date2.format('MM/DD/YYYY'),
+  };
+
+  console.log('Datos de intercambio:', JSON.stringify(exchangePayload, null, 2));
+  enqueueSnackbar('Datos de intercambio generados correctamente', { variant: 'success' });
+  toggleExchangeModal();
+};
+
   function excelTimeToString(excelTime) {
     const totalSeconds = Math.round(excelTime * 86400);
     const hours = Math.floor(totalSeconds / 3600);
@@ -241,6 +277,14 @@ const Horarios = () => {
           >
             Añadir Manualmente
           </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={toggleExchangeModal}
+            sx={{ ml: 2 }}
+          >
+            Intercambio de Horarios
+          </Button>
         </Grid>
       </Grid>
 
@@ -357,6 +401,98 @@ const Horarios = () => {
     <Box sx={{ mt: 4 }}>
       <Button variant="contained" color="primary" fullWidth onClick={handleManualSubmit}>
         Hacer cambio
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+
+<Modal open={exchangeModalOpen} onClose={toggleExchangeModal}>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 6,
+      maxWidth: 800,
+      width: '100%',
+      borderRadius: 4,
+      position: 'relative', // Para posicionar el botón de cierre
+    }}
+  >
+    {/* Botón de cierre */}
+    <IconButton
+      onClick={toggleExchangeModal}
+      sx={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+      }}
+    >
+      <Close />
+    </IconButton>
+
+    <Typography variant="h5" mb={3}>
+      Intercambiar Horarios
+    </Typography>
+
+    <LocationProvider>
+      <Grid container spacing={3}>
+        {/* Empleado 1 */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixUserArray}
+            params={`users/get-all-employees/${dataBase}`}
+            label="Empleado 1"
+            aditionalProperties={{
+              onChange: (e) => handleExchangeChange('employee1', e.target.value),
+              value: exchangeData.employee1,
+            }}
+            required={true}
+          />
+        </Grid>
+
+        {/* Empleado 2 */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixUserArray}
+            params={`users/get-all-employees/${dataBase}`}
+            label="Empleado 2"
+            aditionalProperties={{
+              onChange: (e) => handleExchangeChange('employee2', e.target.value),
+              value: exchangeData.employee2,
+            }}
+            required={true}
+          />
+        </Grid>
+
+        {/* Fecha 1 */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha 1"
+            value={exchangeData.date1}
+            onChange={(value) => handleExchangeChange('date1', value)}
+            fullWidth
+          />
+        </Grid>
+
+        {/* Fecha 2 */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha 2"
+            value={exchangeData.date2}
+            onChange={(value) => handleExchangeChange('date2', value)}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
+    </LocationProvider>
+
+    <Box sx={{ mt: 4 }}>
+      <Button variant="contained" color="primary" fullWidth onClick={handleExchangeSubmit}>
+        Intercambiar
       </Button>
     </Box>
   </Box>
