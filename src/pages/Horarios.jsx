@@ -41,10 +41,20 @@ const Horarios = () => {
 
   const toggleManualModal = () => setManualModalOpen(!manualModalOpen);
 
-  const handleManualChange = (field, value) => {
-    setManualData((prev) => ({ ...prev, [field]: value }));
-  };
+ // Manejo de cambios en los campos del formulario
+ const handleManualChange = (field, value) => {
+  // Si el valor es un objeto (como el empleado), extraemos el valor necesario, por ejemplo, el ID o el nombre
+  if (field === 'employee' && value) {
+    // Si el valor es un objeto y se está seleccionando un empleado, almacenamos el ID o nombre
+    value = value.name || value.id || value; // Depende de lo que venga en el objeto
+  }
 
+  // Actualizamos el estado con el valor correspondiente
+  setManualData(prevState => ({
+    ...prevState,
+    [field]: value,
+  }));
+};
   const handleManualSubmit = () => {
     const { date, employee, startTime, endTime } = manualData;
     if (!date || !employee || !startTime || !endTime) {
