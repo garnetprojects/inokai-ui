@@ -46,6 +46,7 @@ const Horarios = () => {
 
   const handleManualSubmit = () => {
     const { date, employee, startTime, endTime } = manualData;
+    alert(manualData);
     if (!date || !employee || !startTime || !endTime) {
       enqueueSnackbar('Por favor, completa todos los campos', {
         variant: 'warning',
@@ -291,7 +292,7 @@ const Horarios = () => {
               sx={{ mb: 2 }}
             />
             <SelectComponent
-              params="employees/get-all"
+              params={`users/get-all-employees/${dataBase}`}
               label="Empleado"
               aditionalProperties={{
                 onChange: (e) => handleManualChange('employee', e.target.value),
@@ -322,7 +323,7 @@ const Horarios = () => {
             fullWidth
             onClick={handleManualSubmit}
           >
-            Guardar
+            Hacer cambio
           </Button>
         </Box>
       </Modal>
