@@ -269,13 +269,13 @@ const Horarios = () => {
         </Box>
       )}
 
-      <Modal open={manualModalOpen} onClose={toggleManualModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+<Modal open={manualModalOpen} onClose={toggleManualModal}>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
       bgcolor: 'background.paper',
       boxShadow: 24,
       p: 6,
@@ -315,18 +315,21 @@ const Horarios = () => {
 
         {/* Empleado */}
         <Grid item xs={12} md={6}>
-        <SelectComponent
+          <SelectComponent
             fixArrayFn={fixUserArray}
             params={`users/get-all-employees/${dataBase}`}
             label="Empleado"
             required={true}
             aditionalProperties={{
               onChange: (e) => {
-                console.log("seleccionado: " e.target.value);
+                console.log("Empleado seleccionado:", e.target.value);
                 // Aquí actualizamos el estado con el empleado seleccionado
-                handleManualChange('employee', e.target.value);
+                // Asumiendo que e.target.value es un objeto, tomamos el ID o el nombre
+                const selectedEmployee = e.target.value;
+                handleManualChange('employee', selectedEmployee); // Actualizar el estado
               },
-              value: manualData.employee || '',
+              value: manualData.employee || '', // En caso de que no haya un valor, dejar vacío
+            }}
             disabled={loading}
             sx={{ flexGrow: 1 }}
           />
