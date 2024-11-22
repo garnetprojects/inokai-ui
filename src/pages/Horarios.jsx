@@ -264,69 +264,83 @@ const Horarios = () => {
         </Box>
       )}
 
-      <Modal open={manualModalOpen} onClose={toggleManualModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            maxWidth: 400,
-            width: '100%',
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6" mb={2}>
-            Reemplazar Horario
-          </Typography>
+<Modal open={manualModalOpen} onClose={toggleManualModal}>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 6, // Aumenta el padding interno
+      maxWidth: 800, // Doble ancho
+      width: '100%',
+      borderRadius: 4, // Bordes ligeramente más redondeados
+    }}
+  >
+    <Typography variant="h5" mb={3}>
+      Reemplazar Horario
+    </Typography>
 
-          <LocationProvider>
-            <DatePicker
-              label="Fecha"
-              value={manualData.date}
-              onChange={(value) => handleManualChange('date', value)}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-            <SelectComponent
-              params={`users/get-all-employees/${dataBase}`}
-              label="Empleado"
-              aditionalProperties={{
-                onChange: (e) => handleManualChange('employee', e.target.value.name),
-                value: manualData.employee,
-              }}
-              required={true}
-              sx={{ mb: 2 }}
-            />
-            <TimePicker
-              label="Hora de Entrada"
-              value={manualData.startTime}
-              onChange={(value) => handleManualChange('startTime', value)}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-            <TimePicker
-              label="Hora de Salida"
-              value={manualData.endTime}
-              onChange={(value) => handleManualChange('endTime', value)}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-          </LocationProvider>
-
-          <Button
-            variant="contained"
-            color="primary"
+    <LocationProvider>
+      <Grid container spacing={3}>
+        {/* Fecha */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha"
+            value={manualData.date}
+            onChange={(value) => handleManualChange('date', value)}
             fullWidth
-            onClick={handleManualSubmit}
-          >
-            Hacer cambio
-          </Button>
-        </Box>
-      </Modal>
+          />
+        </Grid>
+
+        {/* Empleado */}
+        <Grid item xs={12} md={6}>
+           <SelectComponent
+            fixArrayFn={fixCentersArray}
+            params={`users/get-all-employees/${dataBase}`}
+            label="Empleado"
+            required={true}
+            aditionalProperties={{
+              onChange: (e) => handleManualChange(e.target.value.name),
+              value: manualData.employee,
+            }}
+            disabled={loading}
+            sx={{ flexGrow: 1 }}
+          />
+        </Grid>
+
+        {/* Hora de Entrada */}
+        <Grid item xs={12} md={6}>
+          <TimePicker
+            label="Hora de Entrada"
+            value={manualData.startTime}
+            onChange={(value) => handleManualChange('startTime', value)}
+            fullWidth
+          />
+        </Grid>
+
+        {/* Hora de Salida */}
+        <Grid item xs={12} md={6}>
+          <TimePicker
+            label="Hora de Salida"
+            value={manualData.endTime}
+            onChange={(value) => handleManualChange('endTime', value)}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
+    </LocationProvider>
+
+    <Box sx={{ mt: 4 }}>
+      <Button variant="contained" color="primary" fullWidth onClick={handleManualSubmit}>
+        Hacer cambio
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+
     </Container>
   );
 };
