@@ -310,7 +310,7 @@ const Horarios = () => {
             required={true}
             aditionalProperties={{
               onChange: (e) => handleManualChange(e.target.value.userInfo),
-              value: manualData.employee,
+              value: name || '',
             }}
             disabled={loading}
             sx={{ flexGrow: 1 }}
