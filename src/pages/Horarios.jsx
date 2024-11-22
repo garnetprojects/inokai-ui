@@ -42,23 +42,12 @@ const Horarios = () => {
   const toggleManualModal = () => setManualModalOpen(!manualModalOpen);
 
  // Manejo de cambios en los campos del formulario
- const handleManualChange = (field, value) => {
-  // Si el valor es un objeto (como el empleado), extraemos el valor necesario, por ejemplo, el ID o el nombre
-  if (field === 'employee' && value) {
-    console.log("valor es user: " + value);
 
-    // Si el valor es un objeto y se está seleccionando un empleado, almacenamos el ID o nombre
-    value = value.name || value.id || value; // Depende de lo que venga en el objeto
-  }
-
-  // Actualizamos el estado con el valor correspondiente
-  setManualData(prevState => ({
-    ...prevState,
-    [field]: value,
-  }));
-};
+  const handleManualChange = (field, value) => {
+    setManualData((prev) => ({ ...prev, [field]: value }));
+  };
   const handleManualSubmit = () => {
-    const { date, user, startTime, endTime } = manualData;
+    const { date, employee, startTime, endTime } = manualData;
     if (!date || !employee || !startTime || !endTime) {
       enqueueSnackbar('Por favor, completa todos los campos', {
         variant: 'warning',
