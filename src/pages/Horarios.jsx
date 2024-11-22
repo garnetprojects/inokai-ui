@@ -318,13 +318,13 @@ const Horarios = () => {
         <SelectComponent
                 fixArrayFn={fixUserArray}
                 params={`users/get-all-employees/${dataBase}`}
-                label={t('menu.employees')}
-                required={true}
+                label="Empleado"
                 aditionalProperties={{
-                  onChange: (e) => handleManualChange(e.target.value),
-                  value: manualData.user,
-                  name: 'userInfo',
+                  onChange: (e) => handleManualChange('employee', e.target.value),
+                  value: manualData.employee,
                 }}
+                required={true}
+                sx={{ mb: 2 }}
               />
         </Grid>
 
