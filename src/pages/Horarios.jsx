@@ -111,14 +111,6 @@ const handleExchangeSubmit = async () => {
     date2: date2.format('MM/DD/YYYY'),
   };
 
-  const confirmMessage = `¿Estás seguro de que deseas intercambiar los horarios de:\n\n- ${employee1} (${date1.format("DD/MM/YYYY")})\n- ${employee2} (${date2.format("DD/MM/YYYY")})?`;
-  const userConfirmed = window.confirm(confirmMessage);
-
-  if (!userConfirmed) {
-    enqueueSnackbar("Intercambio cancelado", { variant: "info" });
-    return;
-  }
-
   try {
     console.log('Enviando datos de intercambio:', JSON.stringify(exchangePayload, null, 2));
     
