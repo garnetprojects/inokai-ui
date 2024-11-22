@@ -311,7 +311,7 @@ const Horarios = () => {
             aditionalProperties={{
               onChange: (e) => {
                 // Aquí actualizamos el estado con el empleado seleccionado
-                handleManualChange('employee', e.target.value.userInfo.name);
+                handleManualChange('employee', e.target.value);
               },
               value: manualData.employee || '',
             disabled={loading}
