@@ -264,6 +264,8 @@ const Horarios = () => {
         </Box>
       )}
 
+import { Close } from '@mui/icons-material';
+
 <Modal open={manualModalOpen} onClose={toggleManualModal}>
   <Box
     sx={{
@@ -273,12 +275,25 @@ const Horarios = () => {
       transform: 'translate(-50%, -50%)',
       bgcolor: 'background.paper',
       boxShadow: 24,
-      p: 6, // Aumenta el padding interno
-      maxWidth: 800, // Doble ancho
+      p: 6,
+      maxWidth: 800,
       width: '100%',
-      borderRadius: 4, // Bordes ligeramente más redondeados
+      borderRadius: 4,
+      position: 'relative', // Para posicionar el botón de cierre
     }}
   >
+    {/* Botón de cierre */}
+    <IconButton
+      onClick={toggleManualModal}
+      sx={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+      }}
+    >
+      <Close />
+    </IconButton>
+
     <Typography variant="h5" mb={3}>
       Reemplazar Horario
     </Typography>
@@ -297,7 +312,7 @@ const Horarios = () => {
 
         {/* Empleado */}
         <Grid item xs={12} md={6}>
-           <SelectComponent
+        <SelectComponent
             fixArrayFn={fixUserArray}
             params={`users/get-all-employees/${dataBase}`}
             label="Empleado"
