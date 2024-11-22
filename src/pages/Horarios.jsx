@@ -321,7 +321,7 @@ const Horarios = () => {
                 label="Empleado"
                 aditionalProperties={{
                   onChange: (e) => handleManualChange('employee', e.target.value),
-                  value: manualData.user,
+                  value: manualData.employee,
                 }}
                 required={true}
                 sx={{ mb: 2 }}
