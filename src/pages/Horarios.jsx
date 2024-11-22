@@ -316,8 +316,6 @@ const Horarios = () => {
         {/* Empleado */}
         <Grid item xs={12} md={6}>
         <SelectComponent
-                appointmentData={appointmentData?.appointments2}
-                disabled={mutation.isPending || canEdit}
                 fixArrayFn={fixUserArray}
                 params={`appointment/get-all-employees/${dataBase}`}
                 label={t('menu.employees')}
