@@ -45,6 +45,8 @@ const Horarios = () => {
  const handleManualChange = (field, value) => {
   // Si el valor es un objeto (como el empleado), extraemos el valor necesario, por ejemplo, el ID o el nombre
   if (field === 'employee' && value) {
+    console.log("valor es employee: " value);
+
     // Si el valor es un objeto y se está seleccionando un empleado, almacenamos el ID o nombre
     value = value.name || value.id || value; // Depende de lo que venga en el objeto
   }
@@ -320,6 +322,7 @@ const Horarios = () => {
             required={true}
             aditionalProperties={{
               onChange: (e) => {
+                console.log("seleccionado: " e.target.value);
                 // Aquí actualizamos el estado con el empleado seleccionado
                 handleManualChange('employee', e.target.value);
               },
