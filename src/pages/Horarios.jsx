@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -6,10 +7,10 @@ import {
   Modal,
   TextField,
   Typography,
+  IconButton,
 } from '@mui/material';
-import React, { useState } from 'react';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx'; // Para manejar archivos Excel
+import * as XLSX from 'xlsx';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
@@ -17,11 +18,10 @@ import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
-import { fixCentersArray, fixUserArray  } from '../utils/fixArray';
-import Grid from '@mui/material/Unstable_Grid2/Grid2';
+import { fixCentersArray, fixUserArray } from '../utils/fixArray';
+import Grid from '@mui/material/Unstable_Grid2';
 import SelectComponent from '../components/SelectComponent';
 import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
@@ -31,7 +31,6 @@ const Horarios = () => {
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
 
-  // Estado para el modal de añadir manualmente
   const [manualModalOpen, setManualModalOpen] = useState(false);
   const [manualData, setManualData] = useState({
     date: null,
@@ -48,7 +47,6 @@ const Horarios = () => {
 
   const handleManualSubmit = () => {
     const { date, employee, startTime, endTime } = manualData;
-    alert(manualData);
     if (!date || !employee || !startTime || !endTime) {
       enqueueSnackbar('Por favor, completa todos los campos', {
         variant: 'warning',
@@ -68,39 +66,32 @@ const Horarios = () => {
     toggleManualModal();
   };
 
-  // Función para convertir formato de tiempo de Excel a una cadena hh:mm:ss
   function excelTimeToString(excelTime) {
-    const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
+    const totalSeconds = Math.round(excelTime * 86400);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Función para convertir formato de fecha de Excel a una cadena MM/DD/YYYY
   function excelDateToString(excelDate) {
     const date = new Date((excelDate - 25569) * 86400 * 1000);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-
     return `${month}/${day}/${year}`;
   }
 
-  // Función para convertir cadena de fecha de DD/MM/YYYY a MM/DD/YYYY
   function convertDateToUSFormat(dateStr) {
     const [day, month, year] = dateStr.split('/');
     return `${month}/${day}/${year}`;
   }
 
-  // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
     if (!e.target.files[0]) return;
     const file = e.target.files[0];
-
     const fileExtension = file.name.split('.').pop();
 
     if (fileExtension === 'csv') {
@@ -179,7 +170,7 @@ const Horarios = () => {
 
     setLoading(true);
     try {
-      const data = await axios.post(
+      await axios.post(
         `/appointment/generar-horarios/${dataBase}`,
         fileData,
         {
@@ -199,7 +190,7 @@ const Horarios = () => {
 
   return (
     <Container maxWidth="xl">
-      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+      <Typography variant="h2" sx={{ textTransform: 'capitalize' }} mb={2}>
         {t('title.schedules')}
       </Typography>
 
@@ -220,7 +211,7 @@ const Horarios = () => {
             fixArrayFn={fixCentersArray}
             params={`users/get-all-centers/${dataBase}`}
             label={t('title.center')}
-            required={true}
+            required
             aditionalProperties={{
               onChange: (e) => setCenter(e.target.value),
               value: centerId || '',
@@ -266,15 +257,13 @@ const Horarios = () => {
         </Box>
       )}
 
-import { Close } from '@mui/icons-material';
-
-<Modal open={manualModalOpen} onClose={toggleManualModal}>
-  <Box
-    sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
+      <Modal open={manualModalOpen} onClose={toggleManualModal}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
       bgcolor: 'background.paper',
       boxShadow: 24,
       p: 6,
