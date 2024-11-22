@@ -280,7 +280,7 @@ const Horarios = () => {
           }}
         >
           <Typography variant="h6" mb={2}>
-            Añadir Horario Manualmente
+            Reemplazar Horario
           </Typography>
 
           <LocationProvider>
@@ -295,7 +295,7 @@ const Horarios = () => {
               params={`users/get-all-employees/${dataBase}`}
               label="Empleado"
               aditionalProperties={{
-                onChange: (e) => handleManualChange('employee', e.target.value),
+                onChange: (e) => handleManualChange('employee', e.target.value.name),
                 value: manualData.employee,
               }}
               required={true}
