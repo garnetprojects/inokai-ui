@@ -30,7 +30,7 @@ const Horarios = () => {
   const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
-
+  const centerInfo = state.userInfo.centerId;
   const [manualModalOpen, setManualModalOpen] = useState(false);
   const [manualData, setManualData] = useState({
     date: null,
@@ -377,7 +377,7 @@ const handleExchangeSubmit = async () => {
         <Grid item xs={12} md={6}>
         <SelectComponent
                 fixArrayFn={fixUserArray}
-                params={`users/get-all-employees/${dataBase}`}
+                params={`appointment/get-all-employees/${dataBase}`}
                 label="Empleado"
                 aditionalProperties={{
                   onChange: (e) => handleManualChange('employee', e.target.value),
