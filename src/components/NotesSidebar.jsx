@@ -95,7 +95,7 @@ const NotesSidebar = () => {
             {/* Expandable panel */}
             <Box
                 position="fixed"
-                right={isOpen ? 0 : '-35%'}
+                right={isOpen ? 0 : '-32.5%'}
                 top={0}
                 bottom={0}
                 width={{ xs: '90%', sm: '50%', md: '30%' }} // Responsive widths
