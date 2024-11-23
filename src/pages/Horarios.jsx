@@ -458,7 +458,7 @@ const handleExchangeSubmit = async () => {
         <Grid item xs={12} md={6}>
           <SelectComponent
             fixArrayFn={fixUserArray}
-            params={`users/get-all-employees/${dataBase}`}
+            params={`appointment/get-all-employees/${dataBase}`}
             label="Empleado 1"
             aditionalProperties={{
               onChange: (e) => handleExchangeChange('employee1', e.target.value),
@@ -472,7 +472,7 @@ const handleExchangeSubmit = async () => {
         <Grid item xs={12} md={6}>
           <SelectComponent
             fixArrayFn={fixUserArray}
-            params={`users/get-all-employees/${dataBase}`}
+            params={`appointment/get-all-employees/${dataBase}`}
             label="Empleado 2"
             aditionalProperties={{
               onChange: (e) => handleExchangeChange('employee2', e.target.value),
