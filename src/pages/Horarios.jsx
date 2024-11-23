@@ -30,7 +30,6 @@ const Horarios = () => {
   const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
-  const centerInfo = state.userInfo.centerId;
   const [manualModalOpen, setManualModalOpen] = useState(false);
   const [manualData, setManualData] = useState({
     date: null,
