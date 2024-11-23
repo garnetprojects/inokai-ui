@@ -92,6 +92,9 @@
     "sortByEmail": "Ordenar por email",
     "asc": "⬆️",
     "desc": "⬇️",
-    "search": "Buscar"
+    "search": "Buscar",
+    "cancel": "Cancelar",
+    "update": "Actualizar",
+    "create": "Crear"
   }
 }

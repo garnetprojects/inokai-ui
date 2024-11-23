@@ -91,6 +91,9 @@
     "sortByEmail": "Sort by Email",
     "asc": "⬆️",
     "desc": "⬇️",
-    "search": "Search"
+    "search": "Search",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
   }
 }
