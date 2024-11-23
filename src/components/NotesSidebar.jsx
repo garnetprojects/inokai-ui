@@ -1,4 +1,3 @@
-// src/components/NotesSidebar.js
 import React, { useState, useContext } from 'react';
 import {
     Box,
@@ -47,7 +46,7 @@ const NotesSidebar = () => {
             setNoteInput('');
             setEditNoteId(null);
         },
-        onError: (error) => {
+        onError: () => {
             enqueueSnackbar('Error al guardar la nota', { variant: 'error' });
         }
     });
@@ -61,7 +60,7 @@ const NotesSidebar = () => {
             queryClient.invalidateQueries(['notes', centerInfo]);
             enqueueSnackbar('Nota eliminada', { variant: 'success' });
         },
-        onError: (error) => {
+        onError: () => {
             enqueueSnackbar('Error al eliminar la nota', { variant: 'error' });
         }
     });
@@ -93,38 +92,13 @@ const NotesSidebar = () => {
 
     return (
         <>
-            {/* Sidebar button */}
-            <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                height="100px"
-                width="50px"
-                bgcolor={notes.length > 0 ? 'red' : 'black'}
-                color="white"
-                style={{
-                    writingMode: 'vertical-rl',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    borderRadius: '20px 0 0 20px',
-                    position: 'fixed',
-                    right: isOpen ? '32.4%' : 0,
-                    top: '165px',
-                    zIndex: 10000,
-                    transition: 'right 0.3s ease',
-                }}
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                {`NOTAS${notes.length > 0 ? ` (${notes.length})` : ''}`}
-            </Box>
-
             {/* Expandable panel */}
             <Box
                 position="fixed"
-                right={isOpen ? 0 : '-32.5%'}
+                right={isOpen ? 0 : '-30%'}
                 top={0}
                 bottom={0}
-                width="30%"
+                width={{ xs: '90%', sm: '50%', md: '30%' }} // Responsive widths
                 bgcolor="white"
                 color="black"
                 display="flex"
@@ -138,6 +112,31 @@ const NotesSidebar = () => {
                     borderLeft: '3px solid black',
                 }}
             >
+                {/* Sidebar button */}
+                <Box
+                    position="absolute"
+                    left="-50px" // Attach tab to panel
+                    top="165px"
+                    height="100px"
+                    width="50px"
+                    bgcolor={notes.length > 0 ? 'red' : 'black'}
+                    color="white"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    style={{
+                        writingMode: 'vertical-rl',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        borderRadius: '20px 0 0 20px',
+                        zIndex: 10001,
+                        transition: 'right 0.3s ease',
+                    }}
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    {`NOTAS${notes.length > 0 ? ` (${notes.length})` : ''}`}
+                </Box>
+
                 <TextField
                     label="Nueva Nota"
                     value={noteInput}
