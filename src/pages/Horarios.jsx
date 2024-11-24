@@ -43,10 +43,24 @@ const Horarios = () => {
 
  // Manejo de cambios en los campos del formulario
 
- const handleManualChange = (field, value) => {
-  if (field === 'type') {
-    if (value) {
-      // Si se selecciona un checkbox, se bloquean los campos de hora y se asigna el rango predeterminado
+ const ManualEntryModal = ({ open, onClose, dataBase }) => {
+  const [manualData, setManualData] = useState({
+    date: null,
+    employee: '',
+    startTime: null,
+    endTime: null,
+    type: '', // Nuevo campo para los checkboxes
+  });
+
+  const handleManualChange = (field, value) => {
+    setManualData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCheckboxChange = (event) => {
+    const { value, checked } = event.target;
+
+    if (checked) {
+      // Si se selecciona un checkbox, deshabilitamos los campos de hora y asignamos valores predeterminados
       setManualData((prev) => ({
         ...prev,
         type: value,
@@ -54,7 +68,7 @@ const Horarios = () => {
         endTime: '22:00:00',
       }));
     } else {
-      // Si se deselecciona, se limpian las horas y se elimina el tipo seleccionado
+      // Si se desmarca el checkbox, habilitamos los campos de hora y limpiamos sus valores
       setManualData((prev) => ({
         ...prev,
         type: '',
@@ -62,46 +76,42 @@ const Horarios = () => {
         endTime: null,
       }));
     }
-  } else {
-    // Para otros campos, actualiza normalmente
-    setManualData((prev) => ({ ...prev, [field]: value }));
-  }
-};
+  };
+
+  const isAnyCheckboxChecked = !!manualData.type; // Verifica si algún checkbox está seleccionado
 
   const handleManualSubmit = async () => {
-    const { date, employee, startTime, endTime } = manualData;
-    
-    if (!date || !employee || !startTime || !endTime) {
-      enqueueSnackbar('Por favor, completa todos los campos', {
-        variant: 'warning',
-      });
+    const { date, employee, startTime, endTime, type } = manualData;
+
+    if (!date || !employee || (!startTime && !endTime && !type)) {
+      enqueueSnackbar('Por favor, completa todos los campos', { variant: 'warning' });
       return;
     }
-  
+
     const manualEntry = {
       date: date.format('MM/DD/YYYY'),
       employee,
-      startTime: startTime.format('HH:mm:ss'),
-      endTime: endTime.format('HH:mm:ss'),
-      type: manualData.type, // Nuevo campo
+      startTime: isAnyCheckboxChecked ? '09:00:00' : startTime.format('HH:mm:ss'),
+      endTime: isAnyCheckboxChecked ? '22:00:00' : endTime.format('HH:mm:ss'),
+      type: type || null,
     };
-  
+
     console.log('Datos ingresados manualmente:', JSON.stringify(manualEntry, null, 2));
-  
+
     try {
       const response = await axios.post(
-        `/appointment/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
+        `/appointment/horario-manual/${dataBase}`,
         manualEntry
       );
-  
       enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
       console.log('Respuesta del servidor:', response.data);
-      toggleManualModal();
+      onClose();
     } catch (error) {
       console.error('Error al registrar la entrada manual:', error);
       enqueueSnackbar('Error al registrar la entrada manual', { variant: 'error' });
     }
   };
+
 
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
 const [exchangeData, setExchangeData] = useState({
@@ -352,122 +362,113 @@ const handleExchangeSubmit = async () => {
         </Box>
       )}
 
-<Modal open={manualModalOpen} onClose={toggleManualModal}>
-  <Box
-    sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      bgcolor: 'background.paper',
-      boxShadow: 24,
-      p: 6,
-      maxWidth: 800,
-      width: '100%',
-      borderRadius: 4,
-      position: 'relative',
-    }}
-  >
-    {/* Botón de cierre */}
-    <IconButton
-      onClick={toggleManualModal}
-      sx={{
-        position: 'absolute',
-        top: 16,
-        right: 16,
-      }}
-    >
-      <Close />
-    </IconButton>
+<Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 6,
+          maxWidth: 800,
+          width: '100%',
+          borderRadius: 4,
+          position: 'relative',
+        }}
+      >
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+          }}
+        >
+          <Close />
+        </IconButton>
 
-    <Typography variant="h5" mb={3}>
-      Reemplazar Horario
-    </Typography>
+        <Typography variant="h5" mb={3}>
+          Añadir Manualmente
+        </Typography>
 
-    <LocationProvider>
-      <Grid container spacing={3}>
-        {/* Fecha */}
-        <Grid item xs={12} md={6}>
-          <DatePicker
-            label="Fecha"
-            value={manualData.date}
-            onChange={(value) => handleManualChange('date', value)}
-            fullWidth
-          />
-        </Grid>
-
-        {/* Empleado */}
-        <Grid item xs={12} md={6}>
-          <SelectComponent
-            fixArrayFn={fixUserArray}
-            params={`appointment/get-all-employees/${dataBase}`}
-            label="Empleado"
-            aditionalProperties={{
-              onChange: (e) => handleManualChange('employee', e.target.value),
-              value: manualData.employee,
-            }}
-            required={true}
-          />
-        </Grid>
-
-        {/* Checkboxes */}
-        <Grid item xs={12}>
-          <Typography variant="subtitle1" mb={1}>
-            Tipo de día:
-          </Typography>
-          {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo'].map((type) => (
-            <label key={type} style={{ marginRight: 16 }}>
-              <input
-                type="radio"
-                name="dayType"
-                value={type}
-                checked={manualData.type === type}
-                onChange={(e) =>
-                  handleManualChange('type', e.target.checked ? e.target.value : '')
-                }
+        <LocationProvider>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <DatePicker
+                label="Fecha"
+                value={manualData.date}
+                onChange={(value) => handleManualChange('date', value)}
+                fullWidth
               />
-              {type}
-            </label>
-          ))}
-        </Grid>
+            </Grid>
 
-        {/* Hora de Inicio */}
-        <Grid item xs={6}>
-          <LocationProvider>
-            <TimePicker
-              label="Hora de Inicio"
-              sx={{ width: '100%' }}
-              value={manualData.startTime}
-              onChange={(value) => handleManualChange('startTime', value)}
-              ampm={false}
-              disabled={!!manualData.type} // Deshabilitar si hay un checkbox seleccionado
-            />
-          </LocationProvider>
-        </Grid>
+            <Grid item xs={12} md={6}>
+              <SelectComponent
+                fixArrayFn={fixUserArray}
+                params={`appointment/get-all-employees/${dataBase}`}
+                label="Empleado"
+                aditionalProperties={{
+                  onChange: (e) => handleManualChange('employee', e.target.value),
+                  value: manualData.employee,
+                }}
+                required
+              />
+            </Grid>
 
-        {/* Hora de Fin */}
-        <Grid item xs={6}>
-          <LocationProvider>
-            <TimePicker
-              label="Hora de Fin"
-              sx={{ width: '100%' }}
-              value={manualData.endTime}
-              onChange={(value) => handleManualChange('endTime', value)}
-              ampm={false}
-              disabled={!!manualData.type} // Deshabilitar si hay un checkbox seleccionado
-            />
-          </LocationProvider>
-        </Grid>
-      </Grid>
-    </LocationProvider>
+            <Grid item xs={12}>
+              {/* Checkboxes */}
+              {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo'].map((label) => (
+                <FormControlLabel
+                  key={label}
+                  control={
+                    <Checkbox
+                      value={label}
+                      checked={manualData.type === label}
+                      onChange={handleCheckboxChange}
+                    />
+                  }
+                  label={label}
+                />
+              ))}
+            </Grid>
 
-    <Box sx={{ mt: 4 }}>
-      <Button variant="contained" color="primary" fullWidth onClick={handleManualSubmit}>
-        Hacer cambio
-      </Button>
-    </Box>
-  </Box>
-</Modal>
+            <Grid item xs={6}>
+              <TimePicker
+                label="Hora de Entrada"
+                value={manualData.startTime}
+                onChange={(value) => handleManualChange('startTime', value)}
+                disabled={isAnyCheckboxChecked}
+                ampm={false}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TimePicker
+                label="Hora de Salida"
+                value={manualData.endTime}
+                onChange={(value) => handleManualChange('endTime', value)}
+                disabled={isAnyCheckboxChecked}
+                ampm={false}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+        </LocationProvider>
+
+        <Box sx={{ mt: 4 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleManualSubmit}
+          >
+            Registrar Entrada
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
 
 
 <Modal open={exchangeModalOpen} onClose={toggleExchangeModal}>
