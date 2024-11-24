@@ -57,7 +57,7 @@ const Horarios = () => {
     setManualData((prev) => ({
       ...prev,
       type: checked ? value : '', // Asignar el tipo si está seleccionado, limpiarlo si no
-      startTime: checked ? dayjs('09:00', 'HH:mm') : null, // Hora predeterminada o nula
+      startTime: checked ? dayjs('10:00', 'HH:mm') : null, // Hora predeterminada o nula
       endTime: checked ? dayjs('22:00', 'HH:mm') : null,
     }));
   };
@@ -75,7 +75,7 @@ const Horarios = () => {
     const manualEntry = {
       date: date.format('YYYY-MM-DD'),
       employee,
-      startTime: isAnyCheckboxChecked ? '09:00:00' : startTime.format('HH:mm:ss'),
+      startTime: isAnyCheckboxChecked ? '10:00:00' : startTime.format('HH:mm:ss'),
       endTime: isAnyCheckboxChecked ? '22:00:00' : endTime.format('HH:mm:ss'),
       type: type || null,
     };
