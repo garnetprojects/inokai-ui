@@ -383,14 +383,19 @@ const handleExchangeSubmit = async () => {
             />
           </Grid>
 
+          {/* Empleado */}
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Empleado"
-              value={manualData.employee}
-              onChange={(e) => handleManualChange('employee', e.target.value)}
-              fullWidth
-            />
-          </Grid>
+                    <SelectComponent
+                      fixArrayFn={fixUserArray}
+                      params={`appointment/get-all-employees/${dataBase}`}
+                      label="Empleado"
+                      aditionalProperties={{
+                        onChange: (e) => handleManualChange('employee', e.target.value),
+                        value: exchangeData.employee1,
+                      }}
+                      required={true}
+                    />
+                  </Grid>
 
           <Grid item xs={12}>
             {/* Checkboxes */}
