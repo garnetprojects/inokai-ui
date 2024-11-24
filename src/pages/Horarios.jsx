@@ -73,7 +73,7 @@ const Horarios = () => {
     }
 
     const manualEntry = {
-      date: date.format('YYYY-MM-DD'),
+      date: date.format('MM/DD/YYYY'),
       employee,
       startTime: isAnyCheckboxChecked ? '10:00:00' : startTime.format('HH:mm:ss'),
       endTime: isAnyCheckboxChecked ? '22:00:00' : endTime.format('HH:mm:ss'),
