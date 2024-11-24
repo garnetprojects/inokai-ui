@@ -43,15 +43,6 @@ const Horarios = () => {
 
  // Manejo de cambios en los campos del formulario
 
- const ManualEntryModal = ({ open, onClose, dataBase }) => {
-  const [manualData, setManualData] = useState({
-    date: null,
-    employee: '',
-    startTime: null,
-    endTime: null,
-    type: '', // Campo para los checkboxes
-  });
-
   const handleManualChange = (field, value) => {
     setManualData((prev) => ({ ...prev, [field]: value }));
   };
@@ -92,12 +83,12 @@ const Horarios = () => {
       );
       enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
       console.log('Respuesta del servidor:', response.data);
-      onClose(); // Cerrar modal tras un éxito
+      toggleManualModal(); // Cerrar modal tras un éxito
     } catch (error) {
       console.error('Error al registrar la entrada manual:', error);
       enqueueSnackbar('Error al registrar la entrada manual', { variant: 'error' });
     }
-
+  };
 
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
 const [exchangeData, setExchangeData] = useState({
@@ -348,7 +339,7 @@ const handleExchangeSubmit = async () => {
         </Box>
       )}
 
-<Modal open={open} onClose={onClose}>
+<Modal open={manualModalOpen} onClose={toggleManualModal}>
       <Box
         sx={{
           position: 'absolute',
@@ -364,7 +355,7 @@ const handleExchangeSubmit = async () => {
         }}
       >
         <IconButton
-          onClick={onClose}
+          onClick={toggleManualModal}
           sx={{
             position: 'absolute',
             top: 16,
