@@ -114,15 +114,16 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
 
             {/* Checkbox para TODOS LOS CENTROS */}
             <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isAllCenters}
-                  onChange={() => setIsAllCenters(!isAllCenters)}
-                  color="primary"
+                control={
+                    <Checkbox
+                    checked={isAllCenters}
+                    onChange={() => setIsAllCenters(!isAllCenters)}
+                    color="primary"
+                    disabled={state.userInfo?.role !== 'admin'} // Deshabilita si no es admin
+                    />
+                }
+                label="TODOS LOS CENTROS"
                 />
-              }
-              label="TODOS LOS CENTROS"
-            />
 
             <Box>
               <IconButton
