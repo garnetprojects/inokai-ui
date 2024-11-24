@@ -25,7 +25,6 @@ import { Close } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import axios from 'axios';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
