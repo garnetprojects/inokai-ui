@@ -49,7 +49,7 @@ const Horarios = () => {
     employee: '',
     startTime: null,
     endTime: null,
-    type: '', // Nuevo campo para los checkboxes
+    type: '', // Campo para los checkboxes
   });
 
   const handleManualChange = (field, value) => {
@@ -59,26 +59,15 @@ const Horarios = () => {
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
 
-    if (checked) {
-      // Si se selecciona un checkbox, deshabilitamos los campos de hora y asignamos valores predeterminados
-      setManualData((prev) => ({
-        ...prev,
-        type: value,
-        startTime: dayjs('09:00', 'HH:mm'), // Hora válida
-        endTime: dayjs('22:00', 'HH:mm'), // Hora válida
-      }));
-    } else {
-      // Si se desmarca el checkbox, habilitamos los campos de hora y limpiamos sus valores
-      setManualData((prev) => ({
-        ...prev,
-        type: '',
-        startTime: null,
-        endTime: null,
-      }));
-    }
+    setManualData((prev) => ({
+      ...prev,
+      type: checked ? value : '', // Asignar el tipo si está seleccionado, limpiarlo si no
+      startTime: checked ? dayjs('09:00', 'HH:mm') : null, // Hora predeterminada o nula
+      endTime: checked ? dayjs('22:00', 'HH:mm') : null,
+    }));
   };
 
-  const isAnyCheckboxChecked = !!manualData.type; // Verifica si algún checkbox está seleccionado
+  const isAnyCheckboxChecked = !!manualData.type; // Verificar si algún checkbox está seleccionado
 
   const handleManualSubmit = async () => {
     const { date, employee, startTime, endTime, type } = manualData;
@@ -96,8 +85,6 @@ const Horarios = () => {
       type: type || null,
     };
 
-    console.log('Datos ingresados manualmente:', JSON.stringify(manualEntry, null, 2));
-
     try {
       const response = await axios.post(
         `/appointment/horario-manual/${dataBase}`,
@@ -105,12 +92,11 @@ const Horarios = () => {
       );
       enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
       console.log('Respuesta del servidor:', response.data);
-      onClose();
+      onClose(); // Cerrar modal tras un éxito
     } catch (error) {
       console.error('Error al registrar la entrada manual:', error);
       enqueueSnackbar('Error al registrar la entrada manual', { variant: 'error' });
     }
-  };
 
 
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
@@ -363,7 +349,7 @@ const handleExchangeSubmit = async () => {
       )}
 
 <Modal open={open} onClose={onClose}>
-<Box
+      <Box
         sx={{
           position: 'absolute',
           top: '50%',
@@ -375,7 +361,6 @@ const handleExchangeSubmit = async () => {
           maxWidth: 800,
           width: '100%',
           borderRadius: 4,
-          position: 'relative',
         }}
       >
         <IconButton
@@ -434,7 +419,7 @@ const handleExchangeSubmit = async () => {
               label="Hora de Entrada"
               value={manualData.startTime}
               onChange={(value) => handleManualChange('startTime', value)}
-              disabled={isAnyCheckboxChecked}
+              disabled={isAnyCheckboxChecked} // Desactivar si hay un checkbox seleccionado
               ampm={false}
               fullWidth
             />
@@ -444,7 +429,7 @@ const handleExchangeSubmit = async () => {
               label="Hora de Salida"
               value={manualData.endTime}
               onChange={(value) => handleManualChange('endTime', value)}
-              disabled={isAnyCheckboxChecked}
+              disabled={isAnyCheckboxChecked} // Desactivar si hay un checkbox seleccionado
               ampm={false}
               fullWidth
             />
@@ -556,7 +541,6 @@ const handleExchangeSubmit = async () => {
     </Box>
   </Box>
 </Modal>
-
     </Container>
   );
 };
