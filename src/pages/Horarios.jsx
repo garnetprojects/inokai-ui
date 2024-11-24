@@ -64,8 +64,8 @@ const Horarios = () => {
       setManualData((prev) => ({
         ...prev,
         type: value,
-        startTime: '09:00:00',
-        endTime: '22:00:00',
+        startTime: dayjs('09:00', 'HH:mm'), // Hora válida
+        endTime: dayjs('22:00', 'HH:mm'), // Hora válida
       }));
     } else {
       // Si se desmarca el checkbox, habilitamos los campos de hora y limpiamos sus valores
@@ -89,7 +89,7 @@ const Horarios = () => {
     }
 
     const manualEntry = {
-      date: date.format('MM/DD/YYYY'),
+      date: date.format('YYYY-MM-DD'),
       employee,
       startTime: isAnyCheckboxChecked ? '09:00:00' : startTime.format('HH:mm:ss'),
       endTime: isAnyCheckboxChecked ? '22:00:00' : endTime.format('HH:mm:ss'),
@@ -363,7 +363,7 @@ const handleExchangeSubmit = async () => {
       )}
 
 <Modal open={open} onClose={onClose}>
-      <Box
+<Box
         sx={{
           position: 'absolute',
           top: '50%',
@@ -393,69 +393,63 @@ const handleExchangeSubmit = async () => {
           Añadir Manualmente
         </Typography>
 
-        <LocationProvider>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <DatePicker
-                label="Fecha"
-                value={manualData.date}
-                onChange={(value) => handleManualChange('date', value)}
-                fullWidth
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <SelectComponent
-                fixArrayFn={fixUserArray}
-                params={`appointment/get-all-employees/${dataBase}`}
-                label="Empleado"
-                aditionalProperties={{
-                  onChange: (e) => handleManualChange('employee', e.target.value),
-                  value: manualData.employee,
-                }}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              {/* Checkboxes */}
-              {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo'].map((label) => (
-                <FormControlLabel
-                  key={label}
-                  control={
-                    <Checkbox
-                      value={label}
-                      checked={manualData.type === label}
-                      onChange={handleCheckboxChange}
-                    />
-                  }
-                  label={label}
-                />
-              ))}
-            </Grid>
-
-            <Grid item xs={6}>
-              <TimePicker
-                label="Hora de Entrada"
-                value={manualData.startTime}
-                onChange={(value) => handleManualChange('startTime', value)}
-                disabled={isAnyCheckboxChecked}
-                ampm={false}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TimePicker
-                label="Hora de Salida"
-                value={manualData.endTime}
-                onChange={(value) => handleManualChange('endTime', value)}
-                disabled={isAnyCheckboxChecked}
-                ampm={false}
-                fullWidth
-              />
-            </Grid>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <DatePicker
+              label="Fecha"
+              value={manualData.date}
+              onChange={(value) => handleManualChange('date', value)}
+              fullWidth
+            />
           </Grid>
-        </LocationProvider>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Empleado"
+              value={manualData.employee}
+              onChange={(e) => handleManualChange('employee', e.target.value)}
+              fullWidth
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            {/* Checkboxes */}
+            {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo'].map((label) => (
+              <FormControlLabel
+                key={label}
+                control={
+                  <Checkbox
+                    value={label}
+                    checked={manualData.type === label}
+                    onChange={handleCheckboxChange}
+                  />
+                }
+                label={label}
+              />
+            ))}
+          </Grid>
+
+          <Grid item xs={6}>
+            <TimePicker
+              label="Hora de Entrada"
+              value={manualData.startTime}
+              onChange={(value) => handleManualChange('startTime', value)}
+              disabled={isAnyCheckboxChecked}
+              ampm={false}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TimePicker
+              label="Hora de Salida"
+              value={manualData.endTime}
+              onChange={(value) => handleManualChange('endTime', value)}
+              disabled={isAnyCheckboxChecked}
+              ampm={false}
+              fullWidth
+            />
+          </Grid>
+        </Grid>
 
         <Box sx={{ mt: 4 }}>
           <Button
