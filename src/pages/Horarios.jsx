@@ -23,6 +23,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import SelectComponent from '../components/SelectComponent';
 import { Close } from '@mui/icons-material';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
