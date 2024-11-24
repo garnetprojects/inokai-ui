@@ -94,7 +94,7 @@ const Horarios = () => {
     }
   };
 
-  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
 const [exchangeData, setExchangeData] = useState({
   employee1: '',
   employee2: '',
@@ -391,7 +391,7 @@ const handleExchangeSubmit = async () => {
                       label="Empleado"
                       aditionalProperties={{
                         onChange: (e) => handleManualChange('employee', e.target.value),
-                        value: exchangeData.employee1,
+                        value: exchangeData.employee,
                       }}
                       required={true}
                     />
