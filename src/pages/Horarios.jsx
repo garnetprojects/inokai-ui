@@ -16,7 +16,7 @@ import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
-import { DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
 import { fixCentersArray, fixUserArray } from '../utils/fixArray';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -32,6 +32,7 @@ const Horarios = () => {
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
   const [manualModalOpen, setManualModalOpen] = useState(false);
+  
   const [manualData, setManualData] = useState({
     date: null,
     employee: '',
