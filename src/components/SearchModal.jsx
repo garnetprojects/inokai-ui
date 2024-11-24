@@ -2,7 +2,6 @@ import { SearchOutlined } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Card,
   CardContent,
   Checkbox,
   Chip,
@@ -17,7 +16,7 @@ import { useContext, useState } from 'react';
 import ModalComponent from './ModalComponent';
 import SelectComponent from './SelectComponent';
 import { fixCentersArray } from '../utils/fixArray';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/UserProvider';
 import { useMutation } from '@tanstack/react-query';
@@ -29,6 +28,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isAllCenters, setIsAllCenters] = useState(false); // Nuevo estado para el checkbox
   const [highlightedAppointment, setHighlightedAppointment] = useState(null); // Nuevo estado para la cita resaltada
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
   const { state } = useContext(UserContext);
@@ -53,8 +53,13 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
 
   const handleSelectAppointment = (appointment) => {
     setIsOpen(false);
-    setSelectedDate(appointment.date);
-    setOpenEdit(appointment);
+    // setOpenEdit(appointment);
+    console.log(appointment);
+    setSearchParams({
+      filterDate: appointment.date,
+      appointmentID: appointment._id,
+      centerID: appointment.centerInfo,
+    });
   };
 
   const handleMouseEnter = (appointment) => {

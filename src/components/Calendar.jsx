@@ -12,7 +12,8 @@ import {
 import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
-import { memo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -104,7 +105,9 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
                     </Typography>
-                    {!(availibity.from === '10:00' && availibity.to === '22:00') && (
+                    {!(
+                      availibity.from === '10:00' && availibity.to === '22:00'
+                    ) && (
                       <Typography variant="body2" whiteSpace={'nowrap'}>
                         {`${availibity.from ? availibity.from : ''} ${
                           availibity.to ? availibity.to : ''
@@ -178,6 +181,29 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
 
 const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { dataBase } = useParams();
+  const ref = useRef();
+  const [selectedBox, setSelectedBox] = useState(false);
+
+  const appointmentIDQuery = searchParams.get('appointmentID');
+
+  useEffect(() => {
+    if (appointmentIDQuery === data._id) {
+      ref.current.scrollIntoView({
+        block: 'start',
+        behavior: 'smooth',
+      });
+      setSelectedBox(true);
+
+      setTimeout(() => {
+        handleClick();
+        setSelectedBox(false);
+        navigate(`/${dataBase}/home`, { preventScrollReset: true });
+      }, 2000);
+    }
+  }, [appointmentIDQuery]);
 
   const handleClick = () => {
     setOpen(data);
@@ -204,6 +230,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
   return (
     <Tooltip title={servicesTooltip} arrow>
       <Button
+        ref={ref}
         sx={{
           p: 1,
           position: 'relative',
@@ -211,7 +238,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           bgcolor: serviceColor,
           opacity: 1,
           boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-          border: `2px solid white`, 
+          border: `2px solid ${selectedBox ? 'blue' : 'white'}`,
           ':disabled': {
             cursor: 'not-allowed',
           },
@@ -222,6 +249,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
         }}
         variant="contained"
         disabled={isFreeSlot}
+        onDoubleClick={handleClick}
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -229,7 +257,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           </Typography>
         )}
 
-        <Box onDoubleClick={handleClick}>
+        <Box>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
@@ -237,7 +265,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
               {t('inputLabel.endTime')}: {data.finalTime}
               {t('   (')}
               {data.createdBy}
-              {t(')')}    
+              {t(')')}
             </Typography>
           </Box>
 
