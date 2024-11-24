@@ -2,6 +2,7 @@ import { Box, Container } from '@mui/material';
 import ChangeLngBtn from './ChangeLngBtn';
 
 const Footer = () => {
+
   return (
     <Box sx={{ bgcolor: 'primary.main', color: 'white' }} py={2}>
       <Container
@@ -13,6 +14,7 @@ const Footer = () => {
       >
         <Box>yNokAI</Box> <ChangeLngBtn />
       </Container>
+
     </Box>
   );
 };

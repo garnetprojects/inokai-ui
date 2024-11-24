@@ -4,18 +4,21 @@ import {
   Button,
   Chip,
   Divider,
+  Menu,
+  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { Scheduler } from '@aldabil/react-scheduler';
 import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
-import { memo, useCallback, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
   const [hour, minute] = hora.split(':');
-  return new Date(year, month - 1, day, hour, minute); // mes se indexa desde 0
+  return new Date(year, month - 1, day, hour, minute);
 }
 
 const Calendar = ({ data, setOpen, selectedDate }) => {
@@ -29,11 +32,31 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
 
+  // Estado para el menú contextual
+  const [menuAnchor, setMenuAnchor] = useState(null);
+
   const handleScroll = () => {
     if (scrollableRef.current && hiddenScrollRef.current) {
-      // Sincronizar el scroll horizontal
       hiddenScrollRef.current.scrollLeft = scrollableRef.current.scrollLeft;
     }
+  };
+
+  // Maneja el menú contextual y almacena las coordenadas del clic
+  const handleContextMenu = (event) => {
+    event.preventDefault();
+    setMenuAnchor({
+      mouseX: event.clientX,
+      mouseY: event.clientY,
+    });
+  };
+
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleCreateAppointment = () => {
+    handleCloseMenu();
+    setOpen(true);
   };
 
   return (
@@ -43,20 +66,18 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         ref={hiddenScrollRef}
         position={'sticky'}
         top={0}
-        // position={'absolute'}
         zIndex={1000}
         display={'flex'}
         maxWidth={'100%'}
         overflow={'hidden'}
-        // width={'100%'}
       >
         {data.usersInAppointments.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
 
           return (
             <Tooltip
-              title={`${availibity.from ? availibity.from : ''}  ${
-                availibity.to ? `a ${availibity.to}` : ''
+              title={`${availibity.from ? availibity.from : ''} ${
+                availibity.to ? availibity.to : ''
               }`}
               arrow
               key={user.user_id}
@@ -68,15 +89,19 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                   border={'1px solid #e0e0e0'}
                   py={1}
                   px={'10px'}
-                  flexDirection={'row'} // Keep horizontal for avatar + text
+                  flexDirection={'row'}
                 >
                   <Box mx={1} textTransform={'uppercase'}>
-                    <Avatar>{user.name[0]}</Avatar>
+                    <Avatar
+                      src={user.profileImgUrl || ''}
+                      alt={user.name}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      {!user.profileImgUrl && user.name[0].toUpperCase()}
+                    </Avatar>
                   </Box>
 
                   <Box display={'flex'} flexDirection={'column'}>
-                    {' '}
-                    {/* Stack typography vertically */}
                     <Typography variant="body2" whiteSpace={'nowrap'}>
                       {user.name}
                     </Typography>
@@ -84,8 +109,8 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                       availibity.from === '10:00' && availibity.to === '22:00'
                     ) && (
                       <Typography variant="body2" whiteSpace={'nowrap'}>
-                        {`${availibity.from ? availibity.from : ''}  ${
-                          availibity.to ? `a ${availibity.to}` : ''
+                        {`${availibity.from ? availibity.from : ''} ${
+                          availibity.to ? availibity.to : ''
                         }`}
                       </Typography>
                     )}
@@ -96,11 +121,16 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           );
         })}
       </Box>
-      <div className="calendario" ref={scrollableRef} onScroll={handleScroll}>
+
+      <div
+        className="calendario"
+        ref={scrollableRef}
+        onScroll={handleScroll}
+        onContextMenu={handleContextMenu}
+      >
         <Scheduler
-          height={3000}
+          height={1500}
           resourceViewMode="default"
-          // resourceViewMode="tabs"
           view="day"
           disableViewNavigator
           disableViewer
@@ -131,12 +161,49 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           }}
         />
       </div>
+
+      {/* Menú contextual */}
+      <Menu
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menuAnchor !== null
+            ? { top: menuAnchor.mouseY, left: menuAnchor.mouseX }
+            : undefined
+        }
+        open={Boolean(menuAnchor)}
+        onClose={handleCloseMenu}
+      >
+        <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
+      </Menu>
     </Box>
   );
 };
 
 const BoxAppointment = ({ data, setOpen, appointments }) => {
   const [t] = useTranslation('global');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { dataBase } = useParams();
+  const ref = useRef();
+  const [selectedBox, setSelectedBox] = useState(false);
+
+  const appointmentIDQuery = searchParams.get('appointmentID');
+
+  useEffect(() => {
+    if (appointmentIDQuery === data._id) {
+      ref.current.scrollIntoView({
+        block: 'start',
+        behavior: 'smooth',
+      });
+      setSelectedBox(true);
+
+      setTimeout(() => {
+        handleClick();
+        setSelectedBox(false);
+        navigate(`/${dataBase}/home`, { preventScrollReset: true });
+      }, 2000);
+    }
+  }, [appointmentIDQuery]);
 
   const handleClick = () => {
     setOpen(data);
@@ -147,6 +214,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
     data.clientName === 'Fuera de horario' ||
     data.clientName === 'Vacaciones' ||
     data.clientName === 'Baja' ||
+    data.clientName === 'Compensado' ||
     data.clientName === 'Libre' ||
     data.clientName === 'Año Nuevo' ||
     data.clientName === 'Festivo';
@@ -155,7 +223,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
       ? data.services[0].color
       : 'grey.300';
 
-  // Crear el texto para el tooltip con los servicios
   const servicesTooltip = data.services
     .map((item) => item.serviceName)
     .join(', ');
@@ -163,12 +230,15 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
   return (
     <Tooltip title={servicesTooltip} arrow>
       <Button
+        ref={ref}
         sx={{
           p: 1,
           position: 'relative',
           color: 'black',
           bgcolor: serviceColor,
           opacity: 1,
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+          border: `2px solid ${selectedBox ? 'blue' : 'white'}`,
           ':disabled': {
             cursor: 'not-allowed',
           },
@@ -179,6 +249,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
         }}
         variant="contained"
         disabled={isFreeSlot}
+        onDoubleClick={handleClick}
       >
         {isFreeSlot && (
           <Typography fontSize={11} color="text.secondary">
@@ -186,12 +257,15 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           </Typography>
         )}
 
-        <Box onDoubleClick={handleClick}>
+        <Box>
           <Box display="flex" flexDirection="column" gap={1}>
             <Typography fontSize={11}>
               {t('inputLabel.initTime')}: {data.initTime}
               {t(' - ')}
               {t('inputLabel.endTime')}: {data.finalTime}
+              {t('   (')}
+              {data.createdBy}
+              {t(')')}
             </Typography>
           </Box>
 
@@ -204,14 +278,6 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
           <Divider sx={{ my: 0.5 }} />
 
           <Box>
-            <Typography
-              component="span"
-              fontWeight="bold"
-              display="block"
-              mb={1}
-              fontSize={11}
-            ></Typography>
-
             <Box display="flex" gap={0.5} flexWrap="wrap">
               {data.services.map((item, idx) => (
                 <Chip

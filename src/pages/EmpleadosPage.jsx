@@ -30,6 +30,8 @@ import SpecialitiesBox from '../components/SpecialitiesBox';
 import InputPhone from '../components/InputPhone';
 import { eliminarPrimerosCharSiCoinciden } from '../utils/helpers';
 import { phoneCountry } from '../utils/selectData';
+import { imageUpload } from '../utils/helpers';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export const EmpleadosContext = createContext();
 
@@ -59,6 +61,7 @@ const Header = ({ dataBase }) => {
   const [selectedOption, setSelectedOption] = useState([]);
   const [specialities, setSpecialities] = useState([]);
   const [center, setCenter] = useState('');
+  const [profileImgUrl, setProfileImgUrl] = useState(null);
 
   const centerId = open?.centerInfo?._id;
 
@@ -88,12 +91,11 @@ const Header = ({ dataBase }) => {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const services = selectedOption.map((item) => {
       const [serviceName, duration] = item.split(' - ');
-
       return { serviceName, duration };
     });
 
@@ -110,8 +112,6 @@ const Header = ({ dataBase }) => {
       specialities,
     };
 
-    console.log(data, 'datos mandando');
-
     if (!selectedOption.length || !services.length) {
       enqueueSnackbar('Todos campos requeridos', { variant: 'error' });
       return;
@@ -122,16 +122,20 @@ const Header = ({ dataBase }) => {
       delete data.DNI;
     }
 
+    if (profileImgUrl) {
+      try {
+        data.profileImgUrl = await imageUpload(profileImgUrl, 'large-l-ino24');
+      } catch (error) {
+        enqueueSnackbar('Error al subir la imagen', { variant: 'error' });
+        return;
+      }
+    }
+
     mutation.mutate(data);
   };
 
-  console.log({ open, specialities, selectedOption }, 'aqui');
-
   useEffect(() => {
-    console.log(open);
-
     if (open?.services) {
-      console.log(open);
       setSelectedOption(
         open?.services.map((item) => `${item.serviceName} - ${item.duration}`)
       );
@@ -268,6 +272,14 @@ const Header = ({ dataBase }) => {
               </TextField>
             </Grid>
           </Grid>
+          <Box xs={12} display={'flex'} gap={5} mt={3}>
+            <HandleLogo
+              profileImgUrl={profileImgUrl}
+              setProfileImgUrl={setProfileImgUrl}
+              textBtn={`${t('buttons.chooseLogo')} 1`}
+              cloudinary_url={open?.profileImgUrl || null}
+            />
+          </Box>
 
           <Button
             type="submit"
@@ -282,6 +294,33 @@ const Header = ({ dataBase }) => {
     </Box>
   );
 };
+
+const HandleLogo = ({ profileImgUrl, setProfileImgUrl, textBtn, cloudinary_url }) => (
+  <Box>
+    <Button
+      variant="contained"
+      component="label"
+      startIcon={<CloudUploadIcon />}
+    >
+      {textBtn}
+      <input
+        type="file"
+        hidden
+        onChange={(e) => setProfileImgUrl(e.target.files)}
+        accept="image/*"
+      />
+    </Button>
+    {profileImgUrl && (
+      <Typography>{profileImgUrl[0].name}</Typography>
+    )}
+    {cloudinary_url && (
+      <Box>
+        <Typography>{'Imagen actual en Cloudinary'}</Typography>
+        <img src={cloudinary_url} alt="profile" style={{ maxHeight: '150px' }} />
+      </Box>
+    )}
+  </Box>
+);
 
 const TableBody = ({ dataBase }) => {
   const [t] = useTranslation('global');
@@ -328,7 +367,6 @@ const TableBody = ({ dataBase }) => {
     return (
       <Skeleton
         variant="rectangular"
-        // animation="wave"
         height={300}
         sx={{ bgcolor: 'rgb(203 213 225)' }}
       />
@@ -336,9 +374,7 @@ const TableBody = ({ dataBase }) => {
 
   if (isError) return <p>Ocurrio algo</p>;
 
-  console.log(data);
-
   return <TableComponent columns={columns} data={data} />;
 };
-// comentario
+
 export default EmpleadosPage;

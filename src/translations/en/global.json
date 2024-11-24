@@ -16,7 +16,8 @@
     "appointment": "appointment",
     "service": "service",
     "specialities": "specialities",
-    "schedules": "schedules"
+    "schedules": "schedules",
+    "contactsPage": "contacts"
   },
   "buttons": {
     "register": "register",
@@ -69,5 +70,30 @@
   "text": {
     "serviceReq": "Required Services",
     "clientName": "Client Name"
+  },
+"contacts": {
+    "addContact": "Add Contact",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone1": "Phone 1",
+    "phone2": "Phone 2",
+    "email": "Email",
+    "observations": "Observations",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "saveSuccess": "Contact saved successfully",
+    "deleteSuccess": "Contact deleted successfully",
+    "errorLoading": "Error loading contacts",
+    "filterContacts": "Filter Contacts",
+    "sortByFirstName": "Sort by First Name",
+    "sortByLastName": "Sort by Last Name",
+    "sortByEmail": "Sort by Email",
+    "asc": "⬆️",
+    "desc": "⬇️",
+    "search": "Search",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create"
   }
 }

@@ -2,11 +2,12 @@ import { SearchOutlined } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Divider,
+  FormControlLabel,
   IconButton,
   TextField,
   Typography,
@@ -15,26 +16,28 @@ import { useContext, useState } from 'react';
 import ModalComponent from './ModalComponent';
 import SelectComponent from './SelectComponent';
 import { fixCentersArray } from '../utils/fixArray';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/UserProvider';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
-const SearchModal = () => {
+const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCenter, setFilterCenter] = useState('');
+  const [isAllCenters, setIsAllCenters] = useState(false); // Nuevo estado para el checkbox
+  const [highlightedAppointment, setHighlightedAppointment] = useState(null); // Nuevo estado para la cita resaltada
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const { dataBase } = useParams();
   const [t, i18] = useTranslation('global');
   const { state } = useContext(UserContext);
+  const centerInfo = state.userInfo.centerId;
 
   const mutate = useMutation({
     mutationFn: (params) =>
       axios(`/appointment/filter/${dataBase}`, { params }),
   });
-
-  console.log(mutate.data?.data);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,13 +45,29 @@ const SearchModal = () => {
     const params = {
       clientName: e.target.name.value,
       clientPhone: e.target.phone.value,
-      centerInfo: filterCenter,
+      centerInfo: isAllCenters ? '' : centerInfo, // Ignora el centro si isAllCenters está activo
     };
 
-    console.log(params);
-    // return
-
     mutate.mutate(params);
+  };
+
+  const handleSelectAppointment = (appointment) => {
+    setIsOpen(false);
+    // setOpenEdit(appointment);
+    console.log(appointment);
+    setSearchParams({
+      filterDate: appointment.date,
+      appointmentID: appointment._id,
+      centerID: appointment.centerInfo,
+    });
+  };
+
+  const handleMouseEnter = (appointment) => {
+    setHighlightedAppointment(appointment); // Resaltar cita al pasar el mouse
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedAppointment(null); // Quitar resaltado al salir del mouse
   };
 
   return (
@@ -69,8 +88,8 @@ const SearchModal = () => {
                 fixArrayFn={fixCentersArray}
                 params={`users/get-all-centers/${dataBase}`}
                 label={t('title.center')}
-                required={true}
-                disabled={mutate.isPending}
+                required={!isAllCenters} // Deshabilita si el checkbox está activo
+                disabled={mutate.isPending || isAllCenters}
                 maxWidth={'250px'}
                 aditionalProperties={{
                   onChange: (e) => setFilterCenter(e.target.value),
@@ -93,6 +112,19 @@ const SearchModal = () => {
               name="phone"
             />
 
+            {/* Checkbox para TODOS LOS CENTROS */}
+            <FormControlLabel
+                control={
+                    <Checkbox
+                    checked={isAllCenters}
+                    onChange={() => setIsAllCenters(!isAllCenters)}
+                    color="primary"
+                    disabled={state.userInfo?.role !== 'admin'} // Deshabilita si no es admin
+                    />
+                }
+                label="TODOS LOS CENTROS"
+                />
+
             <Box>
               <IconButton
                 aria-label="delete"
@@ -111,7 +143,19 @@ const SearchModal = () => {
 
           {mutate.data &&
             mutate.data?.data.map((item) => (
-              <Box key={item._id}>
+              <Box
+                key={item._id}
+                onClick={() => handleSelectAppointment(item)}
+                onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
+                onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor:
+                    highlightedAppointment?._id === item._id
+                      ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
+                      : 'transparent',
+                }}
+              >
                 <CardContent>
                   <Typography gutterBottom component="div">
                     Nombre: {item.clientName}
@@ -126,17 +170,17 @@ const SearchModal = () => {
                     Hora: {item.initTime} - {item.finalTime}
                   </Typography>
                   <Typography gutterBottom component="div">
-                    observaciones: {item.remarks}
+                    Observaciones: {item.remarks}
                   </Typography>
 
                   <Typography gutterBottom component="div">
                     Servicios:
                   </Typography>
                   <Box ml={1}>
-                    {item.services.map((item) => (
+                    {item.services.map((service) => (
                       <Chip
-                        label={`${item.serviceName} - ${item.duration}`}
-                        key={item.serviceName}
+                        label={`${service.serviceName} - ${service.duration}`}
+                        key={service.serviceName}
                       />
                     ))}
                   </Box>

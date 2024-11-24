@@ -42,8 +42,10 @@ const Navbar = () => {
 
   if (state.userInfo?.role === 'admin') {
     pages.push({ text: t('menu.employees'), to: '/empleados' });
-    pages.push({ text: t('title.schedules'), to: '/horarios' });
   }
+  pages.push({ text: t('title.schedules'), to: '/horarios' });
+  pages.push({ text: t('title.contactsPage'), to: '/agenda' });
+
 
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);

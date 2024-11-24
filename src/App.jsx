@@ -8,8 +8,11 @@ import { PrivateRoutes } from './auth/PrivateRoutes';
 import PagesLayout from './Layout/PagesLayout';
 import EmpresaEditPage from './pages/EmpresaEditPage';
 import EmpleadosPage from './pages/EmpleadosPage';
+import ContactsPage from './pages/ContactsPage';
+
 import ThemeApp from '../theme/ThemeApp';
 import Horarios from './pages/Horarios';
+import React, { useEffect } from 'react'; // Importa React y useEffect
 
 const router = createBrowserRouter([
   {
@@ -43,7 +46,6 @@ const router = createBrowserRouter([
                 path: 'empresas/:nombreEmpresa',
                 element: <EmpresaEditPage />,
               },
-
               {
                 path: 'empleados',
                 element: <EmpleadosPage />,
@@ -51,6 +53,10 @@ const router = createBrowserRouter([
               {
                 path: 'horarios',
                 element: <Horarios />,
+              },
+              {
+                path: 'agenda',
+                element: <ContactsPage />,
               },
             ],
           },
@@ -61,6 +67,25 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  useEffect(() => {
+    const checkTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Verifica si es la hora y minuto exacto para recargar
+      if (hours === 12 && minutes ===40) {
+        alert("La página se está recargando para mostrar las últimas actualizaciones.");
+        window.location.reload();
+      }
+    };
+
+    // Verifica cada minuto
+    const interval = setInterval(checkTime, 60000);
+    
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, []);
+
   return <RouterProvider router={router} />;
 }
 

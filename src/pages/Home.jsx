@@ -25,9 +25,10 @@ import {
   LocalizationProvider,
   TimePicker,
 } from '@mui/x-date-pickers';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { fixCentersArray, fixUserArray } from '../utils/fixArray';
 import Calendar from '../components/Calendar';
+import NotesSidebar from '../components/NotesSidebar';
 import {
   defaultTime,
   eliminarPrimerosCharSiCoinciden,
@@ -51,10 +52,19 @@ import InputPhone from '../components/InputPhone';
 import { phoneCountry } from '../utils/selectData';
 
 const Home = () => {
+  const [searchParams] = useSearchParams();
   const [filterDate, setFilterDate] = useState('');
   const [filterCenter, setFilterCenter] = useState('');
   const { dataBase } = useParams();
   const [open, setOpen] = useState(null);
+
+  const filterDateQuery = searchParams.get('filterDate');
+  const centerIDQuery = searchParams.get('centerID');
+
+  useEffect(() => {
+    if (filterDateQuery) setFilterDate(filterDateQuery);
+    if (centerIDQuery) setFilterCenter(centerIDQuery);
+  }, [filterDateQuery, centerIDQuery]);
 
   const appointmentQuery = useQuery({
     queryKey: ['appointments', filterDate, filterCenter],
@@ -79,6 +89,7 @@ const Home = () => {
 
   return (
     <Box>
+      <NotesSidebar />
       <Container maxWidth="xl">
         <Box
           display={'flex'}
