@@ -1,24 +1,27 @@
+import React, { useState } from 'react';
 import {
   Box,
   Button,
   CircularProgress,
   Container,
+  Modal,
   TextField,
   Typography,
+  IconButton,
 } from '@mui/material';
-import React, { useState } from 'react';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx'; // Para manejar archivos Excel
+import * as XLSX from 'xlsx';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { enqueueSnackbar } from 'notistack';
 import { getError } from '../utils/getError';
 import LocationProvider from '../components/LocationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { useTranslation } from 'react-i18next';
-import { fixCentersArray } from '../utils/fixArray';
-import Grid from '@mui/material/Unstable_Grid2/Grid2';
+import { fixCentersArray, fixUserArray } from '../utils/fixArray';
+import Grid from '@mui/material/Unstable_Grid2';
 import SelectComponent from '../components/SelectComponent';
+import { Close } from '@mui/icons-material';
 
 const Horarios = () => {
   const [t] = useTranslation('global');
@@ -27,96 +30,172 @@ const Horarios = () => {
   const [centerId, setCenter] = useState('');
   const { dataBase } = useParams();
   const [loading, setLoading] = useState(false);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [manualData, setManualData] = useState({
+    date: null,
+    employee: '',
+    startTime: null,
+    endTime: null,
+  });
 
-  // Función para convertir formato de tiempo de Excel a una cadena hh:mm:ss
+  const toggleManualModal = () => setManualModalOpen(!manualModalOpen);
+
+ // Manejo de cambios en los campos del formulario
+
+  const handleManualChange = (field, value) => {
+    setManualData((prev) => ({ ...prev, [field]: value }));
+  };
+  const handleManualSubmit = async () => {
+    const { date, employee, startTime, endTime } = manualData;
+    
+    if (!date || !employee || !startTime || !endTime) {
+      enqueueSnackbar('Por favor, completa todos los campos', {
+        variant: 'warning',
+      });
+      return;
+    }
+  
+    const manualEntry = {
+      date: date.format('MM/DD/YYYY'),
+      employee,
+      startTime: startTime.format('HH:mm:ss'),
+      endTime: endTime.format('HH:mm:ss'),
+    };
+  
+    console.log('Datos ingresados manualmente:', JSON.stringify(manualEntry, null, 2));
+  
+    try {
+      const response = await axios.post(
+        `/appointment/horario-manual/${dataBase}`, // Reemplaza 'mySelectedDB' con el nombre de la base de datos
+        manualEntry
+      );
+  
+      enqueueSnackbar('Entrada manual registrada', { variant: 'success' });
+      console.log('Respuesta del servidor:', response.data);
+      toggleManualModal();
+    } catch (error) {
+      console.error('Error al registrar la entrada manual:', error);
+      enqueueSnackbar('Error al registrar la entrada manual', { variant: 'error' });
+    }
+  };
+
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+const [exchangeData, setExchangeData] = useState({
+  employee1: '',
+  employee2: '',
+  date1: null,
+  date2: null,
+});
+
+const toggleExchangeModal = () => setExchangeModalOpen(!exchangeModalOpen);
+
+const handleExchangeChange = (field, value) => {
+  setExchangeData((prev) => ({ ...prev, [field]: value }));
+};
+
+const handleExchangeSubmit = async () => {
+  const { employee1, employee2, date1, date2 } = exchangeData;
+
+  if (!employee1 || !employee2 || !date1 || !date2) {
+    enqueueSnackbar('Por favor, completa todos los campos', {
+      variant: 'warning',
+    });
+    return;
+  }
+
+  const exchangePayload = {
+    employee1,
+    employee2,
+    date1: date1.format('MM/DD/YYYY'),
+    date2: date2.format('MM/DD/YYYY'),
+  };
+
+  try {
+    console.log('Enviando datos de intercambio:', JSON.stringify(exchangePayload, null, 2));
+    
+    const response = await axios.post(
+      `/appointment/intercambio-horarios/${dataBase}`,
+      exchangePayload
+    );
+
+    enqueueSnackbar('Intercambio realizado correctamente', { variant: 'success' });
+    console.log('Respuesta del servidor:', response.data);
+
+    toggleExchangeModal(); // Cierra el modal después de un intercambio exitoso
+  } catch (error) {
+    console.error('Error al realizar el intercambio:', error);
+    enqueueSnackbar('Error al realizar el intercambio', { variant: 'error' });
+  }
+};
+
+
   function excelTimeToString(excelTime) {
-    const totalSeconds = Math.round(excelTime * 86400); // Convertir el decimal a segundos
+    const totalSeconds = Math.round(excelTime * 86400);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
-    // Formatear como hh:mm:ss
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  // Función para convertir formato de fecha de Excel a una cadena DD/MM/YYYY
   function excelDateToString(excelDate) {
-    const date = new Date((excelDate - 25569) * 86400 * 1000); // Convertir desde número de Excel a milisegundos
+    const date = new Date((excelDate - 25569) * 86400 * 1000);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-
     return `${month}/${day}/${year}`;
   }
 
-    // Función para convertir cadena de fecha de DD/MM/YYYY a MM/DD/YYYY
-    function convertDateToUSFormat(dateStr) {
-      const [day, month, year] = dateStr.split('/');
-      return `${month}/${day}/${year}`;
-    }
+  function convertDateToUSFormat(dateStr) {
+    const [day, month, year] = dateStr.split('/');
+    return `${month}/${day}/${year}`;
+  }
 
-
-  // Función para manejar la carga del archivo
   const handleFileChange = (e) => {
     if (!e.target.files[0]) return;
     const file = e.target.files[0];
-
     const fileExtension = file.name.split('.').pop();
 
- // Analizar CSV
-if (fileExtension === 'csv') {
-  Papa.parse(file, {
-    complete: (result) => {
-      const data = result.data;
-      const keys = data[0];
-      const parsedData = data.slice(1).map((row) =>
-        row.reduce((obj, value, index) => {
-          const columnName = keys[index];
-          
-          // Verificar si la columna es "Fecha" y si el valor es una cadena en formato DD/MM/YYYY
-          if (columnName === 'Fecha' && typeof value === 'string' && value.includes('/')) {
-            obj[columnName] = convertDateToUSFormat(value);
-          } else {
-            obj[columnName] = value;
-          }
-          return obj;
-        }, {})
-      );
-      setFileData(parsedData);
-    },
-    header: false,
-  });
-}
-
-    // Analizar Excel (.xls, .xlsx)
-    else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
+    if (fileExtension === 'csv') {
+      Papa.parse(file, {
+        complete: (result) => {
+          const data = result.data;
+          const keys = data[0];
+          const parsedData = data.slice(1).map((row) =>
+            row.reduce((obj, value, index) => {
+              const columnName = keys[index];
+              if (columnName === 'Fecha' && typeof value === 'string' && value.includes('/')) {
+                obj[columnName] = convertDateToUSFormat(value);
+              } else {
+                obj[columnName] = value;
+              }
+              return obj;
+            }, {})
+          );
+          setFileData(parsedData);
+        },
+        header: false,
+      });
+    } else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0]; // Primera hoja
-        const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
-          header: 1,
-        });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
 
         const keys = sheet[0];
         const parsedData = sheet.slice(1).map((row) =>
           row.reduce((obj, value, index) => {
             const columnName = keys[index];
-            
-            // Verificar si la columna es Fecha y el valor es un número
-            if (columnName === 'Fecha'){
-                if(typeof value === 'number'){
-                  obj[columnName] = excelDateToString(value);
-                }else{
-                // Si el valor es texto, asumir que está en DD/MM/YYYY y convertir a MM/DD/YYYY
+            if (columnName === 'Fecha') {
+              if (typeof value === 'number') {
+                obj[columnName] = excelDateToString(value);
+              } else {
                 obj[columnName] = convertDateToUSFormat(value);
-                }
-            } 
-            // Verificar si la columna es Hora_Entrada o Hora_Salida y si el valor es un número
-            else if (
+              }
+            } else if (
               (columnName === 'Hora_Entrada' || columnName === 'Hora_Salida') &&
               typeof value === 'number'
             ) {
@@ -128,8 +207,6 @@ if (fileExtension === 'csv') {
           }, {})
         );
         setFileData(parsedData);
-
-        console.log(dateSelected);
       };
       reader.readAsArrayBuffer(file);
     }
@@ -139,9 +216,7 @@ if (fileExtension === 'csv') {
     let confirmContinue = true;
 
     if (fileData.length === 0)
-      return enqueueSnackbar('No se están importando datos', {
-        variant: 'error',
-      });
+      return enqueueSnackbar('No se están importando datos', { variant: 'error' });
 
     if (!dateSelected) {
       confirmContinue = confirm(
@@ -158,20 +233,18 @@ if (fileExtension === 'csv') {
 
     setLoading(true);
     try {
-      const data = await axios.post(
+      await axios.post(
         `/appointment/generar-horarios/${dataBase}`,
         fileData,
         {
           params: {
             dateToDelete: dateSelected,
-            centerId: centerId
+            centerId: centerId,
           },
         }
       );
-      console.log(data);
       enqueueSnackbar('Se importó exitosamente', { variant: 'success' });
     } catch (err) {
-      console.log(err);
       enqueueSnackbar(getError(err), { variant: 'error' });
     } finally {
       setLoading(false);
@@ -180,45 +253,54 @@ if (fileExtension === 'csv') {
 
   return (
     <Container maxWidth="xl">
-      <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
+      <Typography variant="h2" sx={{ textTransform: 'capitalize' }} mb={2}>
         {t('title.schedules')}
       </Typography>
 
-      {/* Grid para agrupar DatePicker y SelectComponent */}
-      <Grid container spacing={2}> {/* spacing={2} aplica 16px de separación entre los elementos */}
-        
-        {/* DatePicker */}
+      <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-        <LocationProvider>
-        <DatePicker
-          label={t('inputLabel.monthToDelete')}
-          views={['month', 'year']}
-          onChange={(e) =>
-            SetDateSelected(`${e.get('month') + 1}/1/${e.get('year')}`)
-          }
-        />
-      </LocationProvider>
+          <LocationProvider>
+            <DatePicker
+              label={t('inputLabel.monthToDelete')}
+              views={['month', 'year']}
+              onChange={(e) =>
+                SetDateSelected(`${e.get('month') + 1}/1/${e.get('year')}`)
+              }
+            />
+          </LocationProvider>
         </Grid>
-
-        {/* SelectComponent (Centro) */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center' }}>
           <SelectComponent
             fixArrayFn={fixCentersArray}
             params={`users/get-all-centers/${dataBase}`}
             label={t('title.center')}
-            required={true}
+            required
             aditionalProperties={{
               onChange: (e) => setCenter(e.target.value),
               value: centerId || '',
             }}
-            disabled={loading} 
-            sx={{ mb: 2 }} // Espaciado inferior
+            disabled={loading}
+            sx={{ flexGrow: 1 }}
           />
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={toggleManualModal}
+            sx={{ ml: 2 }}
+          >
+            Añadir Manualmente
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={toggleExchangeModal}
+            sx={{ ml: 2 }}
+          >
+            Intercambio de Horarios
+          </Button>
         </Grid>
-
       </Grid>
 
-      {/* Input para subir archivos */}
       <TextField
         type="file"
         inputProps={{
@@ -228,10 +310,9 @@ if (fileExtension === 'csv') {
         onChange={handleFileChange}
         fullWidth
         variant="outlined"
-        sx={{ my: 2 }} // Margen en el eje Y
+        sx={{ my: 2 }}
       />
 
-      {/* Botón de envío */}
       <Button
         disabled={loading}
         variant="contained"
@@ -241,12 +322,195 @@ if (fileExtension === 'csv') {
         {loading ? <CircularProgress size={25} /> : 'Importar Datos'}
       </Button>
 
-      {/* Mostrar los datos importados */}
       {fileData.length > 0 && (
         <Box sx={{ mt: 4, maxHeight: 500, overflow: 'auto' }}>
           <pre>{JSON.stringify(fileData, null, 2)}</pre>
         </Box>
       )}
+
+<Modal open={manualModalOpen} onClose={toggleManualModal}>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 6,
+      maxWidth: 800,
+      width: '100%',
+      borderRadius: 4,
+      position: 'relative', // Para posicionar el botón de cierre
+    }}
+  >
+    {/* Botón de cierre */}
+    <IconButton
+      onClick={toggleManualModal}
+      sx={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+      }}
+    >
+      <Close />
+    </IconButton>
+
+    <Typography variant="h5" mb={3}>
+      Reemplazar Horario
+    </Typography>
+
+    <LocationProvider>
+      <Grid container spacing={3}>
+        {/* Fecha */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha"
+            value={manualData.date}
+            onChange={(value) => handleManualChange('date', value)}
+            fullWidth
+          />
+        </Grid>
+
+        {/* Empleado */}
+        <Grid item xs={12} md={6}>
+        <SelectComponent
+                fixArrayFn={fixUserArray}
+                params={`appointment/get-all-employees/${dataBase}`}
+                label="Empleado"
+                aditionalProperties={{
+                  onChange: (e) => handleManualChange('employee', e.target.value),
+                  value: manualData.employee,
+                }}
+                required={true}
+                sx={{ mb: 2 }}
+              />
+        </Grid>
+        <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.initTime')}
+                  sx={{ width: '100%' }}
+                  value={manualData.startTime}
+                  onChange={(value) => handleManualChange('startTime', value)}
+                  ampm={false}
+                />
+              </LocationProvider>
+            </Grid>
+            <Grid xs={6}>
+              <LocationProvider>
+                <TimePicker
+                  label={t('inputLabel.endTime')}
+                  sx={{ width: '100%' }}
+                  value={manualData.endTime}
+                  onChange={(value) => handleManualChange('endTime', value)}
+                  ampm={false}
+                />
+              </LocationProvider>
+            </Grid>
+      </Grid>
+    </LocationProvider>
+
+    <Box sx={{ mt: 4 }}>
+      <Button variant="contained" color="primary" fullWidth onClick={handleManualSubmit}>
+        Hacer cambio
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+
+<Modal open={exchangeModalOpen} onClose={toggleExchangeModal}>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      bgcolor: 'background.paper',
+      boxShadow: 24,
+      p: 6,
+      maxWidth: 800,
+      width: '100%',
+      borderRadius: 4,
+      position: 'relative', // Para posicionar el botón de cierre
+    }}
+  >
+    {/* Botón de cierre */}
+    <IconButton
+      onClick={toggleExchangeModal}
+      sx={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+      }}
+    >
+      <Close />
+    </IconButton>
+
+    <Typography variant="h5" mb={3}>
+      Intercambiar Horarios
+    </Typography>
+
+    <LocationProvider>
+      <Grid container spacing={3}>
+        {/* Empleado 1 */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixUserArray}
+            params={`appointment/get-all-employees/${dataBase}`}
+            label="Empleado 1"
+            aditionalProperties={{
+              onChange: (e) => handleExchangeChange('employee1', e.target.value),
+              value: exchangeData.employee1,
+            }}
+            required={true}
+          />
+        </Grid>
+
+        {/* Empleado 2 */}
+        <Grid item xs={12} md={6}>
+          <SelectComponent
+            fixArrayFn={fixUserArray}
+            params={`appointment/get-all-employees/${dataBase}`}
+            label="Empleado 2"
+            aditionalProperties={{
+              onChange: (e) => handleExchangeChange('employee2', e.target.value),
+              value: exchangeData.employee2,
+            }}
+            required={true}
+          />
+        </Grid>
+
+        {/* Fecha 1 */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha 1"
+            value={exchangeData.date1}
+            onChange={(value) => handleExchangeChange('date1', value)}
+            fullWidth
+          />
+        </Grid>
+
+        {/* Fecha 2 */}
+        <Grid item xs={12} md={6}>
+          <DatePicker
+            label="Fecha 2"
+            value={exchangeData.date2}
+            onChange={(value) => handleExchangeChange('date2', value)}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
+    </LocationProvider>
+
+    <Box sx={{ mt: 4 }}>
+      <Button variant="contained" color="primary" fullWidth onClick={handleExchangeSubmit}>
+        Intercambiar
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+
     </Container>
   );
 };
