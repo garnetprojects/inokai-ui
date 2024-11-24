@@ -339,7 +339,7 @@ const handleExchangeSubmit = async () => {
           <pre>{JSON.stringify(fileData, null, 2)}</pre>
         </Box>
       )}
-
+ <LocalizationProvider dateAdapter={AdapterDayjs}>
 <Modal open={manualModalOpen} onClose={toggleManualModal}>
       <Box
         sx={{
@@ -440,6 +440,7 @@ const handleExchangeSubmit = async () => {
         </Box>
       </Box>
     </Modal>
+    </LocalizationProvider>
 
 
 <Modal open={exchangeModalOpen} onClose={toggleExchangeModal}>
