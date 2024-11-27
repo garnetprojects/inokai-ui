@@ -372,6 +372,7 @@ const handleExchangeSubmit = async () => {
         <Typography variant="h5" mb={3}>
           Añadir Manualmente
         </Typography>
+        <LocationProvider>
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -380,7 +381,6 @@ const handleExchangeSubmit = async () => {
               value={manualData.date}
               onChange={(value) => handleManualChange('date', value)}
               fullWidth
-              name="date"
             />
           </Grid>
 
@@ -436,6 +436,7 @@ const handleExchangeSubmit = async () => {
             />
           </Grid>
         </Grid>
+        </LocationProvider>
 
         <Box sx={{ mt: 4 }}>
           <Button
