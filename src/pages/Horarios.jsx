@@ -281,6 +281,7 @@ const handleExchangeSubmit = async () => {
               onChange={(e) =>
                 SetDateSelected(`${e.get('month') + 1}/1/${e.get('year')}`)
               }
+              name="date"
             />
           </LocationProvider>
         </Grid>
