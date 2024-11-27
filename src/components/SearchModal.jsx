@@ -198,6 +198,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
         </Box>
       </ModalComponent>
     </>
-  );  
+  );
+};
 
 export default SearchModal;
