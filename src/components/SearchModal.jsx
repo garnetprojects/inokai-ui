@@ -144,51 +144,57 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
           {mutate.data &&
             mutate.data?.data.map((item) => (
               <Box
-                key={item._id}
-                onClick={() => handleSelectAppointment(item)}
-                onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
-                onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
-                style={{
-                  cursor: 'pointer',
-                  backgroundColor:
-                    highlightedAppointment?._id === item._id
-                      ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
-                      : 'transparent',
-                }}
-              >
-                <CardContent>
-                  <Typography gutterBottom component="div">
-                    Nombre: {item.clientName}
-                  </Typography>
-                  <Typography gutterBottom component="div">
-                    Telefono: {item.clientPhone}
-                  </Typography>
-                  <Typography gutterBottom component="div">
-                    Fecha: {item.date}
-                  </Typography>
-                  <Typography gutterBottom component="div">
-                    Hora: {item.initTime} - {item.finalTime}
-                  </Typography>
-                  <Typography gutterBottom component="div">
-                    Observaciones: {item.remarks}
-                  </Typography>
-
-                  <Typography gutterBottom component="div">
-                    Servicios:
-                  </Typography>
-                  <Box ml={1}>
-                    {item.services.map((service) => (
-                      <Chip
-                        label={`${service.serviceName} - ${service.duration}`}
-                        key={service.serviceName}
-                      />
-                    ))}
-                  </Box>
-                </CardContent>
-                <Divider />
-              </Box>
-            ))}
-        </Box>
+              key={item._id}
+              onClick={() => {
+                if (item.status !== "cancelled") {
+                  handleSelectAppointment(item);
+                }
+              }}
+              onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
+              onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
+              style={{
+                cursor: item.status === "cancelled" ? 'not-allowed' : 'pointer', // Deshabilita el cursor si está cancelado
+                backgroundColor:
+                  highlightedAppointment?._id === item._id
+                    ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
+                    : item.status === "cancelled"
+                    ? 'rgba(255, 0, 0, 0.2)' // Color de fondo rojo con opacidad para cancelado
+                    : 'transparent',
+                pointerEvents: item.status === "cancelled" ? 'none' : 'auto', // Evita interacción si está cancelado
+              }}
+            >
+              <CardContent>
+                <Typography gutterBottom component="div">
+                  Nombre: {item.clientName}
+                </Typography>
+                <Typography gutterBottom component="div">
+                  Telefono: {item.clientPhone}
+                </Typography>
+                <Typography gutterBottom component="div">
+                  Fecha: {item.date}
+                </Typography>
+                <Typography gutterBottom component="div">
+                  Hora: {item.initTime} - {item.finalTime}
+                </Typography>
+                <Typography gutterBottom component="div">
+                  Observaciones: {item.remarks}
+                </Typography>
+            
+                <Typography gutterBottom component="div">
+                  Servicios:
+                </Typography>
+                <Box ml={1}>
+                  {item.services.map((service) => (
+                    <Chip
+                      label={`${service.serviceName} - ${service.duration}`}
+                      key={service.serviceName}
+                    />
+                  ))}
+                </Box>
+              </CardContent>
+              <Divider />
+            </Box>
+            
       </ModalComponent>
     </>
   );
