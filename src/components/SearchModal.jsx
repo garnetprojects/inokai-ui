@@ -146,21 +146,21 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
               <Box
                 key={item._id}
                 onClick={() => {
-                  if (item.status !== "cancelled") {
+                  if (item.status !== "canceled") {
                     handleSelectAppointment(item);
                   }
                 }}
                 onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
                 onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
                 style={{
-                  cursor: item.status === "cancelled" ? 'not-allowed' : 'pointer', // Deshabilita el cursor si está cancelado
+                  cursor: item.status === "canceled" ? 'not-allowed' : 'pointer', // Deshabilita el cursor si está cancelado
                   backgroundColor:
                     highlightedAppointment?._id === item._id
                       ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
-                      : item.status === "cancelled"
+                      : item.status === "canceled"
                       ? 'rgba(255, 0, 0, 0.2)' // Color de fondo rojo con opacidad para cancelado
                       : 'transparent',
-                  pointerEvents: item.status === "cancelled" ? 'none' : 'auto', // Evita interacción si está cancelado
+                  pointerEvents: item.status === "canceled" ? 'none' : 'auto', // Evita interacción si está cancelado
                 }}
               >
                 <CardContent>
@@ -177,9 +177,15 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
                     Hora: {item.initTime} - {item.finalTime}
                   </Typography>
                   <Typography gutterBottom component="div">
-                    Observaciones: {item.remarks}
+                    Observaciones: {item.status === "canceled" ? (
+                      <>
+                        <strong style={{ color: "red" }}>CANCELADA</strong>
+                        {item.remarks ? ` - ${item.remarks}` : ''}
+                      </>
+                    ) : (
+                      item.remarks || 'Sin observaciones'
+                    )}
                   </Typography>
-  
                   <Typography gutterBottom component="div">
                     Servicios:
                   </Typography>
