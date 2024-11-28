@@ -14,6 +14,7 @@ import { bringAvailibity, convertirAMPMa24Horas } from '../utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import EmployeeWeeklyView from './EmployeeWeeklyView';
 
 function combinarFechaYHora(fecha, hora) {
   const [month, day, year] = fecha.split('/');
@@ -22,6 +23,7 @@ function combinarFechaYHora(fecha, hora) {
 }
 
 const Calendar = ({ data, setOpen, selectedDate }) => {
+  const [selectedEmployee, setSelectedEmployee] = useState(null); // Estado para el empleado seleccionado
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -58,7 +60,15 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     handleCloseMenu();
     setOpen(true);
   };
-
+  if (selectedEmployee) {
+    return (
+      <EmployeeWeeklyView
+        employee={selectedEmployee} // Pasar el empleado seleccionado
+        data={data} // Pasar datos necesarios
+        setSelectedEmployee={setSelectedEmployee} // Función para volver a la vista principal
+      />
+    );
+  }
   return (
     <Box position={'relative'}>
       <Box
@@ -90,6 +100,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
                   py={1}
                   px={'10px'}
                   flexDirection={'row'}
+                  onClick={() => setSelectedEmployee(user)} // Cambia al empleado seleccionado
                 >
                   <Box mx={1} textTransform={'uppercase'}>
                     <Avatar
