@@ -24,21 +24,12 @@ function combinarFechaYHora(fecha, hora) {
 
 const Calendar = ({ data, setOpen, selectedDate }) => {
   const [selectedEmployee, setSelectedEmployee] = useState(null); // Estado para el empleado seleccionado
-  const [currentDate, setCurrentDate] = useState(selectedDate ? new Date(selectedDate) : new Date());
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
     end: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.finalTime)),
     event_id: item._id,
   }));
- // cambio de fecha flechas
-  const goToPreviousDay = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() - 1));
-  };
-  
-  const goToNextDay = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + 1));
-  };
 
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
@@ -157,7 +148,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
           hourFormat="24"
           events={formatedDate || []}
           resources={data?.usersInAppointments || []}
-          selectedDate={currentDate} // Cambiar el prop aquí
+          selectedDate={selectedDate ? new Date(selectedDate) : new Date()}
           day={{
             startHour: 10,
             endHour: 22,
@@ -180,14 +171,6 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
             );
           }}
         />
-        <Box display="flex" justifyContent="center" alignItems="center" mt={2} gap={2}>
-          <Button variant="outlined" onClick={goToPreviousDay}>
-            <Typography>&larr; Día anterior</Typography>
-          </Button>
-          <Button variant="outlined" onClick={goToNextDay}>
-            <Typography>Día siguiente &rarr;</Typography>
-          </Button>
-        </Box>
       </div>
 
       {/* Menú contextual */}
