@@ -37,8 +37,8 @@ const ordenarEmpleados = (empleados) => {
   return empleados
     .sort((a, b) => {
       // Ordenar primero por especialidad
-      if (a.specialty < b.specialty) return -1;
-      if (a.specialty > b.specialty) return 1;
+      if (a.specialities < b.specialities) return -1;
+      if (a.specialities > b.specialities) return 1;
 
       // Si las especialidades son iguales, ordenar alfabéticamente por nombre
       if (a.name < b.name) return -1;
