@@ -54,7 +54,7 @@ import { phoneCountry } from '../utils/selectData';
 
 const Home = () => {
   const [searchParams] = useSearchParams();
-  const [filterDate, setFilterDate] = useState('');
+  const [filterDate, setFilterDate] = useState(formatDate(dayjs()));
   const [filterCenter, setFilterCenter] = useState('');
   const { dataBase } = useParams();
   const [open, setOpen] = useState(null);
@@ -117,7 +117,8 @@ const Home = () => {
   <LocationProvider>
     <Box display="flex" flexDirection="column" alignItems="center">
       <DatePicker
-        onChange={(data) => setFilterDate(formatDate(data.$d))}
+        value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
+        onChange={(newValue) => setFilterDate(formatDate(newValue))}
         name="date"
         required
       />
@@ -125,14 +126,14 @@ const Home = () => {
       <Box display="flex" gap={2} mt={2}>
         <Button
           variant="outlined"
-          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).subtract(1, 'day')))}
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).subtract(1, 'day')))} // Restar un día
           startIcon={<ArrowBackIcon />}
         >
           {t('buttons.previousDay')}
         </Button>
         <Button
           variant="outlined"
-          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).add(1, 'day')))}
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).add(1, 'day')))} // Sumar un día
           endIcon={<ArrowForwardIcon />}
         >
           {t('buttons.nextDay')}
