@@ -17,7 +17,8 @@ import AddIcon from '@mui/icons-material/Add';
 import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ModalComponent from '../components/ModalComponent';
 import SelectComponent from '../components/SelectComponent';
 import {
@@ -91,43 +92,55 @@ const Home = () => {
     <Box>
       <NotesSidebar />
       <Container maxWidth="xl">
-        <Box
-          display={'flex'}
-          alignItems={'start'}
-          justifyContent={'space-between'}
+      <Box
+  display={'flex'}
+  alignItems={'start'}
+  justifyContent={'space-between'}
+>
+  <Box>
+    <Typography
+      variant={'h2'}
+      sx={{ textTransform: 'capitalize' }}
+      mb={2}
+    >
+      {t('title.calender')}
+    </Typography>
+    <Header
+      appointmentData={appointmentQuery.data}
+      dataBase={dataBase}
+      open={open}
+      setOpen={setOpen}
+      filterCenter={filterCenter}
+      setFilterCenter={setFilterCenter}
+    />
+  </Box>
+  <LocationProvider>
+    <Box display="flex" flexDirection="column" alignItems="center">
+      <DatePicker
+        onChange={(data) => setFilterDate(formatDate(data.$d))}
+        name="date"
+        required
+      />
+      {/* Botones para cambiar de fecha */}
+      <Box display="flex" gap={2} mt={2}>
+        <Button
+          variant="outlined"
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).subtract(1, 'day')))}
+          startIcon={<ArrowBackIcon />}
         >
-          <Box>
-            <Typography
-              variant={'h2'}
-              sx={{ textTransform: 'capitalize' }}
-              mb={2}
-            >
-              {t('title.calender')}
-            </Typography>
-            <Header
-              appointmentData={appointmentQuery.data}
-              dataBase={dataBase}
-              open={open}
-              setOpen={setOpen}
-              filterCenter={filterCenter}
-              setFilterCenter={setFilterCenter}
-            />
-          </Box>
-          <LocationProvider>
-            {/* <StaticDatePicker
-              onAccept={(data) => setFilterDate(formatDate(data.$d))}
-            /> */}
-
-            <DatePicker
-              onChange={(data) => setFilterDate(formatDate(data.$d))}
-              name="date"
-              required
-              on
-              // format={formatDatePicker}
-              // disabled={mutation.isPending || canEdit}
-            />
-          </LocationProvider>
-        </Box>
+          {t('buttons.previousDay')}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).add(1, 'day')))}
+          endIcon={<ArrowForwardIcon />}
+        >
+          {t('buttons.nextDay')}
+        </Button>
+      </Box>
+    </Box>
+  </LocationProvider>
+</Box>
       </Container>
 
       <Container
