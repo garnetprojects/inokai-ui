@@ -375,12 +375,14 @@ const handleExchangeSubmit = async () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
+            <LocationProvider>
             <DatePicker
               label="Fecha"
               value={manualData.date}
               onChange={(value) => handleManualChange('date', value)}
               fullWidth
             />
+            </LocationProvider>
           </Grid>
 
           {/* Empleado */}
@@ -515,12 +517,14 @@ const handleExchangeSubmit = async () => {
 
         {/* Fecha 1 */}
         <Grid item xs={12} md={6}>
+          <LocationProvider>
           <DatePicker
             label="Fecha 1"
             value={exchangeData.date1}
             onChange={(value) => handleExchangeChange('date1', value)}
             fullWidth
           />
+          </LocationProvider>
         </Grid>
 
         {/* Fecha 2 */}
