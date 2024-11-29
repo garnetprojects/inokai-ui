@@ -24,6 +24,7 @@ function combinarFechaYHora(fecha, hora) {
 
 const Calendar = ({ data, setOpen, selectedDate }) => {
   const [selectedEmployee, setSelectedEmployee] = useState(null); // Estado para el empleado seleccionado
+  const empleadosOrdenados = ordenarEmpleados(data?.usersInAppointments || []);
   const formatedDate = data?.appointments2?.map((item) => ({
     ...item,
     start: combinarFechaYHora(item.date, convertirAMPMa24Horas(item.initTime)),
@@ -31,6 +32,22 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
     event_id: item._id,
   }));
 
+// Función para ordenar los empleados
+const ordenarEmpleados = (empleados) => {
+  return empleados
+    .sort((a, b) => {
+      // Ordenar primero por especialidad
+      if (a.specialty < b.specialty) return -1;
+      if (a.specialty > b.specialty) return 1;
+
+      // Si las especialidades son iguales, ordenar alfabéticamente por nombre
+      if (a.name < b.name) return -1;
+      if (a.name > b.name) return 1;
+
+      return 0;
+    });
+};
+  
   const scrollableRef = useRef(null);
   const hiddenScrollRef = useRef(null);
 
@@ -81,7 +98,7 @@ const Calendar = ({ data, setOpen, selectedDate }) => {
         maxWidth={'100%'}
         overflow={'hidden'}
       >
-        {data.usersInAppointments.map((user) => {
+        {empleadosOrdenados.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
 
           return (
