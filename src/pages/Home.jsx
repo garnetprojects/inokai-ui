@@ -108,32 +108,45 @@ const Home = () => {
     />
   </Box>
   <LocationProvider>
-    <Box display="flex" flexDirection="column" alignItems="center">
-      <DatePicker
-        value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
-        onChange={(newValue) => setFilterDate(formatDate(newValue))}
-        name="date"
-        required
-      />
-      {/* Botones para cambiar de fecha */}
-      <Box display="flex" gap={2} mt={2}>
-        <Button
-          variant="outlined"
-          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).subtract(1, 'day')))} // Restar un día
-          startIcon={<ArrowBackIcon />}
-        >
-          {t('buttons.previousDay')}
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).add(1, 'day')))} // Sumar un día
-          endIcon={<ArrowForwardIcon />}
-        >
-          {t('buttons.nextDay')}
-        </Button>
-      </Box>
-    </Box>
-  </LocationProvider>
+            <Box
+              display="flex"
+              alignItems="center" // Alinea los elementos en el eje vertical
+              sx={{ width: '250px', justifyContent: 'flex-start' }} // Controla el ancho y alineación de los elementos
+            >
+              {/* DatePicker */}
+              <DatePicker
+                value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
+                onChange={(newValue) => setFilterDate(formatDate(newValue))}
+                name="date"
+                required
+                sx={{ marginRight: 2 }} // Espacio a la derecha del DatePicker
+              />
+
+              {/* Botones para cambiar de fecha */}
+              <Box display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setFilterDate((prev) =>
+                      formatDate(dayjs(prev).subtract(1, 'day'))
+                    )} // Restar un día
+                  startIcon={<ArrowBackIcon />}
+                >
+                  {t('buttons.previousDay')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setFilterDate((prev) =>
+                      formatDate(dayjs(prev).add(1, 'day'))
+                    )} // Sumar un día
+                  endIcon={<ArrowForwardIcon />}
+                >
+                  {t('buttons.nextDay')}
+                </Button>
+              </Box>
+            </Box>
+          </LocationProvider>
 </Box>
       </Container>
 
