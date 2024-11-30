@@ -98,13 +98,6 @@ const Home = () => {
   justifyContent={'space-between'}
 >
   <Box>
-    <Typography
-      variant={'h2'}
-      sx={{ textTransform: 'capitalize' }}
-      mb={2}
-    >
-      {t('title.calender')}
-    </Typography>
     <Header
       appointmentData={appointmentQuery.data}
       dataBase={dataBase}
