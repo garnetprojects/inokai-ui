@@ -63,20 +63,28 @@ const Home = () => {
   const centerIDQuery = searchParams.get('centerID');
 
   useEffect(() => {
-    if (filterDateQuery) setFilterDate(filterDateQuery);
     if (centerIDQuery) setFilterCenter(centerIDQuery);
-  }, [filterDateQuery, centerIDQuery]);
+}, [centerIDQuery]);
 
-  const appointmentQuery = useQuery({
-    queryKey: ['appointments', filterDate, filterCenter],
-    queryFn: async () =>
+  const handleDateChange = (newDate) => {
+    setFilterDate(newDate);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('filterDate', formatDate(newDate));
+    if (filterCenter) {
+        newSearchParams.set('centerID', filterCenter);
+    }
+    navigate(`?${newSearchParams.toString()}`);
+};
+const appointmentQuery = useQuery({
+  queryKey: ['appointments', filterDate, filterCenter || ''],
+  queryFn: async () =>
       await axios(`/appointment/get-all-appointments/${dataBase}`, {
-        params: {
-          filterDate: filterDate || formatDate(),
-          filterCenter,
-        },
+          params: {
+              filterDate: filterDate || formatDate(),
+              filterCenter: filterCenter || '', // Asegúrate de pasar siempre un valor
+          },
       }).then((req) => req.data),
-  });
+});
   const [t] = useTranslation('global');
 
   if (dataBase === 'ownerAdmin')
@@ -342,15 +350,19 @@ const Header = ({
         {userInfo.role === 'admin' && (
           <Box mb={2}>
             <SelectComponent
-              fixArrayFn={fixCentersArray}
-              params={`users/get-all-centers/${dataBase}`}
-              label={t('title.center')}
-              required={true}
-              aditionalProperties={{
-                onChange: (e) => setFilterCenter(e.target.value),
-                sx: { maxWidth: '300px' },
-                value: filterCenter,
-              }}
+                fixArrayFn={fixCentersArray}
+                params={`users/get-all-centers/${dataBase}`}
+                label={t('title.center')}
+                aditionalProperties={{
+                    onChange: (e) => {
+                        const selectedValue = e.target.value;
+                        setFilterCenter(selectedValue);
+                        const newSearchParams = new URLSearchParams(searchParams);
+                        newSearchParams.set('centerID', selectedValue);
+                        navigate(`?${newSearchParams.toString()}`);
+                    },
+                    value: filterCenter,
+                }}
               disabled={mutation.isPending || canEdit}
             />
           </Box>
