@@ -108,20 +108,17 @@ const Home = () => {
     />
   </Box>
   <LocationProvider>
-            <Box
-              display="flex"
-              alignItems="center" // Alinea los elementos en el eje vertical
-              sx={{ width: '250px', justifyContent: 'flex-start' }} // Controla el ancho y alineación de los elementos
-            >
-              {/* DatePicker */}
-              <DatePicker
-                value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
-                onChange={(newValue) => setFilterDate(formatDate(newValue))}
-                name="date"
-                required
-                sx={{ marginRight: 2 }} // Espacio a la derecha del DatePicker
-              />
-
+  <Box display="flex" alignItems="center" gap={2}>  {/* Flexbox en fila */}
+    {/* DatePicker */}
+    <DatePicker
+      value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
+      onChange={(newValue) => setFilterDate(formatDate(newValue))}
+      name="date"
+      required
+      sx={{
+        width: '150px', // Ajustar el ancho del DatePicker
+      }}
+    />
               {/* Botones para cambiar de fecha */}
               <Box display="flex" gap={2}>
                 <Button
