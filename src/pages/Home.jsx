@@ -89,88 +89,73 @@ const Home = () => {
   console.log(appointmentQuery.data);
 
   return (
-      <Box>
-        <NotesSidebar />
-        <Container maxWidth="xl">
-          <Box display={'flex'} alignItems={'start'} justifyContent={'space-between'}>
-            <Box>
-              <Typography variant={'h2'} sx={{ textTransform: 'capitalize' }} mb={2}>
-                {t('title.calender')}
-              </Typography>
-              <Header
-                appointmentData={appointmentQuery.data}
-                dataBase={dataBase}
-                open={open}
-                setOpen={setOpen}
-                filterCenter={filterCenter}
-                setFilterCenter={setFilterCenter}
-              />
-            </Box>
-  
-            {/* Aquí colocamos la parte izquierda con el DatePicker y los botones */}
-            <LocationProvider>
-              <Box
-                display="flex"
-                flexDirection="column"
-                alignItems="flex-start"
-                justifyContent="center"
-                sx={{ width: '250px' }} // Controla el ancho de esta sección
-              >
-                <DatePicker
-                  value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
-                  onChange={(newValue) => setFilterDate(formatDate(newValue))}
-                  name="date"
-                  required
-                  sx={{ marginBottom: 2 }}
-                />
-                {/* Botones para cambiar de fecha */}
-                <Box display="flex" gap={2}>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      setFilterDate((prev) =>
-                        formatDate(dayjs(prev).subtract(1, 'day'))
-                      )} // Restar un día
-                    startIcon={<ArrowBackIcon />}
-                  >
-                    {t('buttons.previousDay')}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      setFilterDate((prev) =>
-                        formatDate(dayjs(prev).add(1, 'day'))
-                      )} // Sumar un día
-                    endIcon={<ArrowForwardIcon />}
-                  >
-                    {t('buttons.nextDay')}
-                  </Button>
-                </Box>
-              </Box>
-            </LocationProvider>
-          </Box>
-        </Container>
-  
-        <Container
-          sx={{
-            width: '98vw',
-          }}
-          maxWidth="xl"
+    <Box>
+      <NotesSidebar />
+      <Container maxWidth="xl">
+      <Box
+  display={'flex'}
+  alignItems={'start'}
+  justifyContent={'space-between'}
+>
+  <Box>
+    <Header
+      appointmentData={appointmentQuery.data}
+      dataBase={dataBase}
+      open={open}
+      setOpen={setOpen}
+      filterCenter={filterCenter}
+      setFilterCenter={setFilterCenter}
+    />
+  </Box>
+  <LocationProvider>
+    <Box display="flex" flexDirection="column" alignItems="center">
+      <DatePicker
+        value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
+        onChange={(newValue) => setFilterDate(formatDate(newValue))}
+        name="date"
+        required
+      />
+      {/* Botones para cambiar de fecha */}
+      <Box display="flex" gap={2} mt={2}>
+        <Button
+          variant="outlined"
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).subtract(1, 'day')))} // Restar un día
+          startIcon={<ArrowBackIcon />}
         >
-          {appointmentQuery.isFetching && <CircularProgress />}
-  
-          {!appointmentQuery.isFetching && (
-            <Calendar
-              data={appointmentQuery.data}
-              setOpen={setOpen}
-              selectedDate={filterDate}
-            />
-          )}
-        </Container>
+          {t('buttons.previousDay')}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setFilterDate((prev) => formatDate(dayjs(prev).add(1, 'day')))} // Sumar un día
+          endIcon={<ArrowForwardIcon />}
+        >
+          {t('buttons.nextDay')}
+        </Button>
       </Box>
-    );
-  };
-  
+    </Box>
+  </LocationProvider>
+</Box>
+      </Container>
+
+      <Container
+        sx={{
+          width: '98vw',
+        }}
+        maxWidth="xl"
+      >
+        {appointmentQuery.isFetching && <CircularProgress />}
+
+        {!appointmentQuery.isFetching && (
+          <Calendar
+            data={appointmentQuery.data}
+            setOpen={setOpen}
+            selectedDate={filterDate}
+          />
+        )}
+      </Container>
+    </Box>
+  );
+};
 
 const Header = ({
   dataBase,
