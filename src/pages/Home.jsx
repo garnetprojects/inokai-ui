@@ -88,7 +88,8 @@ const Home = () => {
 
   console.log(appointmentQuery.data);
 
-  <Box>
+  return (
+    <Box>
       <NotesSidebar />
       <Container maxWidth="xl">
         <Box display={'flex'} alignItems={'start'} justifyContent={'space-between'}>
@@ -106,22 +107,22 @@ const Home = () => {
             />
           </Box>
 
-          {/* Aquí colocamos la parte izquierda con el DatePicker y los botones */}
+          {/* Aquí colocamos la parte izquierda con el DatePicker y los botones alineados horizontalmente */}
           <LocationProvider>
             <Box
               display="flex"
-              flexDirection="column"
-              alignItems="flex-start"
-              justifyContent="center"
-              sx={{ width: '250px' }} // Controla el ancho de esta sección
+              alignItems="center" // Alinea los elementos en el eje vertical
+              sx={{ width: '250px', justifyContent: 'flex-start' }} // Controla el ancho y alineación de los elementos
             >
+              {/* DatePicker */}
               <DatePicker
                 value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
                 onChange={(newValue) => setFilterDate(formatDate(newValue))}
                 name="date"
                 required
-                sx={{ marginBottom: 2 }}
+                sx={{ marginRight: 2 }} // Espacio a la derecha del DatePicker
               />
+
               {/* Botones para cambiar de fecha */}
               <Box display="flex" gap={2}>
                 <Button
@@ -169,6 +170,7 @@ const Home = () => {
     </Box>
   );
 };
+
 const Header = ({
   dataBase,
   open,
