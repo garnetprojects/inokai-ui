@@ -117,6 +117,18 @@ const appointmentQuery = useQuery({
   </Box>
   <LocationProvider>
   <Box display="flex" alignItems="center" gap={2}>  {/* Flexbox en fila */}
+  <Box display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setFilterDate((prev) =>
+                      formatDate(dayjs(prev).subtract(1, 'day'))
+                    )} // Restar un día
+                  startIcon={<ArrowBackIcon />}
+                >
+                  {t('buttons.previousDay')}
+                </Button>
+                </Box>
     {/* DatePicker */}
     <DatePicker
       value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
@@ -129,16 +141,6 @@ const appointmentQuery = useQuery({
     />
               {/* Botones para cambiar de fecha */}
               <Box display="flex" gap={2}>
-                <Button
-                  variant="outlined"
-                  onClick={() =>
-                    setFilterDate((prev) =>
-                      formatDate(dayjs(prev).subtract(1, 'day'))
-                    )} // Restar un día
-                  startIcon={<ArrowBackIcon />}
-                >
-                  {t('buttons.previousDay')}
-                </Button>
                 <Button
                   variant="outlined"
                   onClick={() =>
