@@ -30,7 +30,9 @@
     "back": "atrás",
     "chooseLogo": "elegir logo",
     "uploadSettings": "guardar configuración",
-    "cancelAppointment": "cancelar cita"
+    "cancelAppointment": "cancelar cita",
+    "previousDay": "Día Anterior",
+    "nextDay": "Día Siguiente"
   },
   "inputLabel": {
     "companyName": "nombre de empresa",

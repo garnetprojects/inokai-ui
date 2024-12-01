@@ -17,7 +17,8 @@ import AddIcon from '@mui/icons-material/Add';
 import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ModalComponent from '../components/ModalComponent';
 import SelectComponent from '../components/SelectComponent';
 import {
@@ -53,7 +54,7 @@ import { phoneCountry } from '../utils/selectData';
 
 const Home = () => {
   const [searchParams] = useSearchParams();
-  const [filterDate, setFilterDate] = useState('');
+  const [filterDate, setFilterDate] = useState(formatDate(dayjs()));
   const [filterCenter, setFilterCenter] = useState('');
   const { dataBase } = useParams();
   const [open, setOpen] = useState(null);
@@ -62,20 +63,28 @@ const Home = () => {
   const centerIDQuery = searchParams.get('centerID');
 
   useEffect(() => {
-    if (filterDateQuery) setFilterDate(filterDateQuery);
     if (centerIDQuery) setFilterCenter(centerIDQuery);
-  }, [filterDateQuery, centerIDQuery]);
+}, [centerIDQuery]);
 
-  const appointmentQuery = useQuery({
-    queryKey: ['appointments', filterDate, filterCenter],
-    queryFn: async () =>
+  const handleDateChange = (newDate) => {
+    setFilterDate(newDate);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('filterDate', formatDate(newDate));
+    if (filterCenter) {
+        newSearchParams.set('centerID', filterCenter);
+    }
+    navigate(`?${newSearchParams.toString()}`);
+};
+const appointmentQuery = useQuery({
+  queryKey: ['appointments', filterDate, filterCenter || ''],
+  queryFn: async () =>
       await axios(`/appointment/get-all-appointments/${dataBase}`, {
-        params: {
-          filterDate: filterDate || formatDate(),
-          filterCenter,
-        },
+          params: {
+              filterDate: filterDate || formatDate(),
+              filterCenter: filterCenter || '', // Asegúrate de pasar siempre un valor
+          },
       }).then((req) => req.data),
-  });
+});
   const [t] = useTranslation('global');
 
   if (dataBase === 'ownerAdmin')
@@ -91,43 +100,61 @@ const Home = () => {
     <Box>
       <NotesSidebar />
       <Container maxWidth="xl">
-        <Box
-          display={'flex'}
-          alignItems={'start'}
-          justifyContent={'space-between'}
-        >
-          <Box>
-            <Typography
-              variant={'h2'}
-              sx={{ textTransform: 'capitalize' }}
-              mb={2}
-            >
-              {t('title.calender')}
-            </Typography>
-            <Header
-              appointmentData={appointmentQuery.data}
-              dataBase={dataBase}
-              open={open}
-              setOpen={setOpen}
-              filterCenter={filterCenter}
-              setFilterCenter={setFilterCenter}
-            />
-          </Box>
-          <LocationProvider>
-            {/* <StaticDatePicker
-              onAccept={(data) => setFilterDate(formatDate(data.$d))}
-            /> */}
-
-            <DatePicker
-              onChange={(data) => setFilterDate(formatDate(data.$d))}
-              name="date"
-              required
-              on
-              // format={formatDatePicker}
-              // disabled={mutation.isPending || canEdit}
-            />
+      <Box
+  display={'flex'}
+  alignItems={'start'}
+  justifyContent={'space-between'}
+>
+  <Box>
+    <Header
+      appointmentData={appointmentQuery.data}
+      dataBase={dataBase}
+      open={open}
+      setOpen={setOpen}
+      filterCenter={filterCenter}
+      setFilterCenter={setFilterCenter}
+    />
+  </Box>
+  <LocationProvider>
+  <Box display="flex" alignItems="center" gap={2}>  {/* Flexbox en fila */}
+  <Box display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setFilterDate((prev) =>
+                      formatDate(dayjs(prev).subtract(1, 'day'))
+                    )} // Restar un día
+                  startIcon={<ArrowBackIcon />}
+                >
+                  {t('buttons.previousDay')}
+                </Button>
+                </Box>
+    {/* DatePicker */}
+    <DatePicker
+      value={dayjs(filterDate)} // Asignar filterDate como el valor controlado del DatePicker
+      onChange={(newValue) => setFilterDate(formatDate(newValue))}
+      name="date"
+      required
+      sx={{
+        width: '150px', // Ajustar el ancho del DatePicker
+      }}
+    />
+              {/* Botones para cambiar de fecha */}
+              <Box display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setFilterDate((prev) =>
+                      formatDate(dayjs(prev).add(1, 'day'))
+                    )} // Sumar un día
+                  endIcon={<ArrowForwardIcon />}
+                >
+                  {t('buttons.nextDay')}
+                </Button>
+              </Box>
+            </Box>
           </LocationProvider>
-        </Box>
+</Box>
       </Container>
 
       <Container
@@ -325,15 +352,19 @@ const Header = ({
         {userInfo.role === 'admin' && (
           <Box mb={2}>
             <SelectComponent
-              fixArrayFn={fixCentersArray}
-              params={`users/get-all-centers/${dataBase}`}
-              label={t('title.center')}
-              required={true}
-              aditionalProperties={{
-                onChange: (e) => setFilterCenter(e.target.value),
-                sx: { maxWidth: '300px' },
-                value: filterCenter,
-              }}
+                fixArrayFn={fixCentersArray}
+                params={`users/get-all-centers/${dataBase}`}
+                label={t('title.center')}
+                aditionalProperties={{
+                    onChange: (e) => {
+                        const selectedValue = e.target.value;
+                        setFilterCenter(selectedValue);
+                        const newSearchParams = new URLSearchParams(searchParams);
+                        newSearchParams.set('centerID', selectedValue);
+                        navigate(`?${newSearchParams.toString()}`);
+                    },
+                    value: filterCenter,
+                }}
               disabled={mutation.isPending || canEdit}
             />
           </Box>

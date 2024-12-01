@@ -29,7 +29,9 @@
     "back": "back",
     "chooseLogo": "choose logo",
     "uploadSettings": "upload settings",
-    "cancelAppointment": "cancel appointment"
+    "cancelAppointment": "cancel appointment",
+     "previousDay": "Previous Day",
+    "nextDay": "Next Day"
   },
   "inputLabel": {
     "companyName": "company name",

@@ -79,7 +79,7 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
       >
         Buscar
       </Button>
-
+  
       <ModalComponent open={isOpen} setOpen={setIsOpen}>
         <Box component={'form'} pt={5} onSubmit={handleSubmit}>
           <Box display={'flex'} gap={2}>
@@ -111,20 +111,20 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
               disabled={mutate.isPending}
               name="phone"
             />
-
+  
             {/* Checkbox para TODOS LOS CENTROS */}
             <FormControlLabel
-                control={
-                    <Checkbox
-                    checked={isAllCenters}
-                    onChange={() => setIsAllCenters(!isAllCenters)}
-                    color="primary"
-                    disabled={state.userInfo?.role !== 'admin'} // Deshabilita si no es admin
-                    />
-                }
-                label="TODOS LOS CENTROS"
+              control={
+                <Checkbox
+                  checked={isAllCenters}
+                  onChange={() => setIsAllCenters(!isAllCenters)}
+                  color="primary"
+                  disabled={state.userInfo?.role !== 'admin'} // Deshabilita si no es admin
                 />
-
+              }
+              label="TODOS LOS CENTROS"
+            />
+  
             <Box>
               <IconButton
                 aria-label="delete"
@@ -137,23 +137,30 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
             </Box>
           </Box>
         </Box>
-
+  
         <Box maxHeight={500} overflow={'auto'} mt={2}>
           {mutate.isPending && <CircularProgress />}
-
+  
           {mutate.data &&
             mutate.data?.data.map((item) => (
               <Box
                 key={item._id}
-                onClick={() => handleSelectAppointment(item)}
+                onClick={() => {
+                  if (item.status !== "canceled") {
+                    handleSelectAppointment(item);
+                  }
+                }}
                 onMouseEnter={() => handleMouseEnter(item)} // Resalta al pasar el mouse
                 onMouseLeave={handleMouseLeave} // Quita el resaltado al salir
                 style={{
-                  cursor: 'pointer',
+                  cursor: item.status === "canceled" ? 'not-allowed' : 'pointer', // Deshabilita el cursor si está cancelado
                   backgroundColor:
                     highlightedAppointment?._id === item._id
                       ? 'rgba(0, 0, 255, 0.1)' // Color de fondo para el resaltado
+                      : item.status === "canceled"
+                      ? 'rgba(255, 0, 0, 0.2)' // Color de fondo rojo con opacidad para cancelado
                       : 'transparent',
+                  pointerEvents: item.status === "canceled" ? 'none' : 'auto', // Evita interacción si está cancelado
                 }}
               >
                 <CardContent>
@@ -170,9 +177,15 @@ const SearchModal = ({ setSelectedDate, setOpenEdit }) => {
                     Hora: {item.initTime} - {item.finalTime}
                   </Typography>
                   <Typography gutterBottom component="div">
-                    Observaciones: {item.remarks}
+                    Observaciones: {item.status === "canceled" ? (
+                      <>
+                        <strong style={{ color: "red" }}>CANCELADA</strong>
+                        {item.remarks ? ` - ${item.remarks}` : ''}
+                      </>
+                    ) : (
+                      item.remarks || 'Sin observaciones'
+                    )}
                   </Typography>
-
                   <Typography gutterBottom component="div">
                     Servicios:
                   </Typography>
