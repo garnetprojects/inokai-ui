@@ -117,7 +117,7 @@ const ordenarEmpleados = (empleados) => {
                   py={1}
                   px={'10px'}
                   flexDirection={'row'}
-                  //onClick={() => setSelectedEmployee(user)} // Cambia al empleado seleccionado
+                  onClick={() => setSelectedEmployee(user)} // Cambia al empleado seleccionado
                 >
                   <Box mx={1} textTransform={'uppercase'}>
                     <Avatar

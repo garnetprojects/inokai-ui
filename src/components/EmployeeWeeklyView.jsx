@@ -1,7 +1,8 @@
-import { Box, Typography, Tooltip, Button } from '@mui/material';
+import { Box, Typography, Tooltip, Button, Menu, MenuItem } from '@mui/material';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { useState } from 'react';
 
-const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee }) => {
+const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee, setOpen }) => {
   // Obtener la fecha de inicio de la semana (Lunes)
   const startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
 
@@ -25,8 +26,29 @@ const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee }) => {
     ),
   }));
 
+  // Estado para el menú contextual
+  const [menuAnchor, setMenuAnchor] = useState(null);
+
+  // Manejar el menú contextual
+  const handleContextMenu = (event) => {
+    event.preventDefault();
+    setMenuAnchor({
+      mouseX: event.clientX,
+      mouseY: event.clientY,
+    });
+  };
+
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleCreateAppointment = () => {
+    handleCloseMenu();
+    setOpen(true); // Abrir modal de crear cita
+  };
+
   return (
-    <Box display="flex" flexDirection="column" height="100%">
+    <Box display="flex" flexDirection="column" height="100%" onContextMenu={handleContextMenu}>
       {/* Botón para regresar */}
       <Box mb={2}>
         <Button
@@ -66,6 +88,7 @@ const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee }) => {
                 <Tooltip
                   key={apptIdx}
                   title={`${appointment.clientName} (${appointment.initTime} - ${appointment.finalTime})`}
+                  arrow
                 >
                   <Box
                     mb={1}
@@ -73,6 +96,7 @@ const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee }) => {
                     bgcolor="lightblue"
                     borderRadius="4px"
                     boxShadow="0px 2px 4px rgba(0,0,0,0.1)"
+                    onDoubleClick={() => setOpen(appointment)} // Abrir modal de edición
                   >
                     <Typography variant="body2" fontWeight="bold">
                       {appointment.clientName}
@@ -94,6 +118,20 @@ const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee }) => {
           </Box>
         ))}
       </Box>
+
+      {/* Menú contextual */}
+      <Menu
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menuAnchor !== null
+            ? { top: menuAnchor.mouseY, left: menuAnchor.mouseX }
+            : undefined
+        }
+        open={Boolean(menuAnchor)}
+        onClose={handleCloseMenu}
+      >
+        <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
+      </Menu>
     </Box>
   );
 };
