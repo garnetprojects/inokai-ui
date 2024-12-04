@@ -400,7 +400,7 @@ const handleExchangeSubmit = async () => {
 
           <Grid item xs={12}>
             {/* Checkboxes */}
-            {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo'].map((label) => (
+            {['Libre', 'Baja', 'Vacaciones', 'Año Nuevo', 'Reyes', 'Festivo', 'Compensado'].map((label) => (
               <FormControlLabel
                 key={label}
                 control={
