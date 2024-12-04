@@ -119,6 +119,7 @@ const appointmentQuery = useQuery({
       setOpen={setOpen}
       filterCenter={filterCenter}
       setFilterCenter={setFilterCenter}
+      handleOpenModal={handleOpenModal} 
     />
   </Box>
   <LocationProvider>
