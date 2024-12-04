@@ -66,9 +66,7 @@ const Home = () => {
     if (centerIDQuery) setFilterCenter(centerIDQuery);
 }, [centerIDQuery]);
 
-const handleOpenModal = (centerOnOpen, data = null) => {
-  setOpen({ centerOnOpen, data });
-};
+
 
   const handleDateChange = (newDate) => {
     setFilterDate(newDate);
@@ -99,6 +97,10 @@ const appointmentQuery = useQuery({
   if (appointmentQuery.isError) return <p>Ocurrio algo</p>;
 
   console.log(appointmentQuery.data);
+
+  const handleOpenModal = (centerOnOpen, data = null) => {
+    setOpen({ centerOnOpen, data });
+  };
 
   return (
     <Box>
