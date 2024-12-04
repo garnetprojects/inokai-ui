@@ -3,8 +3,8 @@ import { format, startOfWeek, addDays } from 'date-fns';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const EmployeeWeeklyView = ({ employee, setSelectedEmployee, fetchUrl, setOpen }) => {
-  // Obtener la fecha de inicio de la semana (Lunes)
+const EmployeeWeeklyView = ({ employee, setSelectedEmployee, setOpen }) => {
+  // Fecha de inicio de la semana (Lunes)
   const startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
 
   // Crear una matriz con los días de la semana (Lunes - Domingo)
@@ -13,21 +13,25 @@ const EmployeeWeeklyView = ({ employee, setSelectedEmployee, fetchUrl, setOpen }
   const [appointmentsByDay, setAppointmentsByDay] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Función para cargar citas por día
+  // Función para cargar citas de la API
   const fetchAppointmentsForDay = async (day) => {
+    const filterDate = format(day, 'MM/dd/yyyy'); // Formato requerido por la API
+    const url = `https://inokai-api-dev.onrender.com/api/appointment/get-all-appointments/ebanni?filterDate=${encodeURIComponent(
+      filterDate
+    )}&filterCenter=`;
+
     try {
-      const response = await axios.get(`${fetchUrl}/appointments`, {
-        params: {
-          user_id: employee.user_id,
-          date: format(day, 'yyyy-MM-dd'), // Formato de la fecha para la API
-        },
-      });
+      const response = await axios.get(url);
+      const filteredAppointments = response.data.appointments2.filter(
+        (appointment) => appointment.user_id === employee.user_id
+      );
+
       return {
         date: day,
-        appointments: response.data, // Asumimos que la API devuelve un array de citas
+        appointments: filteredAppointments,
       };
     } catch (error) {
-      console.error(`Error fetching appointments for ${format(day, 'yyyy-MM-dd')}:`, error);
+      console.error(`Error fetching appointments for ${filterDate}:`, error);
       return {
         date: day,
         appointments: [],
@@ -35,23 +39,23 @@ const EmployeeWeeklyView = ({ employee, setSelectedEmployee, fetchUrl, setOpen }
     }
   };
 
+  // Cargar citas para toda la semana
   useEffect(() => {
     const fetchAllAppointments = async () => {
       setLoading(true);
+
       try {
-        const appointments = await Promise.all(
-          weekDays.map((day) => fetchAppointmentsForDay(day))
-        );
-        setAppointmentsByDay(appointments);
+        const results = await Promise.all(weekDays.map((day) => fetchAppointmentsForDay(day)));
+        setAppointmentsByDay(results);
       } catch (error) {
-        console.error('Error fetching appointments:', error);
+        console.error('Error fetching weekly appointments:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAllAppointments();
-  }, [employee, weekDays]);
+  }, [employee]);
 
   return (
     <Box display="flex" flexDirection="column" height="100%">
@@ -116,7 +120,7 @@ const EmployeeWeeklyView = ({ employee, setSelectedEmployee, fetchUrl, setOpen }
                         {appointment.initTime} - {appointment.finalTime}
                       </Typography>
                       <Typography variant="caption">
-                        {appointment.remarks}
+                        {appointment.remarks || ''}
                       </Typography>
                     </Box>
                   </Tooltip>
