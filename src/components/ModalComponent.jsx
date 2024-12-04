@@ -8,7 +8,7 @@ const ModalComponent = ({
   setOpen,
   open,
   onClose = () => {},
-  centerOnOpen = false, // Nueva prop para centrar el modal si es necesario
+  centerOnOpen, // Nueva prop para centrar el modal si es necesario
 }) => {
   const [position, setPosition] = useState({ top: '50%', left: '50%' });
 
