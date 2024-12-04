@@ -1,54 +1,60 @@
-import { Box, Typography, Tooltip, Button, Menu, MenuItem } from '@mui/material';
-import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
-import { useState } from 'react';
+import { Box, Typography, Tooltip, Button, CircularProgress } from '@mui/material';
+import { format, startOfWeek, addDays } from 'date-fns';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee, setOpen }) => {
+const EmployeeWeeklyView = ({ employee, setSelectedEmployee, fetchUrl, setOpen }) => {
   // Obtener la fecha de inicio de la semana (Lunes)
   const startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
 
   // Crear una matriz con los días de la semana (Lunes - Domingo)
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
-  // Filtrar citas del empleado para la semana actual
-  const employeeAppointments = data.appointments2.filter(
-    (appointment) =>
-      appointment.user_id === employee.user_id &&
-      weekDays.some((day) =>
-        isSameDay(new Date(appointment.date), new Date(day))
-      )
-  );
+  const [appointmentsByDay, setAppointmentsByDay] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Agrupar citas por día
-  const appointmentsByDay = weekDays.map((day) => ({
-    date: day,
-    appointments: employeeAppointments.filter((appointment) =>
-      isSameDay(new Date(appointment.date), new Date(day))
-    ),
-  }));
-
-  // Estado para el menú contextual
-  const [menuAnchor, setMenuAnchor] = useState(null);
-
-  // Manejar el menú contextual
-  const handleContextMenu = (event) => {
-    event.preventDefault();
-    setMenuAnchor({
-      mouseX: event.clientX,
-      mouseY: event.clientY,
-    });
+  // Función para cargar citas por día
+  const fetchAppointmentsForDay = async (day) => {
+    try {
+      const response = await axios.get(`${fetchUrl}/appointments`, {
+        params: {
+          user_id: employee.user_id,
+          date: format(day, 'yyyy-MM-dd'), // Formato de la fecha para la API
+        },
+      });
+      return {
+        date: day,
+        appointments: response.data, // Asumimos que la API devuelve un array de citas
+      };
+    } catch (error) {
+      console.error(`Error fetching appointments for ${format(day, 'yyyy-MM-dd')}:`, error);
+      return {
+        date: day,
+        appointments: [],
+      };
+    }
   };
 
-  const handleCloseMenu = () => {
-    setMenuAnchor(null);
-  };
+  useEffect(() => {
+    const fetchAllAppointments = async () => {
+      setLoading(true);
+      try {
+        const appointments = await Promise.all(
+          weekDays.map((day) => fetchAppointmentsForDay(day))
+        );
+        setAppointmentsByDay(appointments);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleCreateAppointment = () => {
-    handleCloseMenu();
-    setOpen(true); // Abrir modal de crear cita
-  };
+    fetchAllAppointments();
+  }, [employee, weekDays]);
 
   return (
-    <Box display="flex" flexDirection="column" height="100%" onContextMenu={handleContextMenu}>
+    <Box display="flex" flexDirection="column" height="100%">
       {/* Botón para regresar */}
       <Box mb={2}>
         <Button
@@ -75,63 +81,55 @@ const EmployeeWeeklyView = ({ employee, data, setSelectedEmployee, setOpen }) =>
       </Box>
 
       {/* Citas por día */}
-      <Box display="flex" flex="1" overflow="auto">
-        {appointmentsByDay.map((dayData, idx) => (
-          <Box
-            key={idx}
-            flex="1"
-            borderRight={idx < 6 ? '1px solid #e0e0e0' : 'none'}
-            px={1}
-          >
-            {dayData.appointments.length > 0 ? (
-              dayData.appointments.map((appointment, apptIdx) => (
-                <Tooltip
-                  key={apptIdx}
-                  title={`${appointment.clientName} (${appointment.initTime} - ${appointment.finalTime})`}
-                  arrow
-                >
-                  <Box
-                    mb={1}
-                    p={1}
-                    bgcolor="lightblue"
-                    borderRadius="4px"
-                    boxShadow="0px 2px 4px rgba(0,0,0,0.1)"
-                    onDoubleClick={() => setOpen(appointment)} // Abrir modal de edición
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" flex="1">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box display="flex" flex="1" overflow="auto">
+          {appointmentsByDay.map((dayData, idx) => (
+            <Box
+              key={idx}
+              flex="1"
+              borderRight={idx < 6 ? '1px solid #e0e0e0' : 'none'}
+              px={1}
+            >
+              {dayData.appointments.length > 0 ? (
+                dayData.appointments.map((appointment, apptIdx) => (
+                  <Tooltip
+                    key={apptIdx}
+                    title={`${appointment.clientName} (${appointment.initTime} - ${appointment.finalTime})`}
+                    arrow
                   >
-                    <Typography variant="body2" fontWeight="bold">
-                      {appointment.clientName}
-                    </Typography>
-                    <Typography variant="body2">
-                      {appointment.initTime} - {appointment.finalTime}
-                    </Typography>
-                    <Typography variant="caption">
-                      {appointment.remarks}
-                    </Typography>
-                  </Box>
-                </Tooltip>
-              ))
-            ) : (
-              <Typography variant="body2" color="textSecondary" textAlign="center">
-                No hay citas
-              </Typography>
-            )}
-          </Box>
-        ))}
-      </Box>
-
-      {/* Menú contextual */}
-      <Menu
-        anchorReference="anchorPosition"
-        anchorPosition={
-          menuAnchor !== null
-            ? { top: menuAnchor.mouseY, left: menuAnchor.mouseX }
-            : undefined
-        }
-        open={Boolean(menuAnchor)}
-        onClose={handleCloseMenu}
-      >
-        <MenuItem onClick={handleCreateAppointment}>Crear Cita</MenuItem>
-      </Menu>
+                    <Box
+                      mb={1}
+                      p={1}
+                      bgcolor="lightblue"
+                      borderRadius="4px"
+                      boxShadow="0px 2px 4px rgba(0,0,0,0.1)"
+                      onDoubleClick={() => setOpen(appointment)} // Abrir modal de edición
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {appointment.clientName}
+                      </Typography>
+                      <Typography variant="body2">
+                        {appointment.initTime} - {appointment.finalTime}
+                      </Typography>
+                      <Typography variant="caption">
+                        {appointment.remarks}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                ))
+              ) : (
+                <Typography variant="body2" color="textSecondary" textAlign="center">
+                  No hay citas
+                </Typography>
+              )}
+            </Box>
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };
