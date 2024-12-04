@@ -18,34 +18,18 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
 
-      // Coordenadas iniciales respecto al clic
-      let left = e.clientX + 20; // 20px a la derecha del clic
-      let top = e.clientY - modalHeight / 2; // Centrado verticalmente
+      // Calcula la posición del modal, asegurándose de que no se corte
+      let top = Math.min(
+        e.clientY - modalHeight / 2,
+        screenHeight - modalHeight - 10
+      );
+      top = Math.max(top, 10);
 
-      // Ajuste si se pasa del borde derecho
-      if (left + modalWidth > screenWidth) {
-        left = screenWidth - modalWidth - 10; // Mover hacia la izquierda
-      }
-
-      // Ajuste si se pasa del borde izquierdo
-      if (left < 10) {
-        left = 10; // Dejar 10px desde el borde izquierdo
-      }
-
-      // Ajuste si se pasa del borde inferior
-      if (top + modalHeight > screenHeight) {
-        top = screenHeight - modalHeight - 10; // Mover hacia arriba
-      }
-
-      // Ajuste si se pasa del borde superior
-      if (top < 10) {
-        top = 10; // Dejar 10px desde el borde superior
-      }
-
-      // Si el clic está demasiado cerca del borde inferior
-      if (e.clientY + 20 + modalHeight > screenHeight) {
-        top = screenHeight - modalHeight - 10; // Posicionar el modal completamente visible
-      }
+      let left = Math.min(
+        e.clientX + 20,
+        screenWidth - modalWidth - 10
+      );
+      left = Math.max(left, 10);
 
       setPosition({ top, left });
     };
@@ -79,6 +63,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
       onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
+      disableScrollLock={true} // Permite el scroll de la página
       sx={{
         '& .MuiBackdrop-root': {
           background: 'transparent', // Fondo transparente
