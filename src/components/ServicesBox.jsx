@@ -58,14 +58,15 @@ const ServicesBox = ({ disabled, setSelectedOption, selectedOption }) => {
       </Typography>
 
       {/* Barra de búsqueda */}
-      <TextField
-        placeholder={t('inputLabel.search')}
-        size="small"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        fullWidth
-        sx={{ mb: 2 }}
-      />
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+        <TextField
+          placeholder={t('inputLabel.search')}
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ width: '33%' }} // La barra ocupa 1/3 del ancho
+        />
+      </Box>
 
       <Box gap={1} display={'flex'} flexWrap={'wrap'} maxHeight={200} overflow={'auto'} style={{ resize: 'vertical' }}>
         {sortedServices.map((service) => (
