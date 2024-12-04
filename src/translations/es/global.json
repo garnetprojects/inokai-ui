@@ -54,7 +54,9 @@
     "remarks": "observaciones",
     "isAvailable": "Esta disponible?",
     "duration": "Duración",
-    "monthToDelete": "Mes del año"
+    "monthToDelete": "Mes del año",
+    "search": "Buscar",
+    "noResults": "Sin resultados"
   },
   "inputOptions": {
     "active": "activo",
