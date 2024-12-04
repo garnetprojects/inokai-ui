@@ -66,6 +66,10 @@ const Home = () => {
     if (centerIDQuery) setFilterCenter(centerIDQuery);
 }, [centerIDQuery]);
 
+const handleOpenModal = (centerOnOpen, data = null) => {
+  setOpen({ centerOnOpen, data });
+};
+
   const handleDateChange = (newDate) => {
     setFilterDate(newDate);
     const newSearchParams = new URLSearchParams(searchParams);
@@ -373,7 +377,7 @@ const Header = ({
         {userInfo.role !== 'admin' && (
           <Button
             variant="outlined"
-            onClick={() => setOpen(true)}
+            onClick={() => handleOpenModal(true)} // Céntralo
             startIcon={<AddIcon />}
             style={{ margin: '7px' }} // Añadir el margen aquí
           >
@@ -416,18 +420,6 @@ const Header = ({
                 defaultValue={open?.clientName}
               />
             </Grid>
-
-            {/* <Grid xs={12} md={6}>
-              <TextField
-                label={t('inputLabel.clientPhone')}
-                name="clientPhone"
-                required
-                variant="standard"
-                sx={{ width: '100%' }}
-                disabled={mutation.isPending || canEdit}
-                defaultValue={open?.clientPhone}
-              />
-            </Grid> */}
 
             <InputPhone
               namePhone="clientPhone"
