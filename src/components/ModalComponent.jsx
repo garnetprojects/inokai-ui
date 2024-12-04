@@ -3,13 +3,7 @@ import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 
-const ModalComponent = ({
-  children,
-  setOpen,
-  open,
-  onClose = () => {},
-  centerOnOpen, // Nueva prop para centrar el modal si es necesario
-}) => {
+const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   const [position, setPosition] = useState({ top: '50%', left: '50%' });
 
   const handleClose = () => {
@@ -19,12 +13,6 @@ const ModalComponent = ({
 
   useEffect(() => {
     const handlePosition = (e) => {
-      if (centerOnOpen) {
-        // Si se solicita abrir centrado, usamos el comportamiento estándar
-        setPosition({ top: '50%', left: '50%' });
-        return;
-      }
-
       const modalWidth = 700; // Ajusta esto según el ancho máximo de tu modal
       const modalHeight = 500; // Altura estimada
       const screenWidth = window.innerWidth;
@@ -47,23 +35,19 @@ const ModalComponent = ({
 
     // Escucha el evento de clic solo si el modal se abre
     if (open) {
-      if (!centerOnOpen) {
-        window.addEventListener('click', handlePosition, { once: true });
-      } else {
-        setPosition({ top: '50%', left: '50%' }); // Forzamos el centro si se solicita
-      }
+      window.addEventListener('click', handlePosition, { once: true });
     }
 
     return () => {
       window.removeEventListener('click', handlePosition);
     };
-  }, [open, centerOnOpen]);
+  }, [open]);
 
   const style = {
     position: 'absolute',
     top: position.top,
     left: position.left,
-    transform: centerOnOpen ? 'translate(-50%, -50%)' : 'translate(0, 0)',
+    transform: 'translate(0, 0)', // No centramos porque usamos coordenadas dinámicas
     width: { xs: '90%', md: '700px' },
     bgcolor: 'background.paper',
     boxShadow: 24,

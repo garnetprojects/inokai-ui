@@ -66,8 +66,6 @@ const Home = () => {
     if (centerIDQuery) setFilterCenter(centerIDQuery);
 }, [centerIDQuery]);
 
-
-
   const handleDateChange = (newDate) => {
     setFilterDate(newDate);
     const newSearchParams = new URLSearchParams(searchParams);
@@ -98,10 +96,6 @@ const appointmentQuery = useQuery({
 
   console.log(appointmentQuery.data);
 
-  const handleOpenModal = (centerOnOpen, data = null) => {
-    setOpen({ centerOnOpen, data });
-  };
-
   return (
     <Box>
       <NotesSidebar />
@@ -119,7 +113,6 @@ const appointmentQuery = useQuery({
       setOpen={setOpen}
       filterCenter={filterCenter}
       setFilterCenter={setFilterCenter}
-      handleOpenModal={handleOpenModal} 
     />
   </Box>
   <LocationProvider>
@@ -191,7 +184,6 @@ const Header = ({
   setFilterCenter,
   filterCenter,
   appointmentData,
-  handleOpenModal
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { invalidate } = useInvalidate();
@@ -381,7 +373,7 @@ const Header = ({
         {userInfo.role !== 'admin' && (
           <Button
             variant="outlined"
-            onClick={() => handleOpenModal(true)} // Céntralo
+            onClick={() => setOpen(true)}
             startIcon={<AddIcon />}
             style={{ margin: '7px' }} // Añadir el margen aquí
           >
@@ -424,6 +416,18 @@ const Header = ({
                 defaultValue={open?.clientName}
               />
             </Grid>
+
+            {/* <Grid xs={12} md={6}>
+              <TextField
+                label={t('inputLabel.clientPhone')}
+                name="clientPhone"
+                required
+                variant="standard"
+                sx={{ width: '100%' }}
+                disabled={mutation.isPending || canEdit}
+                defaultValue={open?.clientPhone}
+              />
+            </Grid> */}
 
             <InputPhone
               namePhone="clientPhone"
