@@ -42,6 +42,11 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
         top = 10; // Dejar 10px desde el borde superior
       }
 
+      // Si el clic está demasiado cerca del borde inferior
+      if (e.clientY + 20 + modalHeight > screenHeight) {
+        top = screenHeight - modalHeight - 10; // Posicionar el modal completamente visible
+      }
+
       setPosition({ top, left });
     };
 
