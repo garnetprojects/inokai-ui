@@ -1,60 +1,49 @@
-/* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
 
-const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
+const DraggablePaperComponent = (props) => {
+  return (
+    <Draggable
+      handle="#draggable-modal-title" // Área movible
+      cancel={'[class*="MuiDialogContent-root"]'} // Evitar arrastrar desde el contenido
+    >
+      <Paper {...props} />
+    </Draggable>
+  );
+};
+
+const ModalComponent = ({ children, setOpen, open, onClose = () => {}, cursorPosition }) => {
   const [position, setPosition] = useState({ top: '50%', left: '50%' });
+
+  // Establecer la posición inicial del modal según el cursor
+  useEffect(() => {
+    if (cursorPosition && open) {
+      const { clientX, clientY } = cursorPosition;
+      setPosition({
+        top: clientY + 10, // Posición vertical ajustada
+        left: clientX + 10, // Posición horizontal ajustada
+      });
+    }
+  }, [cursorPosition, open]);
 
   const handleClose = () => {
     onClose();
     setOpen(false);
   };
 
-  useEffect(() => {
-    const handlePosition = (e) => {
-      const modalWidth = 700; // Ajusta esto según el ancho máximo de tu modal
-      const modalHeight = 500; // Altura estimada
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      let left = e.clientX + 20; // 20px a la derecha del clic
-      let top = e.clientY - modalHeight / 2; // Centrado verticalmente respecto al clic
-
-      // Ajuste si se pasa del borde derecho
-      if (left + modalWidth > screenWidth) {
-        left = e.clientX - modalWidth - 20; // Mover hacia la izquierda
-      }
-
-      // Ajuste si se pasa del borde superior o inferior
-      if (top < 0) top = 10; // Dejar 10px desde el borde superior
-      if (top + modalHeight > screenHeight) top = screenHeight - modalHeight - 10;
-
-      setPosition({ top, left });
-    };
-
-    // Escucha el evento de clic solo si el modal se abre
-    if (open) {
-      window.addEventListener('click', handlePosition, { once: true });
-    }
-
-    return () => {
-      window.removeEventListener('click', handlePosition);
-    };
-  }, [open]);
-
   const style = {
     position: 'absolute',
-    top: position.top,
-    left: position.left,
-    transform: 'translate(0, 0)', // No centramos porque usamos coordenadas dinámicas
-    width: { xs: '90%', md: '700px' },
+    top: `${position.top}px`,
+    left: `${position.left}px`,
+    transform: 'translate(0, 0)', // No centrado por defecto
+    width: { xs: '90%', md: '500px' },
     bgcolor: 'background.paper',
     boxShadow: 24,
-    px: 4,
-    pb: 5,
-    maxHeight: '90vh',
-    overflow: 'auto',
+    p: 4,
+    borderRadius: 2,
   };
 
   return (
@@ -63,13 +52,27 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
       onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
-      sx={{
-        '& .MuiBackdrop-root': {
-          background: 'transparent', // Fondo transparente
-        },
-      }}
+      disableEnforceFocus // Mejora la experiencia al arrastrar
     >
-      <Box sx={style}>{children}</Box>
+      <Box component={DraggablePaperComponent} sx={style}>
+        <Box id="draggable-modal-title" sx={{ cursor: 'move', mb: 2 }}>
+          {/* Área Movible */}
+          <Box
+            component="div"
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'white',
+              p: 1,
+              borderRadius: '4px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+            }}
+          >
+            Mueve este modal
+          </Box>
+        </Box>
+        {children}
+      </Box>
     </Modal>
   );
 };
