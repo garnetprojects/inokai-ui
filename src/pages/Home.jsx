@@ -191,6 +191,7 @@ const Header = ({
   setFilterCenter,
   filterCenter,
   appointmentData,
+  handleOpenModal
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { invalidate } = useInvalidate();
