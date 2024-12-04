@@ -13,27 +13,38 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
 
   useEffect(() => {
     const handlePosition = (e) => {
-      const modalWidth = 700; // Ajusta esto según el ancho máximo de tu modal
+      const modalWidth = 700; // Ancho del modal
       const modalHeight = 500; // Altura estimada
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
 
+      // Coordenadas iniciales respecto al clic
       let left = e.clientX + 20; // 20px a la derecha del clic
-      let top = e.clientY - modalHeight / 2; // Centrado verticalmente respecto al clic
+      let top = e.clientY - modalHeight / 2; // Centrado verticalmente
 
       // Ajuste si se pasa del borde derecho
       if (left + modalWidth > screenWidth) {
-        left = e.clientX - modalWidth - 20; // Mover hacia la izquierda
+        left = screenWidth - modalWidth - 10; // Mover hacia la izquierda
       }
 
-      // Ajuste si se pasa del borde superior o inferior
-      if (top < 0) top = 10; // Dejar 10px desde el borde superior
-      if (top + modalHeight > screenHeight) top = screenHeight - modalHeight - 10;
+      // Ajuste si se pasa del borde izquierdo
+      if (left < 10) {
+        left = 10; // Dejar 10px desde el borde izquierdo
+      }
+
+      // Ajuste si se pasa del borde inferior
+      if (top + modalHeight > screenHeight) {
+        top = screenHeight - modalHeight - 10; // Mover hacia arriba
+      }
+
+      // Ajuste si se pasa del borde superior
+      if (top < 10) {
+        top = 10; // Dejar 10px desde el borde superior
+      }
 
       setPosition({ top, left });
     };
 
-    // Escucha el evento de clic solo si el modal se abre
     if (open) {
       window.addEventListener('click', handlePosition, { once: true });
     }
@@ -47,7 +58,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
     position: 'absolute',
     top: position.top,
     left: position.left,
-    transform: 'translate(0, 0)', // No centramos porque usamos coordenadas dinámicas
+    transform: 'translate(0, 0)', // Usamos coordenadas dinámicas
     width: { xs: '90%', md: '700px' },
     bgcolor: 'background.paper',
     boxShadow: 24,
