@@ -53,7 +53,9 @@
     "remarks": "remarks",
     "isAvailable": "is Available?",
     "duration": "duration",
-    "monthToDelete": "month"
+    "monthToDelete": "month",
+    "search": "Search",
+    "noResults": "No results"
   },
   "inputOptions": {
     "active": "active",

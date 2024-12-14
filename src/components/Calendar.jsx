@@ -245,6 +245,7 @@ const BoxAppointment = ({ data, setOpen, appointments }) => {
     data.clientName === 'Compensado' ||
     data.clientName === 'Libre' ||
     data.clientName === 'Año Nuevo' ||
+    data.clientName === 'Compensado' ||
     data.clientName === 'Festivo';
   const serviceColor =
     !isFreeSlot && data.services.length > 0
