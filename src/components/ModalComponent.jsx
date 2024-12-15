@@ -5,49 +5,56 @@ import Modal from '@mui/material/Modal';
 
 const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   const [position, setPosition] = useState({ top: '50%', left: '50%' });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const handleClose = () => {
     onClose();
     setOpen(false);
   };
 
-  useEffect(() => {
-    const handlePosition = (e) => {
-      const modalWidth = 700; // Ancho del modal
-      const modalHeight = 500; // Altura estimada
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+  const handleDragStart = (e) => {
+    // Calculamos el offset inicial al hacer clic
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
-      // Calcula la posición del modal, asegurándose de que no se corte
-      let top = Math.min(
-        e.clientY - modalHeight / 2,
-        screenHeight - modalHeight - 10
-      );
-      top = Math.max(top, 10);
+  const handleDrag = (e) => {
+    if (e.clientX === 0 && e.clientY === 0) return; // Ignorar eventos de "ghost drag"
 
-      let left = Math.min(
-        e.clientX + 20,
-        screenWidth - modalWidth - 10
-      );
-      left = Math.max(left, 10);
+    // Actualizamos la posición según el movimiento
+    setPosition({
+      top: e.clientY - dragOffset.y,
+      left: e.clientX - dragOffset.x,
+    });
+  };
 
-      setPosition({ top, left });
-    };
+  const handleDragEnd = (e) => {
+    // Evitamos que el modal quede fuera de la pantalla
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const modalWidth = 700; // Ancho del modal
+    const modalHeight = 500; // Altura del modal
 
-    if (open) {
-      window.addEventListener('click', handlePosition, { once: true });
-    }
+    let top = Math.min(
+      Math.max(0, position.top),
+      screenHeight - modalHeight
+    );
+    let left = Math.min(
+      Math.max(0, position.left),
+      screenWidth - modalWidth
+    );
 
-    return () => {
-      window.removeEventListener('click', handlePosition);
-    };
-  }, [open]);
+    setPosition({ top, left });
+  };
 
   const style = {
     position: 'absolute',
     top: position.top,
     left: position.left,
-    transform: 'translate(0, 0)', // Usamos coordenadas dinámicas
+    transform: 'translate(0, 0)', // Coordenadas dinámicas
     width: { xs: '90%', md: '700px' },
     bgcolor: 'background.paper',
     boxShadow: 24,
@@ -55,6 +62,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
     pb: 5,
     maxHeight: '90vh',
     overflow: 'auto',
+    cursor: 'move', // Cambiamos el cursor al arrastrar
   };
 
   return (
@@ -70,7 +78,15 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
         },
       }}
     >
-      <Box sx={style}>{children}</Box>
+      <Box
+        sx={style}
+        draggable
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+      >
+        {children}
+      </Box>
     </Modal>
   );
 };
