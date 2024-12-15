@@ -96,7 +96,7 @@ const ordenarEmpleados = (empleados) => {
         zIndex={1000}
         display={'flex'}
         maxWidth={'100%'}
-        //overflow={'hidden'}
+        overflow={'hidden'}
       >
         {empleadosOrdenados.map((user) => {
           let availibity = bringAvailibity(user.user_id, data?.appointments2);
