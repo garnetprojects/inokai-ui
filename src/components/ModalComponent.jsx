@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 
@@ -8,13 +8,40 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  useEffect(() => {
+    const handleOpenNearCursor = (e) => {
+      if (open) {
+        const modalWidth = 700; // Ancho estimado del modal
+        const modalHeight = 500; // Altura estimada
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        let top = Math.min(e.clientY, screenHeight - modalHeight - 10);
+        let left = Math.min(e.clientX, screenWidth - modalWidth - 10);
+
+        top = Math.max(10, top); // Asegurarse de que no se salga por arriba
+        left = Math.max(10, left); // Asegurarse de que no se salga por la izquierda
+
+        setPosition({ top, left });
+      }
+    };
+
+    // Escuchamos el clic inicial para determinar la posición
+    if (open) {
+      window.addEventListener('click', handleOpenNearCursor, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener('click', handleOpenNearCursor);
+    };
+  }, [open]);
+
   const handleClose = () => {
     onClose();
     setOpen(false);
   };
 
   const handleMouseDown = (e) => {
-    // Activamos el modo "dragging" y calculamos el offset inicial
     const rect = e.currentTarget.getBoundingClientRect();
     setDragOffset({
       x: e.clientX - rect.left,
@@ -26,7 +53,6 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   const handleMouseMove = (e) => {
     if (!dragging) return;
 
-    // Actualizamos la posición del modal basándonos en el movimiento
     setPosition({
       top: e.clientY - dragOffset.y,
       left: e.clientX - dragOffset.x,
@@ -34,7 +60,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   };
 
   const handleMouseUp = () => {
-    setDragging(false); // Desactivamos el modo "dragging"
+    setDragging(false);
   };
 
   const style = {
@@ -49,7 +75,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
     pb: 5,
     maxHeight: '90vh',
     overflow: 'auto',
-    cursor: dragging ? 'grabbing' : 'grab', // Cambiamos el cursor al arrastrar
+    cursor: dragging ? 'grabbing' : 'grab',
   };
 
   return (
@@ -58,10 +84,10 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
       onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
-      disableScrollLock={true} // Permite el scroll de la página
+      disableScrollLock={true}
       sx={{
         '& .MuiBackdrop-root': {
-          background: 'transparent', // Fondo transparente
+          background: 'transparent',
         },
       }}
     >
@@ -70,7 +96,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp} // Detenemos el "dragging" si el mouse sale del modal
+        onMouseLeave={handleMouseUp}
       >
         {children}
       </Box>
