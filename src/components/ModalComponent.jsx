@@ -5,49 +5,69 @@ import Modal from '@mui/material/Modal';
 
 const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
   const [position, setPosition] = useState({ top: '50%', left: '50%' });
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleOpenNearCursor = (e) => {
+      if (open) {
+        const modalWidth = 700; // Ancho estimado del modal
+        const modalHeight = 500; // Altura estimada
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        let top = Math.min(e.clientY, screenHeight - modalHeight - 10);
+        let left = Math.min(e.clientX, screenWidth - modalWidth - 10);
+
+        top = Math.max(10, top); // Asegurarse de que no se salga por arriba
+        left = Math.max(10, left); // Asegurarse de que no se salga por la izquierda
+
+        setPosition({ top, left });
+      }
+    };
+
+    // Escuchamos el clic inicial para determinar la posición
+    if (open) {
+      window.addEventListener('click', handleOpenNearCursor, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener('click', handleOpenNearCursor);
+    };
+  }, [open]);
 
   const handleClose = () => {
     onClose();
     setOpen(false);
   };
 
-  useEffect(() => {
-    const handlePosition = (e) => {
-      const modalWidth = 700; // Ancho del modal
-      const modalHeight = 500; // Altura estimada
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+  const handleMouseDown = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    setDragging(true);
+  };
 
-      // Calcula la posición del modal, asegurándose de que no se corte
-      let top = Math.min(
-        e.clientY - modalHeight / 2,
-        screenHeight - modalHeight - 10
-      );
-      top = Math.max(top, 10);
+  const handleMouseMove = (e) => {
+    if (!dragging) return;
 
-      let left = Math.min(
-        e.clientX + 20,
-        screenWidth - modalWidth - 10
-      );
-      left = Math.max(left, 10);
+    setPosition({
+      top: e.clientY - dragOffset.y,
+      left: e.clientX - dragOffset.x,
+    });
+  };
 
-      setPosition({ top, left });
-    };
-
-    if (open) {
-      window.addEventListener('click', handlePosition, { once: true });
-    }
-
-    return () => {
-      window.removeEventListener('click', handlePosition);
-    };
-  }, [open]);
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
 
   const style = {
     position: 'absolute',
     top: position.top,
     left: position.left,
-    transform: 'translate(0, 0)', // Usamos coordenadas dinámicas
+    transform: 'translate(0, 0)', // Coordenadas dinámicas
     width: { xs: '90%', md: '700px' },
     bgcolor: 'background.paper',
     boxShadow: 24,
@@ -55,6 +75,7 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
     pb: 5,
     maxHeight: '90vh',
     overflow: 'auto',
+    cursor: dragging ? 'grabbing' : 'grab',
   };
 
   return (
@@ -63,14 +84,22 @@ const ModalComponent = ({ children, setOpen, open, onClose = () => {} }) => {
       onClose={handleClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
-      disableScrollLock={true} // Permite el scroll de la página
+      disableScrollLock={true}
       sx={{
         '& .MuiBackdrop-root': {
-          background: 'transparent', // Fondo transparente
+          background: 'transparent',
         },
       }}
     >
-      <Box sx={style}>{children}</Box>
+      <Box
+        sx={style}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {children}
+      </Box>
     </Modal>
   );
 };
